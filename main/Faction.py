@@ -2,7 +2,7 @@ from Organization import Organization
 
 
 class Faction(Organization):
-    def __init__(self, name: str, tier: int, hold: bool, district: str, status: int):
+    def __init__(self, name: str, tier: int, hold: bool, district: str, status: int)  -> None:
         super().__init__(name, tier, hold)
         self.district = district
         self.status = status
