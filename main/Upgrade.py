@@ -1,5 +1,5 @@
 class Upgrade:
-    def __init__(self, name: str, quality: int):
+    def __init__(self, name: str, quality: int) -> None:
         self.name = name
         self.quality = quality
 

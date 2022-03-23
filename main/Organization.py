@@ -2,7 +2,7 @@ from abc import *
 
 
 class Organization:
-    def __init__(self, name: str, tier: int, hold: bool):
+    def __init__(self, name: str, tier: int, hold: bool) -> None:
         self.name = name
         self.tier = tier
         self.hold = hold
