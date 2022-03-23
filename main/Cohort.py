@@ -16,19 +16,21 @@ class Cohort:
 
     def add_harm(self, n: int):
         self.harm += n
+        if self.harm > 4:
+            self.harm = 4
 
     def add_type(self, new_type: str):
         self.type.append(new_type)
 
     def add_flaw(self, new_flaw: str):
-        self.type.append(new_flaw)
+        self.flaws.append(new_flaw)
 
     def add_edge(self, new_edge: str):
-        self.type.append(new_edge)
+        self.edges.append(new_edge)
 
     def __str__(self) -> str:
         return """
-        {},
+        {} {}:
         Edges: {},
         Flaws: {},
         Scale: {},
@@ -36,5 +38,5 @@ class Cohort:
         
         Harm Level: {}
         Armor: {}
-        """.format("Expert" if self.expert is True else "Gang", self.edges, self.flaws, self.scale, self.quality,
+        """.format(self.type, "Expert" if self.expert is True else "Gang", self.edges, self.flaws, self.scale, self.quality,
                    self.harm, self.armor)
