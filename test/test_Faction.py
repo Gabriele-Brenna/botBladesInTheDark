@@ -16,7 +16,7 @@ class TestFaction(TestCase):
     def test_add_status(self):
         self.assertIsNone(self.faction.add_status(2))
 
-        self.assertEqual(4, self.faction.status)
+        self.assertEqual(3, self.faction.status)
 
     def test_add_status_war(self):
         self.faction.add_status(-5)

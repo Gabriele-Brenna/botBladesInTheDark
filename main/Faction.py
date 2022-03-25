@@ -19,8 +19,8 @@ class Faction(Organization):
         if self.status == -3:
             return "You are in war with {}, you reached {} status".format(self.name, self.status)
 
-    def __str__(self) -> str:
-        return super().__str__() + """
+    def __repr__(self) -> str:
+        return super().__repr__() + """
     District: {}
     Status: {}
         """.format(self.district, self.status)

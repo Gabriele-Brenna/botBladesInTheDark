@@ -3,6 +3,6 @@ class SpecialAbility:
         self.name = name
         self.description = description
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return """{}:
     {}""".format(self.name, self.description)
