@@ -3,7 +3,7 @@ from typing import List
 
 class Cohort:
     def __init__(self, type: List[str], armor: int, elite: bool, harm: int, expert: bool, flaws: List[str],
-                 edges: List[str], scale: int, quality: int) -> None:
+                 edges: List[str], scale: int = 0, quality: int = 0) -> None:
         self.type = type
         self.armor = armor
         self.elite = elite
