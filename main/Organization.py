@@ -16,5 +16,5 @@ class Organization:
 
     def __str__(self) -> str:
         return """{}:
-        Tier: {}
-        Hold: {}""".format(self.name, self.tier, self.hold)
+    Tier: {}
+    Hold: {}""".format(self.name, self.tier, self.hold)

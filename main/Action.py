@@ -13,3 +13,5 @@ class Action:
             return False
         return True
 
+    def __str__(self) -> str:
+        return """{}: {}""".format(self.name, self.rating)

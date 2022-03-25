@@ -5,4 +5,4 @@ class SpecialAbility:
 
     def __str__(self) -> str:
         return """{}:
-        {}""".format(self.name, self.description)
+    {}""".format(self.name, self.description)
