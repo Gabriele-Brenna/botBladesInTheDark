@@ -45,7 +45,7 @@ class Crew(Organization):
                 self.change_hold()
             else:
                 return (self.tier + 1) * 8
-            self.rep -= (12 - len(self.lair.claims))
+            self.rep %= (12 - len(self.lair.claims))
 
     # TODO: def calc_rep(self, score: Score)
 
@@ -57,8 +57,8 @@ class Crew(Organization):
     def add_heat(self, heat: int):
         self.heat += heat
         if self.heat >= 9:
-            self.add_wanted_level(1)
-            self.heat -= 9
+            self.add_wanted_level(int(self.heat/9))
+            self.heat %= 9
 
     def clear_heat(self):
         self.heat = 0
