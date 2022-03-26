@@ -28,7 +28,7 @@ class Cohort:
     def add_edge(self, new_edge: str):
         self.edges.append(new_edge)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return """
         {} {}:
         Edges: {},

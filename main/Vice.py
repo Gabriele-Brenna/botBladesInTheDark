@@ -1,6 +1,6 @@
 class Vice:
 
-    def __init__(self, name: str, description: str, purveyor: str) -> None:
+    def __init__(self, name: str = "", description: str = "", purveyor: str = None) -> None:
         self.name = name
         self.description = description
         self.purveyor = purveyor

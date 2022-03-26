@@ -10,7 +10,7 @@ class TestCohort(TestCase):
         self.gang = Cohort(["Thugs"], 0, False, 1, False, ["Unreliable"], ["Loyal"], 2, 2)
         self.expert = Cohort(["Physician"], 1, False, 0, True, ["Principled", "Savage"], ["Loyal", "Tenacious"], 3, 0)
 
-    def test_add_harm(self,):
+    def test_add_harm(self):
         self.gang.add_harm(1)
         self.assertEqual(self.gang.harm, 2)
 

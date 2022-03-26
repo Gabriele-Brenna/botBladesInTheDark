@@ -13,3 +13,5 @@ class Action:
             return False
         return True
 
+    def __repr__(self) -> str:
+        return """{}: {}""".format(self.name, self.rating)

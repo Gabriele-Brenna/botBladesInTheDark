@@ -1,9 +1,9 @@
 class Claim:
-    def __init__(self, name: str, description: str) -> None:
+    def __init__(self, name: str = "Turf", description: str = "") -> None:
         self.name = name
         self.description = description
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return """{}:
         {}
         """.format(self.name, self.description)

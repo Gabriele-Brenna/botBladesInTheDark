@@ -14,7 +14,7 @@ class Organization:
     def change_hold(self):
         self.hold = not self.hold
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return """{}:
-        Tier: {}
-        Hold: {}""".format(self.name, self.tier, self.hold)
+    Tier: {}
+    Hold: {}""".format(self.name, self.tier, self.hold)
