@@ -2,7 +2,9 @@ from typing import List
 
 
 class HarmBox:
-    def __init__(self, harms: List[List[str]] = List[List[None], List[None], List[None]]) -> None:
+    def __init__(self, harms: List[List[str]] = None) -> None:
+        if harms is None:
+            harms = [[], [], []]
         self.harms = harms
 
     def insert_harm(self, level: int, description: str) -> int:
@@ -29,3 +31,8 @@ class HarmBox:
     def count_harm(self, level: int) -> int:
         return len(self.harms[level-1])
 
+    def __repr__(self) -> str:
+        out = ""
+        for i in range(len(self.harms)):
+            out = out + "Level " + str(i+1) + ": " + str(self.harms[i]) + "\n"
+        return out
