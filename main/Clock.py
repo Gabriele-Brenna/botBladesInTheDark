@@ -16,3 +16,10 @@ class Clock:
             self.name = name
         if segments is not None:
             self.segments = segments
+
+    def __repr__(self) -> str:
+        return """{}: 
+    segments: {}
+    progress: {}""".format(self.name, self.segments, self.progress)
+
+

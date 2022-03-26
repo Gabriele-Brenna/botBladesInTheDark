@@ -5,5 +5,4 @@ class Claim:
 
     def __repr__(self) -> str:
         return """{}:
-        {}
-        """.format(self.name, self.description)
+    {}""".format(self.name, self.description)
