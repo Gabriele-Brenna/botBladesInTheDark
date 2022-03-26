@@ -13,5 +13,4 @@ class Lair:
 
     def __repr__(self) -> str:
         return """Location: {}
-        Description: {}
-        """.format(self.location, self.description)
+    Description: {}""".format(self.location, self.description)
