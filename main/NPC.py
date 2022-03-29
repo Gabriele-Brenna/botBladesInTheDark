@@ -6,4 +6,3 @@ class NPC:
         self.name = name
         self.role = role
         self.faction = faction
-

@@ -3,27 +3,24 @@ from typing import List
 from Attribute import Attribute
 from Clock import Clock
 from Crew import Crew
-from HarmBox import HarmBox
 from Item import Item
+from NPC import NPC
 from Organization import Organization
 from Playbook import Playbook
 from SpecialAbility import SpecialAbility
 
 
-class Character:
+class Character(NPC):
 
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,
-                 traumas: List[str] = None, items: List[Item] = None, harms: HarmBox = None,
-                 healing: Clock = None, armors: List[bool] = List[False, False, False],
+                 traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
+                 healing: Clock = None, armors: List[bool] = None,
                  abilities: List[SpecialAbility] = None, playbook: Playbook = Playbook(8),
                  insight: Attribute = None, prowess: Attribute = None, resolve: Attribute = None,
                  load: int = 0, xp_triggers: List[str] = None, notes: str = "",
                  downtime_activities: List[str] = None) -> None:
-
-        self.name = name
-        self.faction = faction
-        self.role = role
+        super().__init__(name, role, faction)
         self.alias = alias
         self.look = look
         self.heritage = heritage
@@ -42,6 +39,8 @@ class Character:
         if healing is None:
             healing = Clock("{}_Healing".format(name))
         self.healing = healing
+        if armors is None:
+            armors = [False, False, False]
         self.armors = armors
         if abilities is None:
             abilities = []
@@ -153,7 +152,7 @@ class Character:
         if contain is not None:
             return self.items[contain].use()
         else:
-            if self.carried_load() < self.load:
+            if self.carried_load() < self.load or item.weight == 0:
                 item.use()
                 self.items.append(item)
                 return True
