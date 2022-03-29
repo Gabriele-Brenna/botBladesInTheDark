@@ -1,11 +1,14 @@
+import os
+import pathlib
 from pathlib import Path
 
 
 class Journal:
     def __init__(self, name: str = "Journal", notes: [] = None) -> None:
-        dir_path = Path('resources')
         file_name = name + ".txt"
-        self.name = dir_path.joinpath(file_name)
+        ROOT_DIR = Path(__file__).parent.parent.resolve()
+        ROOT_DIR = os.path.join(ROOT_DIR, "resources")
+        self.name = os.path.join(ROOT_DIR, file_name)
         file = open(self.name, 'w')
         file.close()
         if notes is None:
