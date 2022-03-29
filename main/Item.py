@@ -15,3 +15,5 @@ class Item:
         elif self.usages == -1:
             return True
 
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
