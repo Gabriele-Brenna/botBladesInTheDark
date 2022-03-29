@@ -1,14 +1,21 @@
 import os
-import pathlib
 from pathlib import Path
+from typing import List
+
+index = 1
 
 
 class Journal:
-    def __init__(self, name: str = "Journal", notes: [] = None) -> None:
-        file_name = name + ".txt"
-        ROOT_DIR = Path(__file__).parent.parent.resolve()
-        ROOT_DIR = os.path.join(ROOT_DIR, "resources")
-        self.name = os.path.join(ROOT_DIR, file_name)
+    def __init__(self, name: str = None, notes: List[str] = None) -> None:
+        if name is None:
+            global index
+            file_name = "Journal{}.txt".format(str(index))
+            index += 1
+            root_dir = Path(__file__).parent.parent.resolve()
+            root_dir = os.path.join(root_dir, "resources")
+            self.name = os.path.join(root_dir, file_name)
+        else:
+            self.name = name
         file = open(self.name, 'w')
         file.close()
         if notes is None:
@@ -48,3 +55,7 @@ class Journal:
             with open(self.name, 'a') as f:
                 f.write(s + '.\n')
         self.notes.clear()
+
+    def rewrite_file(self, new_file: str = ""):
+        with open(self.name, 'w') as f:
+            f.write(new_file)

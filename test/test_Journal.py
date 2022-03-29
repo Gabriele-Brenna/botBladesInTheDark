@@ -1,3 +1,6 @@
+import os
+import unittest
+from pathlib import Path
 from unittest import TestCase
 
 from Journal import Journal
@@ -5,7 +8,10 @@ from Journal import Journal
 
 class TestJournal(TestCase):
     def setUp(self) -> None:
-        self.file = Journal("test", ["Hello", "everybody"])
+        root_dir = Path(__file__).parent.resolve()
+        root_dir = os.path.join(root_dir, "resources_test")
+        name = os.path.join(root_dir, "test.txt")
+        self.file = Journal(name, ["Hello", "everybody"])
 
     def test_delete_note(self):
         self.file.delete_note(2)
@@ -52,3 +58,14 @@ class TestJournal(TestCase):
         self.file.save_notes()
         with open(self.file.name, 'r') as f:
             self.assertEqual("Hello.\neverybody.\nand welcome to Blades in the dark.\n", f.read())
+
+    def test_rewrite_file(self):
+        self.file.save_notes()
+        self.file.rewrite_file("Welcome to Blades in the dark.\n")
+        with open(self.file.name, 'r') as f:
+            self.assertEqual("Welcome to Blades in the dark.\n", f.read())
+
+    @unittest.skip("default")
+    def test_default(self):
+        for i in range(5):
+            self.default = Journal()
