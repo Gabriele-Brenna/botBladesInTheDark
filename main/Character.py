@@ -1,5 +1,7 @@
+from abc import abstractmethod
 from typing import List
 
+from Action import Action
 from Attribute import Attribute
 from Clock import Clock
 from Crew import Crew
@@ -8,6 +10,14 @@ from NPC import NPC
 from Organization import Organization
 from Playbook import Playbook
 from SpecialAbility import SpecialAbility
+
+
+def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:
+    ghost_abilities = []
+    for ability in abilities:
+        if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
+            ghost_abilities.append(ability)
+    return ghost_abilities
 
 
 class Character(NPC):
@@ -46,8 +56,15 @@ class Character(NPC):
             abilities = []
         self.abilities = abilities
         self.playbook = playbook
+        # TODO : fetch from DB??? ;)
+        if insight is None:
+            insight = Attribute([Action("hunt"), Action("study"), Action("survey"), Action("tinker")], 6)
         self.insight = insight
+        if prowess is None:
+            prowess = Attribute([Action("finesse"), Action("prowl"), Action("skirmish"), Action("wreck")], 6)
         self.prowess = prowess
+        if resolve is None:
+            resolve = Attribute([Action("attune"), Action("command"), Action("consort"), Action("sway")], 6)
         self.resolve = resolve
         self.load = load
         string = "Every time you roll a desperate action, mark xp in that action's attribute"
@@ -161,17 +178,9 @@ class Character(NPC):
     def add_notes(self, note: str):
         self.notes += "\n" + note
 
-    def migrate_character_type(self, new_type: str) -> bool:
-        if new_type.lower() == "ghost":
-            # TODO : migrate to ghost
-            return True
-        elif new_type.lower() == "vampire":
-            # TODO : migrate to vampire
-            return True
-        elif new_type.lower() == "hull":
-            # TODO : migrate to hull
-            return True
-        return False
+    @abstractmethod
+    def migrate(self, mc: super.__class__):
+        pass
 
     def __repr__(self) -> str:
         return str(self.__dict__)

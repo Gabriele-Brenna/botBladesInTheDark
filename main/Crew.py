@@ -55,7 +55,8 @@ class Crew(Organization):
             else:
                 return (self.tier + 1) * 8
 
-    # TODO: def calc_rep(self, score: Score)
+    def calc_rep(self, score_target_tier: int) -> int:
+        return 2 + (score_target_tier - self.tier)
 
     def add_wanted_level(self, wanted_level: int):
         self.wanted_level += wanted_level

@@ -11,5 +11,8 @@ class Vice:
     def remove_purveyor(self):
         self.purveyor = None
 
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

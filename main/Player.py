@@ -1,6 +1,9 @@
 from typing import List
 
 from Character import Character
+from Ghost import Ghost
+from Hull import Hull
+from Vampire import Vampire
 
 
 class Player:
@@ -11,6 +14,26 @@ class Player:
         if characters is None:
             characters = []
         self.characters = characters
+
+    def migrate_character_type(self, name: str, new_type: str) -> bool:
+
+        for c in self.characters:
+            if c.name.lower() == name.lower():
+                new_c = None
+                if new_type.lower() == "ghost":
+                    new_c = Ghost(migrating_character=c)
+                if new_type.lower() == "vampire":
+                    new_c = Vampire(migrating_character=c)
+                if new_type.lower() == "hull":
+                    new_c = Hull(migrating_character=c)
+                self.characters[self.characters.index(c)] = new_c
+                return True
+        return False
+
+    def get_character_by_name(self, name: str) -> Character:
+        for c in self.characters:
+            if c.name.lower() == name.lower():
+                return c
 
     def __repr__(self) -> str:
         out = """{}:

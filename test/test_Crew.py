@@ -4,6 +4,7 @@ from Claim import Claim
 from Crew import Crew
 from Lair import Lair
 from NPC import NPC
+from Score import Score
 from Upgrade import Upgrade
 
 
@@ -26,7 +27,9 @@ class TestCrew(TestCase):
             "Contrabbandieri",
             "smugglers",
             "honorables",
-            Lair("crow's foot", "a little barrack behind a pub", [Claim("Turf", "a turf"), Claim("Tavern", "Hound Pits Pub")]),
+            Lair("crow's foot", "a little barrack behind a pub", [Claim("Turf", "a turf"), Claim("Tavern", "Hound "
+                                                                                                           "Pits "
+                                                                                                           "Pub")]),
             tier=2,
             hold=False,
             rep=3,
@@ -129,3 +132,13 @@ class TestCrew(TestCase):
         self.assertIsNone(self.shadows.remove_upgrade("Workshop"))
         self.assertEqual(Upgrade("Tools", 1), self.shadows.remove_upgrade("Tools"))
         self.assertEqual(Upgrade("Boat", 2), self.shadows.remove_upgrade("boat"))
+
+    def test_calc_rep(self):
+        score1 = Score(target_tier=3)
+        score2 = Score(target_tier=0)
+
+        self.assertEqual(3, self.smugglers.calc_rep(score1.target_tier))
+        self.assertEqual(4, self.shadows.calc_rep(score1.target_tier))
+
+        self.assertEqual(0, self.smugglers.calc_rep(score2.target_tier))
+        self.assertEqual(1, self.shadows.calc_rep(score2.target_tier))
