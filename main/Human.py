@@ -28,3 +28,6 @@ class Human(Owner):
         self.pc_class = pc_class
         self.friend = friend
         self.enemy = enemy
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

@@ -59,3 +59,6 @@ class Journal:
     def rewrite_file(self, new_file: str = ""):
         with open(self.name, 'w') as f:
             f.write(new_file)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

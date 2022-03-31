@@ -40,3 +40,6 @@ class Cohort:
         Armor: {}
         """.format(self.type, "Expert" if self.expert is True else "Gang", self.edges, self.flaws, self.scale, self.quality,
                    self.harm, self.armor)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

@@ -9,6 +9,8 @@ class Score:
     def __init__(self, title: str = "Score", participants: List[Character] = None, target_tier: int = 0,
                  target: Union[NPC, Faction] = NPC()) -> None:
         self.title = title
+        if participants is None:
+            participants = []
         self.participants = participants
         self.target_tier = target_tier
         self.target = target
@@ -21,3 +23,6 @@ class Score:
                 self.target_tier = self.target.faction.tier
         else:
             self.target_tier = 1
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

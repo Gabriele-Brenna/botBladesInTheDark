@@ -30,3 +30,6 @@ class Hull(Character):
     def select_frame(self, frame_type : str):
         if frame_type.lower() == "small" or "medium" or "large" or "s" or "m" or "l":
             self.frame = frame_type
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

@@ -34,3 +34,6 @@ class Vampire(Owner):
         if dark_servants is None:
             dark_servants = [NPC(), NPC()]
         self.dark_servants = dark_servants
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

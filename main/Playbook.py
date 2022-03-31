@@ -20,3 +20,6 @@ class Playbook:
             self.exp %= self.exp_limit
             return self.add_points(int(i/self.exp_limit))
         return False
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

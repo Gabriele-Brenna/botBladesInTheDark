@@ -18,3 +18,6 @@ class Organization:
         return """{}:
     Tier: {}
     Hold: {}""".format(self.name, self.tier, self.hold)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

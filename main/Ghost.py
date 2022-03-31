@@ -29,3 +29,6 @@ class Ghost(Character):
         self.need = Vice("Life Essence", """Feeding: Use a downtime activity to Hunt prey and indulge 
                          your vice. Also, when you feed,mark four ticks on your healing clock. 
                          This is the only way you can heal.""", "consumed from a living human")
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
