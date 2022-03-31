@@ -1,6 +1,6 @@
 from typing import List
 
-from Claim import Claim
+from organization.Claim import Claim
 
 
 class Lair:

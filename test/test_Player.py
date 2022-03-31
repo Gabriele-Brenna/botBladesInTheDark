@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from Ghost import Ghost
-from Hull import Hull
-from Human import Human
-from Player import Player
-from SpecialAbility import SpecialAbility
-from Vampire import Vampire
+from character.Ghost import Ghost
+from character.Hull import Hull
+from character.Human import Human
+from game.Player import Player
+from component.SpecialAbility import SpecialAbility
+from character.Vampire import Vampire
 
 
 class TestPlayer(TestCase):

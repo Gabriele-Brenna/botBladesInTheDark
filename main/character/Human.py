@@ -1,15 +1,15 @@
 from typing import List
 
-from Attribute import Attribute
-from Clock import Clock
-from Crew import Crew
-from Item import Item
-from NPC import NPC
-from Organization import Organization
-from Owner import Owner
-from Playbook import Playbook
-from SpecialAbility import SpecialAbility
-from Vice import Vice
+from character.Attribute import Attribute
+from component.Clock import Clock
+from organization.Crew import Crew
+from character.Item import Item
+from character.NPC import NPC
+from organization.Organization import Organization
+from character.Owner import Owner
+from character.Playbook import Playbook
+from component.SpecialAbility import SpecialAbility
+from character.Vice import Vice
 
 
 class Human(Owner):

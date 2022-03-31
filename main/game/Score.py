@@ -1,8 +1,8 @@
 from typing import List, Union
 
-from Character import Character
-from Faction import Faction
-from NPC import NPC
+from character.Character import Character
+from organization.Faction import Faction
+from character.NPC import NPC
 
 
 class Score:

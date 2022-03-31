@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from Action import Action
+from character.Action import Action
 
 
 class TestAction(TestCase):

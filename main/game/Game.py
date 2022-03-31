@@ -1,10 +1,10 @@
 from typing import List
 
-from Clock import Clock
-from Journal import Journal
-from NPC import NPC
-from Player import Player
-from Score import Score
+from component.Clock import Clock
+from game.Journal import Journal
+from character.NPC import NPC
+from game.Player import Player
+from game.Score import Score
 
 _id = 1
 

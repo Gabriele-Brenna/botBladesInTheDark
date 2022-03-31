@@ -1,9 +1,9 @@
 from typing import List
 
-from Character import Character
-from Ghost import Ghost
-from Hull import Hull
-from Vampire import Vampire
+from character.Character import Character
+from character.Ghost import Ghost
+from character.Hull import Hull
+from character.Vampire import Vampire
 
 
 class Player:

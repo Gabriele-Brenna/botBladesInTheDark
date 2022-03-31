@@ -1,11 +1,11 @@
 from unittest import TestCase
 
-from Claim import Claim
-from Crew import Crew
-from Lair import Lair
-from NPC import NPC
-from Score import Score
-from Upgrade import Upgrade
+from organization.Claim import Claim
+from organization.Crew import Crew
+from organization.Lair import Lair
+from character.NPC import NPC
+from game.Score import Score
+from organization.Upgrade import Upgrade
 
 
 class TestCrew(TestCase):

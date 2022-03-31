@@ -11,7 +11,8 @@ class Journal:
             global index
             file_name = "Journal{}.txt".format(str(index))
             index += 1
-            root_dir = Path(__file__).parent.parent.resolve()
+            # TODO: path finder
+            root_dir = Path(__file__).parent.parent.parent.resolve()
             root_dir = os.path.join(root_dir, "resources")
             self.name = os.path.join(root_dir, file_name)
         else:
@@ -24,14 +25,14 @@ class Journal:
 
     def delete_note(self, number: int = 1):
         if len(self.notes) > 1:
-            if number in range(len(self.notes)+1):
+            if number in range(len(self.notes) + 1):
                 self.notes.pop(-number)
         elif len(self.notes) == 1:
             self.notes.pop(0)
 
     def edit_note(self, note: str, number: int = 1):
         if len(self.notes) > 1:
-            if number in range(len(self.notes)+1):
+            if number in range(len(self.notes) + 1):
                 self.notes[-number] = note
         else:
             self.notes[0] = note

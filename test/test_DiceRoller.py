@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase
 
-from main.DiceRoller import roll_dice
+from utility.DiceRoller import roll_dice
 
 
 class Test(TestCase):

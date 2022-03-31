@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from Faction import Faction
-from NPC import NPC
-from Score import Score
+from organization.Faction import Faction
+from character.NPC import NPC
+from game.Score import Score
 
 
 class TestScore(TestCase):

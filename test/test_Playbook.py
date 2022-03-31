@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from Playbook import Playbook
+from character.Playbook import Playbook
 
 
 class TestPlaybook(TestCase):

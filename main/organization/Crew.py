@@ -1,12 +1,12 @@
 from typing import List
 
-from Claim import Claim
-from Cohort import Cohort
-from Lair import Lair
-from NPC import NPC
-from Organization import Organization
-from SpecialAbility import SpecialAbility
-from Upgrade import Upgrade
+from organization.Claim import Claim
+from organization.Cohort import Cohort
+from organization.Lair import Lair
+from character.NPC import NPC
+from organization.Organization import Organization
+from component.SpecialAbility import SpecialAbility
+from organization.Upgrade import Upgrade
 
 
 class Crew(Organization):

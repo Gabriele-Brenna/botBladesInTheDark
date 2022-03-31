@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from Vice import Vice
+from character.Vice import Vice
 
 
 class TestVice(TestCase):

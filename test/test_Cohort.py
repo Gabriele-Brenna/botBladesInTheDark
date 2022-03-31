@@ -1,7 +1,6 @@
-import unittest
 from unittest import TestCase
 
-from Cohort import Cohort
+from organization.Cohort import Cohort
 
 
 class TestCohort(TestCase):

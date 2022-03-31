@@ -1,4 +1,4 @@
-from Organization import Organization
+from organization.Organization import Organization
 
 
 class Faction(Organization):

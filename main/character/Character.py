@@ -1,15 +1,15 @@
 from abc import abstractmethod
 from typing import List
 
-from Action import Action
-from Attribute import Attribute
-from Clock import Clock
-from Crew import Crew
-from Item import Item
-from NPC import NPC
-from Organization import Organization
-from Playbook import Playbook
-from SpecialAbility import SpecialAbility
+from character.Action import Action
+from character.Attribute import Attribute
+from component.Clock import Clock
+from organization.Crew import Crew
+from character.Item import Item
+from character.NPC import NPC
+from organization.Organization import Organization
+from character.Playbook import Playbook
+from component.SpecialAbility import SpecialAbility
 
 
 def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:

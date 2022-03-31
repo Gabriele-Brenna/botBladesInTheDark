@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest import TestCase
 
-from Journal import Journal
+from game.Journal import Journal
 
 
 class TestJournal(TestCase):

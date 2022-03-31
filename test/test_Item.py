@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from Item import Item
+from character.Item import Item
 
 
 class TestItem(TestCase):

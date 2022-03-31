@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from Character import Character
-from Clock import Clock
-from Game import Game
-from Score import Score
+from character.Character import Character
+from component.Clock import Clock
+from game.Game import Game
+from game.Score import Score
 
 
 class TestGame(TestCase):

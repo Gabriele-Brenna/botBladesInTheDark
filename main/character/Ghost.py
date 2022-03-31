@@ -1,11 +1,11 @@
-from Character import *
-from Clock import Clock
-from Crew import Crew
-from Item import Item
-from Organization import Organization
-from Playbook import Playbook
-from SpecialAbility import SpecialAbility
-from Vice import Vice
+from character.Character import *
+from component.Clock import Clock
+from organization.Crew import Crew
+from character.Item import Item
+from organization.Organization import Organization
+from character.Playbook import Playbook
+from component.SpecialAbility import SpecialAbility
+from character.Vice import Vice
 
 
 class Ghost(Character):

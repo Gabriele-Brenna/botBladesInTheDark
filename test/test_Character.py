@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from Character import Character
-from Item import Item
+from character.Character import Character
+from character.Item import Item
 
 
 class TestCharacter(TestCase):

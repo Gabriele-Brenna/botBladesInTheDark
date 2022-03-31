@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from Faction import Faction
+from organization.Faction import Faction
 
 
 class TestFaction(TestCase):

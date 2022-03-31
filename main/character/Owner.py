@@ -1,14 +1,11 @@
-from typing import List
-
-from Attribute import Attribute
-from Character import Character
-from Clock import Clock
-from Crew import Crew
-from Item import Item
-from Organization import Organization
-from Playbook import Playbook
-from SpecialAbility import SpecialAbility
-from Vice import Vice
+from character.Character import *
+from component.Clock import Clock
+from organization.Crew import Crew
+from character.Item import Item
+from organization.Organization import Organization
+from character.Playbook import Playbook
+from component.SpecialAbility import SpecialAbility
+from character.Vice import Vice
 
 
 class Owner(Character):
@@ -45,6 +42,10 @@ class Owner(Character):
             self.stash += coins
             return True
         return False
+
+    @abstractmethod
+    def migrate(self, mc: super.__class__):
+        pass
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

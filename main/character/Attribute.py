@@ -1,7 +1,7 @@
 from typing import List
 
-from Action import Action
-from Playbook import Playbook
+from character.Action import Action
+from character.Playbook import Playbook
 
 
 class Attribute(Playbook):
