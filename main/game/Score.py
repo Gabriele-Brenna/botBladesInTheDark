@@ -6,6 +6,9 @@ from character.NPC import NPC
 
 
 class Score:
+    """
+    Models the score activity of the game
+    """
     def __init__(self, title: str = "Score", participants: List[Character] = None, target_tier: int = 0,
                  target: Union[NPC, Faction] = NPC()) -> None:
         self.title = title
@@ -16,6 +19,16 @@ class Score:
         self.target = target
 
     def calc_target_tier(self):
+        """
+        Evaluates the tier of the Score's target:
+
+        if the target is a Faction, its tier attribute is used;
+
+        if the target is an NPC and a member of a Faction, the Faction's tier attribute is used;
+
+        if the target is an NPC with no links to any Organization, the default value(1) is used
+
+        """
         if isinstance(self.target, Faction):
             self.target_tier = self.target.tier
         elif isinstance(self.target, NPC):

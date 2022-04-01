@@ -9,6 +9,9 @@ from character.Vice import Vice
 
 
 class Ghost(Character):
+    """
+    Represents the ghost Character of the game
+    """
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
@@ -35,6 +38,16 @@ class Ghost(Character):
                              This is the only way you can heal.""", "consumed from a living human")
 
     def migrate(self, mc: super.__class__):
+        """
+        Method used to migrate a Character subclass object and convert it into a Ghost object.
+        All the common attributes of the previous object are maintained and the stress level, the traumas' list
+        the Items' list, the harms' list, the armors' list and the load are cleared and set to default values.
+        The Special Abilities' list maintains only the abilities that are ghost related
+        (i.e. that contains the "Ghost" word) and the xp_trigger list is changed according to the new triggers.
+        Furthermore, the base action dot of the Ghost are added.
+
+        :param mc: represents the migrating Character
+        """
         ghost_abilities = get_ghost_abilities(mc.abilities)
 
         # TODO : fetch "Ghost Form" ability from DB
