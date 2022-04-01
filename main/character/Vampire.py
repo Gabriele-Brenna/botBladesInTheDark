@@ -11,6 +11,9 @@ from character.Vice import Vice
 
 
 class Vampire(Owner):
+    """
+    Represents the vampire Character of the game
+    """
 
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 12,
@@ -44,6 +47,17 @@ class Vampire(Owner):
         self.dark_servants = dark_servants
 
     def migrate(self, mc: super.__class__):
+        """
+        Method used to migrate a Character subclass object and convert it into a Vampire object.
+        All the common attributes of the previous object are maintained and the stress level, the traumas' list
+        the Items' list, the harms' list, the armors' list and the load are cleared and set to default values.
+        The Special Abilities' list maintains only the abilities that are ghost related
+        (i.e. that contains the "Ghost" word, except for "Ghost Form")
+        and the xp_trigger list is changed according to the new triggers.
+        Furthermore, the base action dot of the Vampire are added.
+
+        :param mc: represents the migrating Character
+        """
         vampire_abilities = get_ghost_abilities(mc.abilities)
 
         # TODO : fetch "Undead" ability from DB
