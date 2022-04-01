@@ -1,4 +1,7 @@
 class Claim:
+    """
+    Territories, facilities and favours claimed by the Crew
+    """
     def __init__(self, name: str = "Turf", description: str = "") -> None:
         self.name = name
         self.description = description

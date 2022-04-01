@@ -2,22 +2,35 @@ from organization.Organization import Organization
 
 
 class Faction(Organization):
+    """
+    The organization of the NPC's
+    """
     def __init__(self, name: str = "", tier: int = 1, hold: bool = True, district: str = "", status: int = 0) -> None:
         super().__init__(name, tier, hold)
         self.district = district
         self.status = status
 
     def add_tier(self, n: int):
+        """
+        Adds the specified number of tier
+
+        :param n: the number of tier to add
+        """
         self.tier += n
 
-    def add_status(self, n: int) -> str:
+    def add_status(self, n: int) -> int:
+        """
+        Adds the selected status level
+
+        :param n: the status to add
+        :return: the new reached status
+        """
         self.status += n
         if self.status > 3:
             self.status = 3
         if self.status < -3:
             self.status = -3
-        if self.status == -3:
-            return "You are in war with {}, you reached {} status".format(self.name, self.status)
+        return self.status
 
     def __repr__(self) -> str:
         return super().__repr__() + """

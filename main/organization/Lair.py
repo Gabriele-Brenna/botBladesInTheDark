@@ -4,6 +4,9 @@ from organization.Claim import Claim
 
 
 class Lair:
+    """
+    Is the crew hideout with all its claims
+    """
     def __init__(self, location: str = "", description: str = "", claims: List[Claim] = None) -> None:
         self.location = location
         self.description = description
