@@ -7,6 +7,9 @@ from character.Vampire import Vampire
 
 
 class Player:
+    """
+    Represents the human user.
+    """
     def __init__(self, name: str, player_id: int, is_master: bool = False, characters: List[Character] = None) -> None:
         self.name = name
         self.player_id = player_id
@@ -16,7 +19,13 @@ class Player:
         self.characters = characters
 
     def migrate_character_type(self, name: str, new_type: str) -> bool:
+        """
+        Allows to change the specified character into the selected new type
 
+        :param name: the name of the character to change
+        :param new_type: the type you want to transform into (ghost, vampire, hull)
+        :return: True if the new type and the character's name selected exist, False otherwise
+        """
         for c in self.characters:
             if c.name.lower() == name.lower():
                 new_c = None
@@ -31,6 +40,12 @@ class Player:
         return False
 
     def get_character_by_name(self, name: str) -> Character:
+        """
+        Gets the character with the selected name.
+
+        :param name: the name of the character
+        :return: the selected character, None otherwise
+        """
         for c in self.characters:
             if c.name.lower() == name.lower():
                 return c
