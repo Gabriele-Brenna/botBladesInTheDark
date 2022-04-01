@@ -13,6 +13,9 @@ from character.Vice import Vice
 
 
 class Human(Owner):
+    """
+    This is the human race of the game.
+    """
 
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,

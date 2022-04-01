@@ -2,6 +2,9 @@ from organization.Organization import Organization
 
 
 class NPC:
+    """
+    Non-Playable-Character of the game.
+    """
     def __init__(self, name: str = "", role: str = "", faction: Organization = None) -> None:
         self.name = name
         self.role = role

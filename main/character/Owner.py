@@ -9,7 +9,9 @@ from character.Vice import Vice
 
 
 class Owner(Character):
-
+    """
+    Represents all the playable races that are able to own and use items.
+    """
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
@@ -26,18 +28,42 @@ class Owner(Character):
         self.vice = vice
 
     def can_have_coins(self, coins: int) -> bool:
+        """
+        Check if a given amount of coins can be added to this Owner.
+
+        :param coins: is the amount of coins
+        :return: True if the coin can be added, False otherwise
+        """
         return self.coin + coins <= 4
 
     def can_stash_coins(self, coins: int) -> bool:
+        """
+        Check if a given amount of coins can be added to this Owner's stash.
+
+        :param coins: is the amount of coins
+        :return: True if the coin can be added, False otherwise
+        """
         return self.stash + coins <= 40
 
     def add_coins(self, coins: int) -> bool:
+        """
+        Adds a given amount of coins to the Owner.
+
+        :param coins: is the amount of coins
+        :return: True if the coins can be added, False otherwise.
+        """
         if self.can_have_coins(coins):
             self.coin += coins
             return True
         return False
 
     def stash_coins(self, coins: int) -> bool:
+        """
+        Adds a given amount of coins the Owner's stash.
+
+        :param coins: coins: is the amount of coins
+        :return: True if the coins can be added, False otherwise.
+        """
         if self.can_stash_coins(coins):
             self.stash += coins
             return True

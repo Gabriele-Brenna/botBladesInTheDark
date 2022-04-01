@@ -1,4 +1,7 @@
 class Item:
+    """
+    Models what the player can use during the game.
+    """
     def __init__(self, name: str, description: str, weight: int = 0, usages: int = -1, quality: int = 1) -> None:
         self.name = name
         self.description = description
@@ -7,6 +10,11 @@ class Item:
         self.quality = quality
 
     def use(self) -> bool:
+        """
+        Allows the use of this item, depending on how many usages it has left.
+
+        :return: True if this item can be used (usages greater than zero or equal to -1), False if it can't be used
+        """
         if self.usages > 0:
             self.usages -= 1
             return True

@@ -8,7 +8,9 @@ from component.SpecialAbility import SpecialAbility
 
 
 class Hull(Character):
-
+    """
+    It's a particular type of playable breed.
+    """
     def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 10,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
@@ -48,9 +50,17 @@ class Hull(Character):
         self.prowess.action_dots("skirmish", 1)
         self.resolve.action_dots("attune", 1)
 
-    def select_frame(self, frame_type: str):
+    def select_frame(self, frame_type: str) -> bool:
+        """
+        Allows the selection of the frame for your Hull.
+
+        :param frame_type: is the selected type of frame
+        :return: True if a correct frame type was given, False otherwise
+        """
         if frame_type.lower() == "small" or "medium" or "large" or "s" or "m" or "l":
             self.frame = frame_type
+            return True
+        return False
 
     def __repr__(self) -> str:
         return str(self.__dict__)
