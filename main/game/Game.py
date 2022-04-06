@@ -5,6 +5,8 @@ from game.Journal import Journal
 from character.NPC import NPC
 from game.Player import Player
 from game.Score import Score
+from organization.Crew import Crew
+from organization.Faction import Faction
 
 _id = 1
 
@@ -14,16 +16,20 @@ class Game:
     Represents an instance of a game and keeps track of the participants and their roles
     """
     def __init__(self, identifier: int = _id, title: str = "Game" + str(_id), users: List[Player] = None,
-                 NPCs: List[NPC] = None, clocks: List[Clock] = None,
-                 scores: List[Score] = None, journal: Journal = Journal()) -> None:
+                 crew: Crew = Crew(), NPCs: List[NPC] = None, factions: List[Faction] = None,
+                 clocks: List[Clock] = None, scores: List[Score] = None, journal: Journal = Journal()) -> None:
         self.identifier = identifier
         self.title = title
         if users is None:
             users = []
         self.users = users
+        self.crew = crew
         if NPCs is None:
             NPCs = []
         self.NPCs = NPCs
+        if factions is None:
+            factions = []
+        self.factions = factions
         if clocks is None:
             clocks = []
         self.clocks = clocks

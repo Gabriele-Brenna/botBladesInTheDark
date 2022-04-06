@@ -9,7 +9,7 @@ class TestCharacter(TestCase):
         self.character = Character(items=[Item("knife", "miracle blade", 1),
                                           Item("grenade", "art is an explosion", 2, 2)],
                                    load=4, armors=[True, True, False],
-                                   notes="first")
+                                   description="first")
         self.deadManWalking = Character(harms=[["Scared", "Battered"], ["Seduced", "Exhausted"], ["Terrified"]],
                                         stress_level=9,
                                         traumas=["cold", "haunted", "soft", "paranoid"])
@@ -120,6 +120,6 @@ class TestCharacter(TestCase):
     def test_add_notes(self):
         self.character.add_notes("second")
 
-        self.assertEqual("first\nsecond", self.character.notes)
+        self.assertEqual("first\nsecond", self.character.description)
 
     # TODO : def test_migrate_character_type(self):

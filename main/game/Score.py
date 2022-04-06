@@ -9,7 +9,7 @@ class Score:
     """
     Models the score activity of the game
     """
-    def __init__(self, title: str = "Score", participants: List[Character] = None, target_tier: int = 0,
+    def __init__(self, title: str = "Score", participants: List[str] = None, target_tier: int = 0,
                  target: Union[NPC, Faction] = NPC()) -> None:
         self.title = title
         if participants is None:

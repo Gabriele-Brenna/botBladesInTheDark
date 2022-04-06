@@ -37,9 +37,9 @@ class Character(NPC):
                  healing: Clock = None, armors: List[bool] = None,
                  abilities: List[SpecialAbility] = None, playbook: Playbook = Playbook(8),
                  insight: Attribute = None, prowess: Attribute = None, resolve: Attribute = None,
-                 load: int = 0, xp_triggers: List[str] = None, notes: str = "",
+                 load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None) -> None:
-        super().__init__(name, role, faction)
+        super().__init__(name, role, faction, description)
         self.alias = alias
         self.look = look
         self.heritage = heritage
@@ -85,7 +85,6 @@ class Character(NPC):
         if downtime_activities is None:
             downtime_activities = []
         self.downtime_activities = downtime_activities
-        self.notes = notes
 
     def add_stress(self, stress: int) -> int:
         """
@@ -246,11 +245,11 @@ class Character(NPC):
 
     def add_notes(self, note: str):
         """
-        Adds the specified note to the notes.
+        Adds the specified note to the description.
 
         :param note: the note to add
         """
-        self.notes += "\n" + note
+        self.description += "\n" + note
 
     @abstractmethod
     def migrate(self, mc: super.__class__):

@@ -22,12 +22,12 @@ class Human(Owner):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
                  playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, notes: str = "",
+                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0, vice: Vice = Vice(),
                  pc_class: str = "", friend: NPC = NPC(), enemy: NPC = NPC()) -> None:
         super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
                          items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
-                         xp_triggers, notes, downtime_activities, coin, stash, vice)
+                         xp_triggers, description, downtime_activities, coin, stash, vice)
         self.pc_class = pc_class
         self.friend = friend
         self.enemy = enemy

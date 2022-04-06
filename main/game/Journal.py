@@ -28,7 +28,7 @@ class Journal:
 
     def delete_note(self, number: int = 1):
         """
-        Allows to delete a specified note, depending on its position inside the list of notes.
+        Allows to delete a specified note, depending on its position inside the list of description.
 
         :param number: is the position of the note. It's given starting from the most recent to the oldest one,
         meaning the note 1 is the last note written
@@ -41,7 +41,7 @@ class Journal:
 
     def edit_note(self, note: str, number: int = 1):
         """
-        Allows to change a specified note, depending on its position inside the list of notes.
+        Allows to change a specified note, depending on its position inside the list of description.
 
         :param note: is the new note that will be written
         :param number: is the position of the note. It's given starting from the most recent to the oldest one,
@@ -57,7 +57,7 @@ class Journal:
         """
         Allows the read everything that has been written so far.
 
-        :return: a string containing all that it is written in the text file plus all the notes added after it
+        :return: a string containing all that it is written in the text file plus all the description added after it
         """
         with open(self.name, 'r') as f:
             out = f.read()
@@ -67,7 +67,7 @@ class Journal:
 
     def append(self, new_note: str):
         """
-        Adds a new note at the end of the notes' list. If the total amount of notes in the list
+        Adds a new note at the end of the description' list. If the total amount of description in the list
         is greater than 5 after adding the new note,
         the oldest note (the first of the list) is written in the text file and removed from the list.
 
@@ -81,7 +81,7 @@ class Journal:
 
     def save_notes(self):
         """
-        Writes all the notes of the notes' list in the text file, then clears the list.
+        Writes all the description of the description' list in the text file, then clears the list.
         """
         for s in self.notes:
             with open(self.name, 'a') as f:

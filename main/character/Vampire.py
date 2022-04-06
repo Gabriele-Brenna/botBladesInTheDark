@@ -20,7 +20,7 @@ class Vampire(Owner):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
                  playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, notes: str = "",
+                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0,
                  strictures: List[str] = None, dark_servants: List[NPC] = None,
                  migrating_character: Character = None) -> None:
@@ -31,7 +31,7 @@ class Vampire(Owner):
         else:
             super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
-                             xp_triggers, notes, downtime_activities, coin, stash,
+                             xp_triggers, description, downtime_activities, coin, stash,
                              vice=Vice("Life Essence", """Feeding: Use a downtime activity to Hunt prey and indulge 
                              your vice. Also, when you feed,mark four ticks on your healing clock. 
                              This is the only way you can heal.""", "consumed from a living human"))
@@ -68,7 +68,7 @@ class Vampire(Owner):
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          12, None, None, None, None, None, vampire_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, vampire_xp_triggers, mc.notes,
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, vampire_xp_triggers, mc.description,
                          None)
 
         self.playbook.exp_limit = 10

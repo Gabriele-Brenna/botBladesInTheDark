@@ -17,7 +17,7 @@ class Ghost(Character):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
                  playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, notes: str = "",
+                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None,
                  enemies_rivals: List[str] = None,
                  migrating_character: Character = None) -> None:
@@ -28,7 +28,7 @@ class Ghost(Character):
         else:
             super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
-                             xp_triggers, notes, downtime_activities)
+                             xp_triggers, description, downtime_activities)
         if enemies_rivals is None:
             enemies_rivals = []
 
@@ -58,7 +58,7 @@ class Ghost(Character):
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          9, None, None, None, None, None, ghost_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, ghost_xp_triggers, mc.notes,
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, ghost_xp_triggers, mc.description,
                          None)
         self.insight.action_dots("hunt", 1)
         self.prowess.action_dots("prowl", 1)

@@ -17,7 +17,7 @@ class Hull(Character):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
                  playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, notes: str = "",
+                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "small",
                  migrating_character: Character = None) -> None:
 
@@ -28,7 +28,7 @@ class Hull(Character):
             super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit,
                              traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
-                             xp_triggers, notes, downtime_activities)
+                             xp_triggers, description, downtime_activities)
 
         if functions is None:
             functions = []
@@ -57,7 +57,7 @@ class Hull(Character):
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          10, None, None, None, None, None, hull_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, hull_xp_triggers, mc.notes,
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, hull_xp_triggers, mc.description,
                          None)
         self.prowess.action_dots("skirmish", 1)
         self.resolve.action_dots("attune", 1)
