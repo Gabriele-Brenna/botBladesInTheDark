@@ -7,7 +7,7 @@ connection = sqlite3.connect('mydata.db')
 cursor = connection.cursor()
 
 
-def get_special_abilities(name: str = None, peculiar: bool = False) -> List[SpecialAbility]:
+def query_special_abilities(name: str = None, peculiar: bool = False) -> List[SpecialAbility]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
 
@@ -45,37 +45,7 @@ def get_special_abilities(name: str = None, peculiar: bool = False) -> List[Spec
     return abilities
 
 
-def is_crew(sheet: str) -> bool:
-    """
-    Checks if the given sheet appears in the Crew table or in the Character table in the database.
-    Raises an exception if the sheet doesn't appear in the database.
-    :param sheet: represents the sheet to check
-    :return: True if the sheet is a Crew, False if the sheet is a Character
-    """
-    query = """
-    SELECT *
-    FROM CrewSheet
-    WHERE name = '{}'
-    """.format(sheet)
-
-    cursor.execute(query)
-    rows = cursor.fetchall()
-
-    if not rows:
-        query.replace("CrewSheet", "CharacterSheet")
-
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        if not rows:
-            raise Exception("{} is not a sheet!".format(sheet))
-
-        return False
-
-    return True
-
-
-def get_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
+def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
@@ -92,44 +62,62 @@ def get_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
 
     q_where = "\n"
 
-    try:
-        if sheet is not None:
-            if is_crew(sheet):
-                q_where += "WHERE Crew = '{}' ".format(sheet)
-                if not peculiar:
-                    q_where += "OR Crew_Char = true"
-            else:
-                q_where += "WHERE Character = '{}' ".format(sheet)
-                if not peculiar:
-                    q_where += "OR Crew_Char = false"
+    if sheet is not None:
+        if exists_crew(sheet):
+            q_where += "WHERE Crew = '{}' ".format(sheet)
+            if not peculiar:
+                q_where += "OR Crew_Char = true"
+        elif exists_character(sheet):
+            q_where += "WHERE Character = '{}' ".format(sheet)
+            if not peculiar:
+                q_where += "OR Crew_Char = false"
         else:
-            if peculiar:
-                q_where += "WHERE Crew IS NOT NULL OR Character IS NOT NULL"
+            return []
+    else:
+        if peculiar:
+            q_where += "WHERE Crew IS NOT NULL OR Character IS NOT NULL"
 
-        cursor.execute(q_select + q_from + q_where)
-        rows = cursor.fetchall()
+    cursor.execute(q_select + q_from + q_where)
+    rows = cursor.fetchall()
 
-        xp_triggers = []
-        for trigger in rows:
-            xp_triggers.append(trigger[0])
+    xp_triggers = []
+    for trigger in rows:
+        xp_triggers.append(trigger[0])
 
-        return xp_triggers
-
-    except Exception:
-        return []
+    return xp_triggers
 
 
 def exists_character(sheet: str) -> bool:
     """
-    Checks if the specified sheet has a matching value in the Character table of the database
+    Checks if the specified sheet has a matching value in the CharacterSheet table of the database
 
     :param sheet: is the character to check
     :return: True if the character exists, False otherwise
     """
     cursor.execute("""
             SELECT *
-            FROM Character
-            WHERE name = '{}'
+            FROM CharacterSheet
+            WHERE class = '{}'
+            """.format(sheet))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
+
+
+def exists_crew(sheet: str) -> bool:
+    """
+    Checks if the specified sheet has a matching value in the CrewSheet table of the database
+
+    :param sheet: is the crew to check
+    :return: True if the crew exists, False otherwise
+    """
+    cursor.execute("""
+            SELECT *
+            FROM CrewSheet
+            WHERE type = '{}'
             """.format(sheet))
 
     rows = cursor.fetchall()

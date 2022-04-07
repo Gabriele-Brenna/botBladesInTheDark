@@ -1,6 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
-from controller.DBreader import get_xp_triggers
+from controller.DBreader import query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from organization.Organization import Organization
@@ -26,6 +26,9 @@ class Hull(Character):
             self.migrate(migrating_character)
 
         else:
+            if xp_triggers is None:
+                xp_triggers = query_xp_triggers(self.__class__.__name__)
+
             super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit,
                              traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
@@ -51,7 +54,7 @@ class Hull(Character):
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          10, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, get_xp_triggers(self.__class__.__name__),
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)
         self.prowess.action_dots("skirmish", 1)
         self.resolve.action_dots("attune", 1)

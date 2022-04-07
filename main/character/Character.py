@@ -4,7 +4,7 @@ from typing import List
 from character.Action import Action
 from character.Attribute import Attribute
 from component.Clock import Clock
-from controller.DBreader import get_special_abilities
+from controller.DBreader import query_special_abilities, query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -38,7 +38,7 @@ def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[Spe
             the specified sheet
     """
     class_abilities = get_ghost_abilities(abilities)
-    class_abilities.append(get_special_abilities(sheet, True)[0])
+    class_abilities.append(query_special_abilities(sheet, True)[0])
     return class_abilities
 
 
@@ -92,9 +92,8 @@ class Character(NPC):
             resolve = Attribute([Action("attune"), Action("command"), Action("consort"), Action("sway")], 6)
         self.resolve = resolve
         self.load = load
-        triggers = ""  # TODO : Fetch from DB
         if xp_triggers is None:
-            xp_triggers = [triggers]
+            xp_triggers = []
         self.xp_triggers = xp_triggers
         if downtime_activities is None:
             downtime_activities = []

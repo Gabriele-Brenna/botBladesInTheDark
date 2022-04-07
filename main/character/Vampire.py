@@ -1,6 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
-from controller.DBreader import get_xp_triggers
+from controller.DBreader import query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -30,6 +30,9 @@ class Vampire(Owner):
             self.migrate(migrating_character)
 
         else:
+            if xp_triggers is None:
+                xp_triggers = query_xp_triggers(self.__class__.__name__)
+
             super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                              xp_triggers, description, downtime_activities, coin, stash,
@@ -62,7 +65,7 @@ class Vampire(Owner):
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, get_xp_triggers(self.__class__.__name__),
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)
         self.playbook.exp_limit = 10
         self.prowess.exp_limit = 8
