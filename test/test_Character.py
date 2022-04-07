@@ -122,4 +122,3 @@ class TestCharacter(TestCase):
 
         self.assertEqual("first\nsecond", self.character.description)
 
-    # TODO : def test_migrate_character_type(self):
