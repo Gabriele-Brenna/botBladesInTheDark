@@ -9,6 +9,7 @@ from organization.Crew import Crew
 from organization.Faction import Faction
 
 _id = 1
+# TODO : Fetch max id from DB
 
 
 class Game:

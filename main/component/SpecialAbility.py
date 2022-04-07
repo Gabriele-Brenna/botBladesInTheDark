@@ -1,4 +1,7 @@
 class SpecialAbility:
+    """
+    The special abilities of the game
+    """
     def __init__(self, name: str, description: str) -> None:
         self.name = name
         self.description = description

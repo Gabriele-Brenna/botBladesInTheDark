@@ -2,6 +2,7 @@ from typing import List
 
 from character.Attribute import Attribute
 from component.Clock import Clock
+from controller.DBreader import get_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -32,8 +33,16 @@ class Human(Owner):
         self.friend = friend
         self.enemy = enemy
 
-    def migrate(self, mc: super.__class__):
-        pass
+    def migrate(self, mc: super.__class__, sheet: str = None):
+        """
+        Method used to change the class of a Human Character.
+
+        :param mc: represent the Human that wants to change its class
+        :param sheet: is the new character sheet representing the new selected class
+        """
+        if sheet is not None:
+            self.pc_class = sheet
+            self.xp_triggers = get_xp_triggers(sheet)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

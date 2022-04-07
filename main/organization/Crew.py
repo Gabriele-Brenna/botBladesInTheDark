@@ -17,7 +17,8 @@ class Crew(Organization):
                  upgrades: List[Upgrade] = None, contact: NPC = NPC(), description: str = "",
                  abilities: List[SpecialAbility] = None, rep: int = 0, tier: int = 0, hold: bool = True,
                  heat: int = 0, wanted_level: int = 0, exp: int = 0, cohorts: List[Cohort] = None,
-                 coins: int = 0, vault_capacity: int = 4, prison_claims: List[Claim] = None) -> None:
+                 coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
+                 prison_claims: List[Claim] = None) -> None:
         super().__init__(name, tier, hold)
         self.type = type
         if abilities is None:
@@ -40,6 +41,10 @@ class Crew(Organization):
         self.vault_capacity = vault_capacity
         if prison_claims is None:
             prison_claims = []
+        triggers = ""  # TODO : Fetch from DB
+        if xp_triggers is None:
+            xp_triggers = [triggers]
+        self.xp_triggers = xp_triggers
         self.prison_claims = prison_claims
         self.description = description
 

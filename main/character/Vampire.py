@@ -1,5 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
+from controller.DBreader import get_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -58,19 +59,11 @@ class Vampire(Owner):
 
         :param mc: represents the migrating Character
         """
-        vampire_abilities = get_ghost_abilities(mc.abilities)
-
-        # TODO : fetch "Undead" ability from DB
-        vampire_abilities.insert(0, SpecialAbility("Undead", ""))
-
-        vampire_xp_triggers = mc.xp_triggers[:1]
-        # TODO : vampire_xp_triggers.append( FETCH FROM DB )
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
-                         12, None, None, None, None, None, vampire_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, vampire_xp_triggers, mc.description,
-                         None)
-
+                         12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, get_xp_triggers(self.__class__.__name__),
+                         mc.description, None)
         self.playbook.exp_limit = 10
         self.prowess.exp_limit = 8
         self.insight.exp_limit = 8
