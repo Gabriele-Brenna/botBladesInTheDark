@@ -58,16 +58,11 @@ class Vampire(Owner):
 
         :param mc: represents the migrating Character
         """
-        vampire_abilities = get_ghost_abilities(mc.abilities)
-
-        # TODO : fetch "Undead" ability from DB
-        vampire_abilities.insert(0, SpecialAbility("Undead", ""))
-
         vampire_xp_triggers = mc.xp_triggers[:1]
         # TODO : vampire_xp_triggers.append( FETCH FROM DB )
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
-                         12, None, None, None, None, None, vampire_abilities,
+                         12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
                          mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, vampire_xp_triggers, mc.description,
                          None)
 

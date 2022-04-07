@@ -4,6 +4,7 @@ from typing import List
 from character.Action import Action
 from character.Attribute import Attribute
 from component.Clock import Clock
+from controller.DBreader import get_special_abilities
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -24,6 +25,21 @@ def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]
         if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
             ghost_abilities.append(ability)
     return ghost_abilities
+
+
+def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[SpecialAbility]:
+    """
+    Method used during the migration to a "Spirit Character".
+    Calls get_ghost_abilities and fetch the peculiar ability of the destination Spirit Character.
+
+    :param abilities: list of SpecialAbility to filter
+    :param sheet: the specified Spirit Character
+    :return: a list of SpecialAbility containing all the "ghost" abilities and the peculiar SpecialAbility of
+            the specified sheet
+    """
+    class_abilities = get_ghost_abilities(abilities)
+    class_abilities.append(get_special_abilities(sheet, True)[0])
+    return class_abilities
 
 
 class Character(NPC):
@@ -76,11 +92,9 @@ class Character(NPC):
             resolve = Attribute([Action("attune"), Action("command"), Action("consort"), Action("sway")], 6)
         self.resolve = resolve
         self.load = load
-        string = "Every time you roll a desperate action, mark xp in that action's attribute"
+        triggers = ""  # TODO : Fetch from DB
         if xp_triggers is None:
-            xp_triggers = [string]
-        elif not xp_triggers.__contains__(string):
-            xp_triggers.insert(0, string)
+            xp_triggers = [triggers]
         self.xp_triggers = xp_triggers
         if downtime_activities is None:
             downtime_activities = []

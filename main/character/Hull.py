@@ -47,16 +47,11 @@ class Hull(Character):
 
         :param mc: represents the migrating Character
         """
-        hull_abilities = get_ghost_abilities(mc.abilities)
-
-        # TODO : fetch "Automation" ability from DB
-        hull_abilities.append(SpecialAbility("Automation", ""))
-
         hull_xp_triggers = mc.xp_triggers[:1]
         # TODO : hull_xp_triggers.append( FETCH FROM DB )
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
-                         10, None, None, None, None, None, hull_abilities,
+                         10, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
                          mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, hull_xp_triggers, mc.description,
                          None)
         self.prowess.action_dots("skirmish", 1)
