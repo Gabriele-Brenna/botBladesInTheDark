@@ -117,3 +117,23 @@ def get_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
 
     except Exception:
         return []
+
+
+def exists_character(sheet: str) -> bool:
+    """
+    Checks if the specified sheet has a matching value in the Character table of the database
+
+    :param sheet: is the character to check
+    :return: True if the character exists, False otherwise
+    """
+    cursor.execute("""
+            SELECT *
+            FROM Character
+            WHERE name = '{}'
+            """.format(sheet))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
