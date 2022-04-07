@@ -56,6 +56,9 @@ class Hull(Character):
         self.prowess.action_dots("skirmish", 1)
         self.resolve.action_dots("attune", 1)
 
+    def change_pc_class(self, new_class: str):
+        pass
+
     def select_frame(self, frame_type: str) -> bool:
         """
         Allows the selection of the frame for your Hull.

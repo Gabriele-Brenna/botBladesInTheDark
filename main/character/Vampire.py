@@ -79,6 +79,9 @@ class Vampire(Owner):
         for action in (self.insight.actions + self.prowess.actions + self.resolve.actions):
             action.limit = 5
 
+    def change_pc_class(self, new_class: str):
+        pass
+
     def __repr__(self) -> str:
         return str(self.__dict__)
 

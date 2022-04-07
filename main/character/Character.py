@@ -269,6 +269,10 @@ class Character(NPC):
     def migrate(self, mc: super.__class__):
         pass
 
+    @abstractmethod
+    def change_pc_class(self, new_class: str):
+        pass
+
     def __repr__(self) -> str:
         return str(self.__dict__)
 

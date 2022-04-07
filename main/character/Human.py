@@ -34,15 +34,16 @@ class Human(Owner):
         self.enemy = enemy
 
     def migrate(self, mc: super.__class__, sheet: str = None):
+        pass
+
+    def change_pc_class(self, new_class: str):
         """
         Method used to change the class of a Human Character.
 
-        :param mc: represent the Human that wants to change its class
-        :param sheet: is the new character sheet representing the new selected class
+        :param new_class: is the new character sheet representing the new selected class
         """
-        if sheet is not None:
-            self.pc_class = sheet
-            self.xp_triggers = get_xp_triggers(sheet)
+        self.pc_class = new_class
+        self.xp_triggers = get_xp_triggers(new_class)
 
     def __repr__(self) -> str:
         return str(self.__dict__)
