@@ -122,3 +122,13 @@ class TestCharacter(TestCase):
 
         self.assertEqual("first\nsecond", self.character.description)
 
+    def test_tick_healing_clock(self):
+        self.assertEqual(0, self.deadManWalking.tick_healing_clock(3))
+
+        self.assertEqual(1, self.deadManWalking.tick_healing_clock(2))
+        self.assertEqual(1, self.deadManWalking.healing.progress)
+        self.assertEqual([["Seduced", "Exhausted"], ["Terrified"], []], self.deadManWalking.harms)
+
+        self.assertEqual(2, self.deadManWalking.tick_healing_clock(7))
+        self.assertEqual(0, self.deadManWalking.healing.progress)
+        self.assertEqual([[], [], []], self.deadManWalking.harms)

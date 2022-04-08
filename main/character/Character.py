@@ -172,6 +172,16 @@ class Character(NPC):
                 self.harms[i].append(harm)
             self.harms[i + 1].clear()
 
+    def tick_healing_clock(self, ticks: int) -> int:
+        healed = 0
+        for i in range(ticks):
+            if self.healing.tick(1):
+                healed += 1
+                self.healing.progress = 0
+        for j in range(healed):
+            self.heal_harms()
+        return healed
+
     def count_harms(self, level: int) -> int:
         """
         Count the number of harms at the specified level.
