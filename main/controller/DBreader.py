@@ -8,7 +8,7 @@ from component.SpecialAbility import SpecialAbility
 
 root_dir = Path(__file__).parent.parent.parent.resolve()
 root_dir = os.path.join(root_dir, "resources")
-db_path = os.path.join(root_dir, 'DataBase1.0.db')
+db_path = os.path.join(root_dir, 'BladesInTheDark.db')
 connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
@@ -133,7 +133,7 @@ def exists_crew(sheet: str) -> bool:
     return True
 
 
-def query_action_list(attr: str) -> list[Action]:
+def query_action_list(attr: str) -> List[Action]:
     """
 
     :param attr:
