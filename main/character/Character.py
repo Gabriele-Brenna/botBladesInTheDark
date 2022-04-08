@@ -1,10 +1,9 @@
 from abc import abstractmethod
 from typing import List
 
-from character.Action import Action
 from character.Attribute import Attribute
 from component.Clock import Clock
-from controller.DBreader import query_special_abilities, query_xp_triggers
+from controller.DBreader import query_special_abilities, query_action_list
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -38,7 +37,7 @@ def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[Spe
             the specified sheet
     """
     class_abilities = get_ghost_abilities(abilities)
-    class_abilities.append(query_special_abilities(sheet, True)[0])
+    class_abilities.insert(0, query_special_abilities(sheet, True)[0])
     return class_abilities
 
 
@@ -81,15 +80,14 @@ class Character(NPC):
             abilities = []
         self.abilities = abilities
         self.playbook = playbook
-        # TODO : fetch from DB??? ;)
         if insight is None:
-            insight = Attribute([Action("hunt"), Action("study"), Action("survey"), Action("tinker")], 6)
+            insight = Attribute(query_action_list("Insight"), 6)
         self.insight = insight
         if prowess is None:
-            prowess = Attribute([Action("finesse"), Action("prowl"), Action("skirmish"), Action("wreck")], 6)
+            prowess = Attribute(query_action_list("Prowess"), 6)
         self.prowess = prowess
         if resolve is None:
-            resolve = Attribute([Action("attune"), Action("command"), Action("consort"), Action("sway")], 6)
+            resolve = Attribute(query_action_list("Resolve"), 6)
         self.resolve = resolve
         self.load = load
         if xp_triggers is None:

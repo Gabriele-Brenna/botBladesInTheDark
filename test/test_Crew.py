@@ -107,6 +107,10 @@ class TestCrew(TestCase):
         self.assertTrue(self.smugglers.add_coin(-3))
         self.assertEqual(0, self.smugglers.coins)
 
+    def test_add_prison_claim(self):
+        self.smugglers.add_prison_claim(Claim("Prison Claim"))
+        self.assertEqual([Claim("Prison Claim")], self.smugglers.prison_claims)
+
     def test_add_lair_claim(self):
         self.assertTrue(self.shadows.add_lair_claim(Claim()))
 
@@ -120,6 +124,9 @@ class TestCrew(TestCase):
         self.assertFalse(self.shadows.hold)
 
         self.assertFalse(self.smugglers.add_tier())
+
+    def test_upgrade_vault(self):
+        self.assertEqual(16, self.smugglers.upgrade_vault())
 
     def test_add_upgrade(self):
         self.assertEqual(Upgrade("Vehicle", 2), self.smugglers.add_upgrade("veHicle"))
@@ -142,3 +149,10 @@ class TestCrew(TestCase):
 
         self.assertEqual(0, self.smugglers.calc_rep(score2.target_tier))
         self.assertEqual(1, self.shadows.calc_rep(score2.target_tier))
+
+    def test_change_crew_type(self):
+        self.shadows.change_crew_type("Bravos")
+        self.assertEqual("Bravos", self.shadows.type)
+
+
+
