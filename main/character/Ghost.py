@@ -1,5 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
+from controller.DBreader import query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from organization.Organization import Organization
@@ -26,9 +27,12 @@ class Ghost(Character):
             self.migrate(migrating_character)
 
         else:
-            super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
-                             items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
-                             xp_triggers, description, downtime_activities)
+            if xp_triggers is None:
+                xp_triggers = query_xp_triggers(self.__class__.__name__)
+
+            super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit,
+                             traumas, items, harms, healing, armors, abilities, playbook, insight, prowess, resolve,
+                             load, xp_triggers, description, downtime_activities)
         if enemies_rivals is None:
             enemies_rivals = []
 
@@ -48,21 +52,17 @@ class Ghost(Character):
 
         :param mc: represents the migrating Character
         """
-        ghost_abilities = get_ghost_abilities(mc.abilities)
-
-        # TODO : fetch "Ghost Form" ability from DB
-        ghost_abilities.append(SpecialAbility("Ghost Form", ""))
-
-        ghost_xp_triggers = mc.xp_triggers[:1]
-        # TODO : ghost_xp_triggers.append( FETCH FROM DB )
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
-                         9, None, None, None, None, None, ghost_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, ghost_xp_triggers, mc.description,
-                         None)
+                         9, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
+                         mc.description, None)
         self.insight.action_dots("hunt", 1)
         self.prowess.action_dots("prowl", 1)
         self.resolve.action_dots("attune", 1)
+
+    def change_pc_class(self, new_class: str):
+        pass
 
     def __repr__(self) -> str:
         return str(self.__dict__)

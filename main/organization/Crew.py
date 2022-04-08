@@ -1,5 +1,6 @@
 from typing import List
 
+from controller.DBreader import query_xp_triggers, exists_crew
 from organization.Claim import Claim
 from organization.Cohort import Cohort
 from organization.Lair import Lair
@@ -17,7 +18,8 @@ class Crew(Organization):
                  upgrades: List[Upgrade] = None, contact: NPC = NPC(), description: str = "",
                  abilities: List[SpecialAbility] = None, rep: int = 0, tier: int = 0, hold: bool = True,
                  heat: int = 0, wanted_level: int = 0, exp: int = 0, cohorts: List[Cohort] = None,
-                 coins: int = 0, vault_capacity: int = 4, prison_claims: List[Claim] = None) -> None:
+                 coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
+                 prison_claims: List[Claim] = None) -> None:
         super().__init__(name, tier, hold)
         self.type = type
         if abilities is None:
@@ -40,6 +42,9 @@ class Crew(Organization):
         self.vault_capacity = vault_capacity
         if prison_claims is None:
             prison_claims = []
+        if xp_triggers is None and type != "":
+            xp_triggers = query_xp_triggers(type)
+        self.xp_triggers = xp_triggers
         self.prison_claims = prison_claims
         self.description = description
 
@@ -205,6 +210,18 @@ class Crew(Organization):
             if u.name.lower() == upgrade.lower():
                 self.upgrades.remove(u)
                 return u
+
+    def change_crew_type(self, new_type: str) -> bool:
+        """
+        Method used to change the type of the Crew.
+
+        :param new_type: is the new crew sheet representing the new selected type
+        """
+        if exists_crew(new_type):
+            self.type = new_type
+            self.xp_triggers = query_xp_triggers(new_type)
+            return True
+        return False
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

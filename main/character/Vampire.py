@@ -1,5 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
+from controller.DBreader import query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -29,12 +30,23 @@ class Vampire(Owner):
             self.migrate(migrating_character)
 
         else:
-            super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
+            if xp_triggers is None:
+                xp_triggers = query_xp_triggers(self.__class__.__name__)
+
+            super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit,
+                             traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                              xp_triggers, description, downtime_activities, coin, stash,
                              vice=Vice("Life Essence", """Feeding: Use a downtime activity to Hunt prey and indulge 
                              your vice. Also, when you feed,mark four ticks on your healing clock. 
                              This is the only way you can heal.""", "consumed from a living human"))
+        self.playbook.exp_limit = 10
+        self.prowess.exp_limit = 8
+        self.insight.exp_limit = 8
+        self.resolve.exp_limit = 8
+
+        for action in (self.insight.actions + self.prowess.actions + self.resolve.actions):
+            action.limit = 5
 
         if traumas is not None:
             self.traumas = traumas
@@ -58,23 +70,11 @@ class Vampire(Owner):
 
         :param mc: represents the migrating Character
         """
-        vampire_abilities = get_ghost_abilities(mc.abilities)
-
-        # TODO : fetch "Undead" ability from DB
-        vampire_abilities.insert(0, SpecialAbility("Undead", ""))
-
-        vampire_xp_triggers = mc.xp_triggers[:1]
-        # TODO : vampire_xp_triggers.append( FETCH FROM DB )
 
         super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
-                         12, None, None, None, None, None, vampire_abilities,
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, vampire_xp_triggers, mc.description,
-                         None)
-
-        self.playbook.exp_limit = 10
-        self.prowess.exp_limit = 8
-        self.insight.exp_limit = 8
-        self.resolve.exp_limit = 8
+                         12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
+                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
+                         mc.description, None)
 
         self.insight.action_dots("hunt", 1)
         self.prowess.action_dots("prowl", 1)
@@ -83,8 +83,8 @@ class Vampire(Owner):
         self.resolve.action_dots("command", 1)
         self.resolve.action_dots("sway", 1)
 
-        for action in (self.insight.actions + self.prowess.actions + self.resolve.actions):
-            action.limit = 5
+    def change_pc_class(self, new_class: str):
+        pass
 
     def __repr__(self) -> str:
         return str(self.__dict__)

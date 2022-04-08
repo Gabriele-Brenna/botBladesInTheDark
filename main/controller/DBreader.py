@@ -1,13 +1,19 @@
+import os
 import sqlite3
+from pathlib import Path
 from typing import List
 
+from character.Action import Action
 from component.SpecialAbility import SpecialAbility
 
-connection = sqlite3.connect('mydata.db')
+root_dir = Path(__file__).parent.parent.parent.resolve()
+root_dir = os.path.join(root_dir, "resources")
+db_path = os.path.join(root_dir, 'DataBase1.0.db')
+connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-def get_special_abilities(name: str = None, peculiar: bool = False) -> List[SpecialAbility]:
+def query_special_abilities(name: str = None, peculiar: bool = False) -> List[SpecialAbility]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
 
@@ -25,10 +31,10 @@ def get_special_abilities(name: str = None, peculiar: bool = False) -> List[Spec
     q_where = "\n"
 
     if peculiar is True:
-        q_from += " NATURAL JOIN Char_SA C"
-        q_where += "WHERE C.peculiar = true"
+        q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
+        q_where += "WHERE C.peculiar = 'TRUE'"
         if name is not None:
-            q_where += " AND C.class = '{}'".format(name)
+            q_where += " AND C.character = '{}'".format(name)
 
     else:
         if name is not None:
@@ -45,42 +51,12 @@ def get_special_abilities(name: str = None, peculiar: bool = False) -> List[Spec
     return abilities
 
 
-def is_crew(sheet: str) -> bool:
-    """
-    Checks if the given sheet appears in the Crew table or in the Character table in the database.
-    Raises an exception if the sheet doesn't appear in the database.
-    :param sheet: represents the sheet to check
-    :return: True if the sheet is a Crew, False if the sheet is a Character
-    """
-    query = """
-    SELECT *
-    FROM CrewSheet
-    WHERE name = '{}'
-    """.format(sheet)
-
-    cursor.execute(query)
-    rows = cursor.fetchall()
-
-    if not rows:
-        query.replace("CrewSheet", "CharacterSheet")
-
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        if not rows:
-            raise Exception("{} is not a sheet!".format(sheet))
-
-        return False
-
-    return True
-
-
-def get_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
+def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
     :param sheet: represents the sheet of the Crew or Character of interest.
-        If this parameter is None and peculiar is False, the complete list of xp trigger is retrieved;
+        If this parameter is None and peculiar is False, the complete list of xp triggers is retrieved;
         If this parameter is None and peculiar is True, only the peculiar xp triggers of each sheet are retrieved;
         If this parameter is not None, the targets are the triggers of the specified sheet.
     :param peculiar: True if only the peculiar triggers are the targets, False if all the triggers are the targets
@@ -92,28 +68,87 @@ def get_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
 
     q_where = "\n"
 
-    try:
-        if sheet is not None:
-            if is_crew(sheet):
-                q_where += "WHERE Crew = '{}' ".format(sheet)
-                if not peculiar:
-                    q_where += "OR Crew_Char = true"
-            else:
-                q_where += "WHERE Character = '{}' ".format(sheet)
-                if not peculiar:
-                    q_where += "OR Crew_Char = false"
+    if sheet is not None:
+        if exists_crew(sheet):
+            q_where += "WHERE Crew = '{}' ".format(sheet)
+            if not peculiar:
+                q_where += "OR Crew_Char = 'TRUE'"
+        elif exists_character(sheet):
+            q_where += "WHERE Character = '{}' ".format(sheet)
+            if not peculiar:
+                q_where += "OR Crew_Char = false"
         else:
-            if peculiar:
-                q_where += "WHERE Crew IS NOT NULL OR Character IS NOT NULL"
+            return []
+    else:
+        if peculiar:
+            q_where += "WHERE Crew IS NOT NULL OR Character IS NOT NULL"
 
-        cursor.execute(q_select + q_from + q_where)
-        rows = cursor.fetchall()
+    cursor.execute(q_select + q_from + q_where)
+    rows = cursor.fetchall()
 
-        xp_triggers = []
-        for trigger in rows:
-            xp_triggers.append(trigger[0])
+    xp_triggers = []
+    for trigger in rows:
+        xp_triggers.append(trigger[0])
 
-        return xp_triggers
+    return xp_triggers
 
-    except Exception:
-        return []
+
+def exists_character(sheet: str) -> bool:
+    """
+    Checks if the specified sheet has a matching value in the CharacterSheet table of the database
+
+    :param sheet: is the character to check
+    :return: True if the character exists, False otherwise
+    """
+    cursor.execute("""
+            SELECT *
+            FROM CharacterSheet
+            WHERE class = '{}'
+            """.format(sheet))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
+
+
+def exists_crew(sheet: str) -> bool:
+    """
+    Checks if the specified sheet has a matching value in the CrewSheet table of the database
+
+    :param sheet: is the crew to check
+    :return: True if the crew exists, False otherwise
+    """
+    cursor.execute("""
+            SELECT *
+            FROM CrewSheet
+            WHERE type = '{}'
+            """.format(sheet))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
+
+
+def query_action_list(attr: str) -> list[Action]:
+    """
+
+    :param attr:
+    :return:
+    """
+    cursor.execute("""
+    SELECT name
+    FROM Action
+    WHERE attribute = '{}'
+    """.format(attr))
+
+    rows = cursor.fetchall()
+
+    actions = []
+    for action in rows:
+        actions.append(Action(str(action[0]).lower()))
+
+    return actions

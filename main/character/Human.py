@@ -2,6 +2,7 @@ from typing import List
 
 from character.Attribute import Attribute
 from component.Clock import Clock
+from controller.DBreader import query_xp_triggers
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -25,6 +26,10 @@ class Human(Owner):
                  resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0, vice: Vice = Vice(),
                  pc_class: str = "", friend: NPC = NPC(), enemy: NPC = NPC()) -> None:
+
+        if xp_triggers is None and pc_class != "":
+            xp_triggers = query_xp_triggers(self.__class__.__name__)
+
         super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
                          items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                          xp_triggers, description, downtime_activities, coin, stash, vice)
@@ -32,8 +37,17 @@ class Human(Owner):
         self.friend = friend
         self.enemy = enemy
 
-    def migrate(self, mc: super.__class__):
+    def migrate(self, mc: super.__class__, sheet: str = None):
         pass
+
+    def change_pc_class(self, new_class: str):
+        """
+        Method used to change the class of a Human Character.
+
+        :param new_class: is the new character sheet representing the new selected class
+        """
+        self.pc_class = new_class
+        self.xp_triggers = query_xp_triggers(new_class)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

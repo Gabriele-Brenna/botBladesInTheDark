@@ -73,5 +73,9 @@ class Owner(Character):
     def migrate(self, mc: super.__class__):
         pass
 
+    @abstractmethod
+    def change_pc_class(self, new_class: str):
+        pass
+
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

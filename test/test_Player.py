@@ -13,7 +13,11 @@ class TestPlayer(TestCase):
         self.human = Human("Marg", stress_level=420, harms=[[], ["black hole sun burn"], []])
         self.human.resolve.action_dots("attune", 2)
         self.human.insight.action_dots("hunt", 1)
-        self.ghost = Ghost("Casper", abilities=[SpecialAbility("Ghost Form", ""), SpecialAbility("ghost mind", ""),
+        self.ghost = Ghost("Casper", abilities=[SpecialAbility("Ghost Form", ""),
+                                                SpecialAbility("ghost mind",
+                                                               "You’re always aware of supernatural entities in your " +
+                                                               "presence. Take +1d when you gather info about the " +
+                                                               "supernatural."),
                                                 SpecialAbility("Calculating", "")])
         self.player = Player("p1", 1, False, [self.human, self.ghost])
 
@@ -35,5 +39,15 @@ class TestPlayer(TestCase):
         self.player.migrate_character_type("casper", "vampire")
         self.assertIsInstance(self.player.characters[1], Vampire)
 
-        self.assertEqual([SpecialAbility("undead", ""), SpecialAbility("Ghost mind", "")],
+        self.assertEqual([SpecialAbility("undead",
+                                         "You are a spirit which animates an undead body. Your trauma is maxed out. "
+                                         "Choose four trauma conditions which reflect your vampiric nature. Arcane "
+                                         "attacks are potent against you. If you suffer fatal harm or trauma, "
+                                         "your undead spirit is overwhelmed. You take level 3 harm: \"Incapacitated\" "
+                                         "until you feed enough to recover. If you suffer arcane harm while in this "
+                                         "state, you are destroyed utterly. Your XP tracks are longer (you now "
+                                         "advance more slowly). You have more stress boxes. "),
+                          SpecialAbility("Ghost mind",
+                                         "You’re always aware of supernatural entities in your presence. Take +1d "
+                                         "when you gather info about the supernatural.")],
                          self.player.characters[1].abilities)
