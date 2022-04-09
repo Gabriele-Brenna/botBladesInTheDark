@@ -1,12 +1,11 @@
 from character.Character import *
 from component.Clock import Clock
-from controller.DBreader import query_xp_triggers
+from controller.DBreader import *
 from organization.Crew import Crew
 from character.Item import Item
 from organization.Organization import Organization
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
-from character.Vice import Vice
 
 
 class Ghost(Character):
@@ -37,9 +36,7 @@ class Ghost(Character):
             enemies_rivals = []
 
         self.enemies_rivals = enemies_rivals
-        self.need = Vice("Life Essence", """Feeding: Use a downtime activity to Hunt prey and indulge 
-                             your vice. Also, when you feed,mark four ticks on your healing clock. 
-                             This is the only way you can heal.""", "consumed from a living human")
+        self.need = query_vice("Need of Life Essence")[0]
 
     def migrate(self, mc: super.__class__):
         """

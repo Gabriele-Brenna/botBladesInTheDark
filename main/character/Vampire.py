@@ -1,6 +1,6 @@
 from character.Character import *
 from component.Clock import Clock
-from controller.DBreader import query_xp_triggers
+from controller.DBreader import *
 from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
@@ -8,7 +8,6 @@ from organization.Organization import Organization
 from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
-from character.Vice import Vice
 
 
 class Vampire(Owner):
@@ -37,9 +36,7 @@ class Vampire(Owner):
                              traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                              xp_triggers, description, downtime_activities, coin, stash,
-                             vice=Vice("Life Essence", """Feeding: Use a downtime activity to Hunt prey and indulge 
-                             your vice. Also, when you feed,mark four ticks on your healing clock. 
-                             This is the only way you can heal.""", "consumed from a living human"))
+                             vice=query_vice("Life Essence")[0])
         self.playbook.exp_limit = 10
         self.prowess.exp_limit = 8
         self.insight.exp_limit = 8

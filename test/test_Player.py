@@ -3,6 +3,7 @@ from unittest import TestCase
 from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Human import Human
+from character.Vice import Vice
 from game.Player import Player
 from component.SpecialAbility import SpecialAbility
 from character.Vampire import Vampire
@@ -22,8 +23,13 @@ class TestPlayer(TestCase):
         self.player = Player("p1", 1, False, [self.human, self.ghost])
 
     def test_migrate_character_type(self):
+        # TODO : check Xp_Triggers from DB
         self.player.migrate_character_type("marg", "Ghost")
         self.assertIsInstance(self.player.characters[0], Ghost)
+        self.assertEqual(Vice("Need of Life Essence", "You have an intense need: life essence. To satisfy this need, "
+                                                      "possess a living victim and consume their spirit energy (this "
+                                                      "may be a downtime action). When you do so, clear half your "
+                                                      "drain (round down)."), self.player.characters[0].need)
 
         self.player.migrate_character_type("marg", "HULL")
         self.assertIsInstance(self.player.characters[0], Hull)
