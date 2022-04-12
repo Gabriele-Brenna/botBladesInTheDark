@@ -170,6 +170,12 @@ def query_action_list(attr: str) -> List[Action]:
 
 
 def query_vice(vice: str = None, hull: bool = None) -> List[Vice]:
+    """
+
+    :param vice:
+    :param hull:
+    :return:
+    """
 
     q_select = "SELECT name, description"
     q_from = "\nFROM Vice"
