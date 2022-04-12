@@ -32,7 +32,7 @@ def query_special_abilities(name: str = None, peculiar: bool = False) -> List[Sp
 
     if peculiar is True:
         q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
-        q_where += "WHERE C.peculiar = 'TRUE'"
+        q_where += "WHERE C.peculiar is True"
         if name is not None:
             q_where += " AND C.character = '{}'".format(name)
 
@@ -62,28 +62,41 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
     :param peculiar: True if only the peculiar triggers are the targets, False if all the triggers are the targets
     :return: a list of strings, representing the xp triggers
     """
-    q_select = "SELECT X.trigger"
+    q_select = "SELECT Description"
 
-    q_from = "\nFROM XpTrigger X"
+    q_from = "\nFROM XpTrigger"
 
     q_where = "\n"
 
+    query = q_select + q_from + q_where
+
     if sheet is not None:
         if exists_crew(sheet):
+            q_from += " NATURAL JOIN Crew_Xp"
             q_where += "WHERE Crew = '{}' ".format(sheet)
-            if not peculiar:
-                q_where += "OR Crew_Char = 'TRUE'"
+
         elif exists_character(sheet):
+            q_from += " NATURAL JOIN Char_Xp"
             q_where += "WHERE Character = '{}' ".format(sheet)
-            if not peculiar:
-                q_where += "OR Crew_Char = false"
+
         else:
             return []
+
+        if not peculiar:
+            q_where += "and Peculiar is False"
+        query = q_select + q_from + q_where
     else:
         if peculiar:
-            q_where += "WHERE Crew IS NOT NULL OR Character IS NOT NULL"
+            query = """
+            SELECT Description
+            FROM XpTrigger NATURAL JOIN Crew_Xp 
+            WHERE Peculiar is True
+            UNION
+            SELECT Description
+            FROM XpTrigger NATURAL JOIN Char_Xp 
+            WHERE Peculiar is True"""
 
-    cursor.execute(q_select + q_from + q_where)
+    cursor.execute(query)
     rows = cursor.fetchall()
 
     xp_triggers = []
