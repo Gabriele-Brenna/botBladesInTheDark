@@ -1,6 +1,6 @@
 from typing import List
 
-from character.Character import Character
+from character.PC import PC
 from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Vampire import Vampire
@@ -12,7 +12,7 @@ class Player:
     Represents the human user.
     """
 
-    def __init__(self, name: str, player_id: int, is_master: bool = False, characters: List[Character] = None) -> None:
+    def __init__(self, name: str, player_id: int, is_master: bool = False, characters: List[PC] = None) -> None:
         self.name = name
         self.player_id = player_id
         self.is_master = is_master
@@ -55,7 +55,7 @@ class Player:
             return True
         return False
 
-    def get_character_by_name(self, name: str) -> Character:
+    def get_character_by_name(self, name: str) -> PC:
         """
         Gets the character with the selected name.
 

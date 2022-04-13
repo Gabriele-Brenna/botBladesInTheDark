@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from character.Character import Character
+from character.PC import PC
 from component.Clock import Clock
 from game.Game import Game
 from game.Score import Score
@@ -54,5 +54,5 @@ class TestGame(TestCase):
         self.game.scores.append(Score("Score2", [None]))
         self.game.scores.append(Score("Score3"))
         self.assertEqual(Score("Score2", [None]), self.game.get_main_score())
-        self.game.scores[0].participants.append(Character())
-        self.assertEqual(Score("Score1", [Character()]), self.game.get_main_score())
+        self.game.scores[0].participants.append(PC())
+        self.assertEqual(Score("Score1", [PC()]), self.game.get_main_score())

@@ -1,10 +1,8 @@
-from character.Character import *
+from character.PC import *
 from component.Clock import Clock
 from controller.DBreader import *
-from organization.Crew import Crew
 from character.Item import Item
 from character.NPC import NPC
-from organization.Organization import Organization
 from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
@@ -12,10 +10,10 @@ from component.SpecialAbility import SpecialAbility
 
 class Vampire(Owner):
     """
-    Represents the vampire Character of the game
+    Represents the vampire PC of the game
     """
 
-    def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
+    def __init__(self, name: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 12,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
@@ -23,7 +21,7 @@ class Vampire(Owner):
                  resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0,
                  strictures: List[str] = None, dark_servants: List[NPC] = None,
-                 migrating_character: Character = None) -> None:
+                 migrating_character: PC = None) -> None:
 
         if migrating_character is not None:
             self.migrate(migrating_character)
@@ -32,7 +30,7 @@ class Vampire(Owner):
             if xp_triggers is None:
                 xp_triggers = query_xp_triggers(self.__class__.__name__)
 
-            super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit,
+            super().__init__(name, alias, look, heritage, background, stress_level, stress_limit,
                              traumas,
                              items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                              xp_triggers, description, downtime_activities, coin, stash,
@@ -57,7 +55,7 @@ class Vampire(Owner):
 
     def migrate(self, mc: super.__class__):
         """
-        Method used to migrate a Character subclass object and convert it into a Vampire object.
+        Method used to migrate a PC subclass object and convert it into a Vampire object.
         All the common attributes of the previous object are maintained and the stress level, the traumas' list
         the Items' list, the harms' list, the armors' list and the load are cleared and set to default values.
         The Special Abilities' list maintains only the abilities that are ghost related
@@ -65,10 +63,10 @@ class Vampire(Owner):
         and the xp_trigger list is changed according to the new triggers.
         Furthermore, the base action dot of the Vampire are added.
 
-        :param mc: represents the migrating Character
+        :param mc: represents the migrating PC
         """
 
-        super().__init__(mc.name, mc.faction, mc.role, mc.alias, mc.look, mc.heritage, mc.background, 0,
+        super().__init__(mc.name, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
                          mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)

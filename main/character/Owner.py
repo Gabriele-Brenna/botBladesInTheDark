@@ -1,18 +1,16 @@
-from character.Character import *
+from character.PC import *
 from component.Clock import Clock
-from organization.Crew import Crew
 from character.Item import Item
-from organization.Organization import Organization
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
 from character.Vice import Vice
 
 
-class Owner(Character):
+class Owner(PC):
     """
     Represents all the playable races that are able to own and use items.
     """
-    def __init__(self, name: str = "", faction: Organization = Crew(), role: str = "", alias: str = "", look: str = "",
+    def __init__(self, name: str = "", alias: str = "", look: str = "",
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
@@ -20,7 +18,7 @@ class Owner(Character):
                  resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None,
                  coin: int = 0, stash: int = 0, vice: Vice = Vice()) -> None:
-        super().__init__(name, faction, role, alias, look, heritage, background, stress_level, stress_limit, traumas,
+        super().__init__(name, alias, look, heritage, background, stress_level, stress_limit, traumas,
                          items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
                          xp_triggers, description, downtime_activities)
         self.coin = coin

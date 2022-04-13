@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from character.Character import Character
+from character.PC import PC
 from organization.Faction import Faction
 from character.NPC import NPC
 

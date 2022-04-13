@@ -56,7 +56,7 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
-    :param sheet: represents the sheet of the Crew or Character of interest.
+    :param sheet: represents the sheet of the Crew or PC of interest.
         If this parameter is None and peculiar is False, the complete list of xp triggers is retrieved;
         If this parameter is None and peculiar is True, only the peculiar xp triggers of each sheet are retrieved;
         If this parameter is not None, the targets are the triggers of the specified sheet.
@@ -189,8 +189,8 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
         if character_class is not None:
             q_where += "WHERE class = '{}'".format(str(character_class).capitalize())
 
-    print(q_select+q_from+q_where)
-    cursor.execute(q_select+q_from+q_where)
+    print(q_select + q_from + q_where)
+    cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
 
