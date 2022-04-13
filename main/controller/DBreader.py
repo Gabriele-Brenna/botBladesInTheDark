@@ -151,8 +151,8 @@ def query_action_list(attr: str) -> List[Action]:
     """
     Retrieve the list of Actions of the specified attribute
 
-    :param attr:
-    :return:
+    :param attr: is the Attribute of interest
+    :return: a list of Actions
     """
     cursor.execute("""
     SELECT name
@@ -169,12 +169,13 @@ def query_action_list(attr: str) -> List[Action]:
     return actions
 
 
-def query_vice(vice: str = None, hull: bool = None) -> List[Vice]:
+def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
     """
+    Retrieve the list of Vices of the specified character class or the specified vice.
 
-    :param vice:
-    :param hull:
-    :return:
+    :param vice: is the Vice of interest
+    :param character_class: is the class of interest
+    :return: a list of Vices
     """
 
     q_select = "SELECT name, description"
@@ -185,8 +186,8 @@ def query_vice(vice: str = None, hull: bool = None) -> List[Vice]:
         q_where += "WHERE name = '{}'".format(vice)
 
     else:
-        if hull is not None:
-            q_where += "WHERE hull = '{}'".format(str(hull).upper())
+        if character_class is not None:
+            q_where += "WHERE class = '{}'".format(str(character_class).capitalize())
 
     print(q_select+q_from+q_where)
     cursor.execute(q_select+q_from+q_where)
