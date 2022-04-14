@@ -56,7 +56,7 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
-    :param sheet: represents the sheet of the Crew or Character of interest.
+    :param sheet: represents the sheet of the Crew or PC of interest.
         If this parameter is None and peculiar is False, the complete list of xp triggers is retrieved;
         If this parameter is None and peculiar is True, only the peculiar xp triggers of each sheet are retrieved;
         If this parameter is not None, the targets are the triggers of the specified sheet.
@@ -151,8 +151,8 @@ def query_action_list(attr: str) -> List[Action]:
     """
     Retrieve the list of Actions of the specified attribute
 
-    :param attr:
-    :return:
+    :param attr: is the Attribute of interest
+    :return: a list of Actions
     """
     cursor.execute("""
     SELECT name
@@ -169,12 +169,13 @@ def query_action_list(attr: str) -> List[Action]:
     return actions
 
 
-def query_vice(vice: str = None, hull: bool = None) -> List[Vice]:
+def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
     """
+    Retrieve the list of Vices of the specified character class or the specified vice.
 
-    :param vice:
-    :param hull:
-    :return:
+    :param vice: is the Vice of interest
+    :param character_class: is the class of interest
+    :return: a list of Vices
     """
 
     q_select = "SELECT name, description"
@@ -185,11 +186,11 @@ def query_vice(vice: str = None, hull: bool = None) -> List[Vice]:
         q_where += "WHERE name = '{}'".format(vice)
 
     else:
-        if hull is not None:
-            q_where += "WHERE hull = '{}'".format(str(hull).upper())
+        if character_class is not None:
+            q_where += "WHERE class = '{}'".format(str(character_class).capitalize())
 
-    print(q_select+q_from+q_where)
-    cursor.execute(q_select+q_from+q_where)
+    print(q_select + q_from + q_where)
+    cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
 

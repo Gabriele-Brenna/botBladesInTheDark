@@ -1,7 +1,7 @@
 class Action:
     """
     Models an action that the player can use to achieve a goal.
-    The more dots the action has, the more efficient the Character will be while performing that specific action.
+    The more dots the action has, the more efficient the PC will be while performing that specific action.
     """
     def __init__(self, name: str, rating: int = 0, limit: int = 4) -> None:
         self.name = name

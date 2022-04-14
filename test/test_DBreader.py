@@ -31,6 +31,6 @@ class TestDBReader(TestCase):
         self.assertEqual([Vice("Weird", "You experiment with strange essences, consort with rogue spirits, observe "
                                         "bizarre rituals or taboos, etc.")],
                          query_vice("Weird"))
-        self.assertEqual([Vice("To Guard"), Vice("To Destroy"), Vice("To Discover"), Vice("To Acquire"),
-                          Vice("To Labour at")],
-                         query_vice(hull=True))
+        self.assertEqual([Vice("To Guard", None), Vice("To Destroy", None), Vice("To Discover", None),
+                          Vice("To Acquire", None), Vice("To Labour at", None)],
+                         query_vice(character_class="Hull"))

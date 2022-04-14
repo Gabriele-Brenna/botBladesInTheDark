@@ -1,18 +1,18 @@
 from unittest import TestCase
 
-from character.Character import Character
+from character.PC import PC
 from character.Item import Item
 
 
 class TestCharacter(TestCase):
     def setUp(self) -> None:
-        self.character = Character(items=[Item("knife", "miracle blade", 1),
-                                          Item("grenade", "art is an explosion", 2, 2)],
-                                   load=4, armors=[True, True, False],
-                                   description="first")
-        self.deadManWalking = Character(harms=[["Scared", "Battered"], ["Seduced", "Exhausted"], ["Terrified"]],
-                                        stress_level=9,
-                                        traumas=["cold", "haunted", "soft", "paranoid"])
+        self.character = PC(items=[Item("knife", "miracle blade", 1),
+                                   Item("grenade", "art is an explosion", 2, 2)],
+                            load=4, armors=[True, True, False],
+                            description="first")
+        self.deadManWalking = PC(harms=[["Scared", "Battered"], ["Seduced", "Exhausted"], ["Terrified"]],
+                                 stress_level=9,
+                                 traumas=["cold", "haunted", "soft", "paranoid"])
 
     def test_add_stress(self):
         self.character.add_stress(5)

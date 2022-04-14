@@ -1,6 +1,6 @@
 class Playbook:
     """
-    Models the base Character's progression layer.
+    Models the base PC's progression layer.
     When an advance is taken from this track a new special ability can be obtained
     """
 

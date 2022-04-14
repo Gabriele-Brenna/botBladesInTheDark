@@ -1,10 +1,12 @@
 from typing import List
 
+from character.Item import Item
 from component.Clock import Clock
 from game.Journal import Journal
 from character.NPC import NPC
 from game.Player import Player
 from game.Score import Score
+from organization.Crew import Crew
 from organization.Faction import Faction
 
 _id = 1
@@ -16,8 +18,9 @@ class Game:
     Represents an instance of a game and keeps track of the participants and their roles
     """
     def __init__(self, identifier: int = _id, title: str = "Game" + str(_id), users: List[Player] = None,
-                 NPCs: List[NPC] = None, factions: List[Faction] = None,
-                 clocks: List[Clock] = None, scores: List[Score] = None, journal: Journal = Journal()) -> None:
+                 NPCs: List[NPC] = None, crew: Crew = Crew(), factions: List[Faction] = None,
+                 clocks: List[Clock] = None, scores: List[Score] = None, crafted_items: List[Item] = None,
+                 journal: Journal = Journal()) -> None:
         self.identifier = identifier
         self.title = title
         if users is None:
@@ -26,6 +29,7 @@ class Game:
         if NPCs is None:
             NPCs = []
         self.NPCs = NPCs
+        self.crew = crew
         if factions is None:
             factions = []
         self.factions = factions
@@ -35,6 +39,9 @@ class Game:
         if scores is None:
             scores = []
         self.scores = scores
+        if crafted_items is None:
+            crafted_items = []
+        self.crafted_items = crafted_items
         self.journal = journal
         global _id
         self.n_clock = 100 * _id
