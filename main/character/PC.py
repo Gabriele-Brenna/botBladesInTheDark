@@ -196,8 +196,9 @@ class PC(Character):
 
     def clear_consumable(self):
         """
-        Clear all the consumable of the PC (items, load and armors).
+        Clear all the 'consumable' of the PC (items, load, armors and downtime_activities ).
         """
+        self.downtime_activities.clear()
         self.items.clear()
         self.load = 0
         for i in range(len(self.armors)):

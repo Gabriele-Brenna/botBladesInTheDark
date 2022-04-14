@@ -171,7 +171,7 @@ def query_action_list(attr: str) -> List[Action]:
 
 def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
     """
-    Retrieve the list of Vices of the specified character class or the specified vice.
+    Retrieves the list of Vices of the specified character class or the specified vice.
 
     :param vice: is the Vice of interest
     :param character_class: is the class of interest
@@ -189,7 +189,6 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
         if character_class is not None:
             q_where += "WHERE class = '{}'".format(str(character_class).capitalize())
 
-    print(q_select + q_from + q_where)
     cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
@@ -199,3 +198,36 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
         vices.append(Vice(elem[0], elem[1]))
 
     return vices
+
+
+def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]:
+    """
+    Retrieves the list of sheets of the specified character class or type.
+    If default values are used (None) all the sheets are retrieved
+
+    :param canon: if True the targets are all the canon sheets; if False the targets are all the non-canon sheets
+    :param spirit: if True the targets are all the spirit sheets; if False the targets are all the non-spirit sheets
+    :return: list of the required sheets
+    """
+    q_select = "SELECT class"
+    q_from = "\nFROM CharacterSheet"
+    q_where = "\n"
+
+    if canon is not None:
+        q_where += "WHERE canon IS {}".format(canon)
+
+        if spirit is not None:
+            q_where += " AND spirit IS {}".format(spirit)
+
+    elif spirit is not None:
+        q_where += "WHERE spirit IS {}".format(spirit)
+
+    cursor.execute(q_select + q_from + q_where)
+
+    rows = cursor.fetchall()
+
+    sheets = []
+    for elem in rows:
+        sheets.append(elem[0])
+
+    return sheets
