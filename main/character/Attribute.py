@@ -8,11 +8,13 @@ class Attribute(Playbook):
     """
     Models the player's characteristics. Allows the player to resist bad consequences
     """
-    def __init__(self, actions: List[Action], exp_limit: int, exp: int = 0, points: int = 0) -> None:
+    def __init__(self, name: str, actions: List[Action], exp_limit: int = 6, exp: int = 0,
+                 points: int = 0) -> None:
         super().__init__(exp_limit, exp, points)
+        self.name = name
         self.actions = actions
 
-    def get_attribute_level(self) -> int:
+    def attribute_level(self) -> int:
         """
         Compute the level of this attribute based on how many of its actions have a rating greater than 0.
 
@@ -36,9 +38,8 @@ class Attribute(Playbook):
         for a in self.actions:
             if a.name.lower() == action.lower():
                 return a.add_dots(dots)
-        raise Exception("{} doesn't exit".format(action))
 
-    def get_action_rating(self, action: str) -> int:
+    def action_rating(self, action: str) -> int:
         """
         Gets a given action from the list of this attribute's actions.
         If the action is not present it raises an exception.

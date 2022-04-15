@@ -17,8 +17,8 @@ class Vampire(Owner):
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 12,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
-                 playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
+                 playbook: Playbook = Playbook(8), attributes: List[Attribute] = None,
+                 load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0,
                  strictures: List[str] = None, dark_servants: List[NPC] = None,
                  migrating_character: PC = None) -> None:
@@ -32,16 +32,16 @@ class Vampire(Owner):
 
             super().__init__(name, alias, look, heritage, background, stress_level, stress_limit,
                              traumas,
-                             items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
+                             items, harms, healing, armors, abilities, playbook, attributes, load,
                              xp_triggers, description, downtime_activities, coin, stash,
                              vice=query_vice("Life Essence")[0])
         self.playbook.exp_limit = 10
-        self.prowess.exp_limit = 8
-        self.insight.exp_limit = 8
-        self.resolve.exp_limit = 8
+        for attr in self.attributes:
+            attr.exp_limit = 8
 
-        for action in (self.insight.actions + self.prowess.actions + self.resolve.actions):
-            action.limit = 5
+        for attr in self.attributes:
+            for action in attr.actions:
+                action.limit = 5
 
         if traumas is not None:
             self.traumas = traumas
@@ -68,15 +68,15 @@ class Vampire(Owner):
 
         super().__init__(mc.name, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
+                         mc.playbook, mc.attributes, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)
 
-        self.insight.action_dots("hunt", 1)
-        self.prowess.action_dots("prowl", 1)
-        self.prowess.action_dots("skirmish", 1)
-        self.resolve.action_dots("attune", 1)
-        self.resolve.action_dots("command", 1)
-        self.resolve.action_dots("sway", 1)
+        self.add_action_dots("hunt", 1)
+        self.add_action_dots("prowl", 1)
+        self.add_action_dots("skirmish", 1)
+        self.add_action_dots("attune", 1)
+        self.add_action_dots("command", 1)
+        self.add_action_dots("sway", 1)
 
     def change_pc_class(self, new_class: str):
         pass

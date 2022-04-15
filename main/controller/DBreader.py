@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 from character.Action import Action
+from character.Attribute import Attribute
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 
@@ -231,3 +232,21 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
         sheets.append(elem[0])
 
     return sheets
+
+
+def query_attributes() -> List[Attribute]:
+    cursor.execute("""
+    SELECT DISTINCT attribute
+    FROM Action
+    ORDER BY attribute
+    """)
+
+    attribute_names = []
+    for elem in cursor.fetchall():
+        attribute_names.append(elem[0])
+
+    attributes = []
+    for i in range(len(attribute_names)):
+        attributes.append(Attribute(attribute_names[i], query_action_list(attribute_names[i])))
+
+    return attributes

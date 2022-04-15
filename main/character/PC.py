@@ -1,10 +1,11 @@
 from abc import abstractmethod
 from typing import List
 
+from character.Action import Action
 from character.Attribute import Attribute
 from character.Character import Character
 from component.Clock import Clock
-from controller.DBreader import query_special_abilities, query_action_list
+from controller.DBreader import query_special_abilities, query_attributes
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
@@ -49,7 +50,7 @@ class PC(Character):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None,
                  abilities: List[SpecialAbility] = None, playbook: Playbook = Playbook(8),
-                 insight: Attribute = None, prowess: Attribute = None, resolve: Attribute = None,
+                 attributes: List[Attribute] = None,
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None) -> None:
         super().__init__(name, description)
@@ -78,15 +79,9 @@ class PC(Character):
             abilities = []
         self.abilities = abilities
         self.playbook = playbook
-        if insight is None:
-            insight = Attribute(query_action_list("Insight"), 6)
-        self.insight = insight
-        if prowess is None:
-            prowess = Attribute(query_action_list("Prowess"), 6)
-        self.prowess = prowess
-        if resolve is None:
-            resolve = Attribute(query_action_list("Resolve"), 6)
-        self.resolve = resolve
+        if attributes is None:
+            attributes = query_attributes()
+        self.attributes = attributes
         self.load = load
         if xp_triggers is None:
             xp_triggers = []
@@ -270,6 +265,32 @@ class PC(Character):
         :param note: the note to add
         """
         self.description += "\n" + note
+
+    def get_attribute_by_name(self, attribute: str) -> Attribute:
+        for attr in self.attributes:
+            if attr.name.lower() == attribute.lower():
+                return attr
+
+    def get_action_by_name(self, action: str) -> Action:
+        for attr in self.attributes:
+            for act in attr.actions:
+                if act.name.lower() == action.lower():
+                    return act
+
+    def get_attribute_level(self, attribute: str) -> int:
+        attr = self.get_attribute_by_name(attribute)
+        if attr is not None:
+            return attr.attribute_level()
+
+    def get_action_rating(self, action: str) -> int:
+        act = self.get_action_by_name(action)
+        if act is not None:
+            return act.rating
+
+    def add_action_dots(self, action: str, dots: int) -> bool:
+        act = self.get_action_by_name(action)
+        if act is not None:
+            return act.add_dots(dots)
 
     @abstractmethod
     def migrate(self, mc: super.__class__):
