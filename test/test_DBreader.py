@@ -20,6 +20,7 @@ class TestDBReader(TestCase):
                          query_special_abilities("Cutter", True))
 
     def test_query_xp_triggers(self):
+        # TODO
         pass
 
     def test_exists_character(self):

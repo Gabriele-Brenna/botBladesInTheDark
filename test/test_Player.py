@@ -23,7 +23,6 @@ class TestPlayer(TestCase):
         self.player = Player("p1", 1, False, [self.human, self.ghost])
 
     def test_migrate_character_type(self):
-        # TODO : check Xp_Triggers from DB
         self.player.migrate_character_type("marg", "Ghost")
         self.assertIsInstance(self.player.characters[0], Ghost)
         self.assertEqual(Vice("Need of Life Essence", "You have an intense need: life essence. To satisfy this need, "
@@ -57,3 +56,10 @@ class TestPlayer(TestCase):
                                          "You’re always aware of supernatural entities in your presence. Take +1d "
                                          "when you gather info about the supernatural.")],
                          self.player.characters[1].abilities)
+
+        self.assertEqual(["Every time you roll a desperate action, mark xp in that action's attribute.",
+                          "You expressed your beliefs, drives, heritage, or background.",
+                          "You struggled with issues from your vice or traumas (or strictures)/ need or glooms / "
+                          "wear during the session.",
+                          "You displayed your dominance or slayed without mercy."],
+                         self.player.characters[1].xp_triggers)

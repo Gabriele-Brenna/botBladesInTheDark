@@ -70,13 +70,7 @@ class Vampire(Owner):
                          12, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
                          mc.playbook, mc.attributes, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)
-
-        self.add_action_dots("hunt", 1)
-        self.add_action_dots("prowl", 1)
-        self.add_action_dots("skirmish", 1)
-        self.add_action_dots("attune", 1)
-        self.add_action_dots("command", 1)
-        self.add_action_dots("sway", 1)
+        add_initial_dots(self, self.__class__.__name__)
 
     def change_pc_class(self, new_class: str):
         pass

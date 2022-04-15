@@ -1,7 +1,7 @@
 import os
 import sqlite3
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from character.Action import Action
 from character.Attribute import Attribute
@@ -53,13 +53,12 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     return abilities
 
 
-def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
+def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
     :param sheet: represents the sheet of the Crew or PC of interest.
-        If this parameter is None and peculiar is False, the complete list of xp triggers is retrieved;
-        If this parameter is None and peculiar is True, only the peculiar xp triggers of each sheet are retrieved;
+        If this parameter is None and peculiar is None, the complete list of xp triggers is retrieved;
         If this parameter is not None, the targets are the triggers of the specified sheet.
     :param peculiar: True if only the peculiar triggers are the targets, False if all the triggers are the targets
     :return: a list of strings, representing the xp triggers
@@ -84,19 +83,19 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
         else:
             return []
 
-        if not peculiar:
-            q_where += "and Peculiar is False"
+        if peculiar is not None:
+            q_where += "and Peculiar is {}".format(peculiar)
         query = q_select + q_from + q_where
     else:
-        if peculiar:
+        if peculiar is not None:
             query = """
             SELECT Description
             FROM XpTrigger NATURAL JOIN Crew_Xp 
-            WHERE Peculiar is True
+            WHERE Peculiar is {}
             UNION
             SELECT Description
             FROM XpTrigger NATURAL JOIN Char_Xp 
-            WHERE Peculiar is True"""
+            WHERE Peculiar is {}""".format(peculiar, peculiar)
 
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -250,3 +249,13 @@ def query_attributes() -> List[Attribute]:
         attributes.append(Attribute(attribute_names[i], query_action_list(attribute_names[i])))
 
     return attributes
+
+
+def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
+    cursor.execute("""
+    SELECT Action, Dots
+    FROM Char_Action 
+    WHERE Character = '{}'  
+    """.format(sheet))
+
+    return cursor.fetchall()
