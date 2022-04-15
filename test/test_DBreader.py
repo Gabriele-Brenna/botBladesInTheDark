@@ -67,3 +67,8 @@ class TestDBReader(TestCase):
         query = cursor.fetchall()[0][0]
 
         self.assertEqual(query, len(query_character_sheets()))
+
+    def test_query_attributes(self):
+        self.assertEqual([Attribute("Insight", query_action_list("Insight")),
+                          Attribute("Prowess", query_action_list("Prowess")),
+                          Attribute("Resolve", query_action_list("Resolve"))], query_attributes())
