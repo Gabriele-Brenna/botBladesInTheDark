@@ -5,39 +5,10 @@ from character.Action import Action
 from character.Attribute import Attribute
 from character.Character import Character
 from component.Clock import Clock
-from controller.DBreader import query_special_abilities, query_attributes
+from controller.DBreader import query_special_abilities, query_attributes, query_initial_dots
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
-
-
-def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:
-    """
-    Filters the abilities that only contain "ghost" in them except "ghost form"
-
-    :param abilities: list of abilities to filter
-    :return: a list of only "ghost" abilities
-    """
-    ghost_abilities = []
-    for ability in abilities:
-        if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
-            ghost_abilities.append(ability)
-    return ghost_abilities
-
-
-def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[SpecialAbility]:
-    """
-    Method used during the migration to a "Spirit PC".
-    Calls get_ghost_abilities and fetch the peculiar ability of the destination Spirit PC.
-
-    :param abilities: list of SpecialAbility to filter
-    :param sheet: the specified Spirit PC
-    :return: a list of SpecialAbility containing all the "ghost" abilities and the peculiar SpecialAbility of
-            the specified sheet
-    """
-    class_abilities = get_ghost_abilities(abilities)
-    class_abilities.insert(0, query_special_abilities(sheet, True)[0])
-    return class_abilities
 
 
 class PC(Character):
@@ -305,3 +276,37 @@ class PC(Character):
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
+
+
+def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:
+    """
+    Filters the abilities that only contain "ghost" in them except "ghost form"
+
+    :param abilities: list of abilities to filter
+    :return: a list of only "ghost" abilities
+    """
+    ghost_abilities = []
+    for ability in abilities:
+        if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
+            ghost_abilities.append(ability)
+    return ghost_abilities
+
+
+def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[SpecialAbility]:
+    """
+    Method used during the migration to a "Spirit PC".
+    Calls get_ghost_abilities and fetch the peculiar ability of the destination Spirit PC.
+
+    :param abilities: list of SpecialAbility to filter
+    :param sheet: the specified Spirit PC
+    :return: a list of SpecialAbility containing all the "ghost" abilities and the peculiar SpecialAbility of
+            the specified sheet
+    """
+    class_abilities = get_ghost_abilities(abilities)
+    class_abilities.insert(0, query_special_abilities(sheet, True)[0])
+    return class_abilities
+
+
+def add_initial_dots(pc: PC, sheet: str):
+    for elem in query_initial_dots(sheet.capitalize()):
+        pc.add_action_dots(elem[0], elem[1])
