@@ -5,14 +5,20 @@ class Cohort:
     """
      Gang or an expert who works for your crew.
     """
-    def __init__(self, type: List[str], armor: int, elite: bool, harm: int, expert: bool, flaws: List[str],
-                 edges: List[str], scale: int = 0, quality: int = 0) -> None:
+    def __init__(self, type: List[str] = None, armor: int = 0, elite: bool = False, harm: int = 0, expert: bool = False,
+                 flaws: List[str] = None, edges: List[str] = None, scale: int = 0, quality: int = 0) -> None:
+        if type is None:
+            type = []
         self.type = type
         self.armor = armor
         self.elite = elite
         self.harm = harm
         self.expert = expert
+        if flaws is None:
+            flaws = []
         self.flaws = flaws
+        if edges is None:
+            edges = []
         self.edges = edges
         self.scale = scale
         self.quality = quality
@@ -26,6 +32,8 @@ class Cohort:
         self.harm += n
         if self.harm > 4:
             self.harm = 4
+        if self.harm < 0:
+            self.harm = 0
 
     def add_type(self, new_type: str):
         """

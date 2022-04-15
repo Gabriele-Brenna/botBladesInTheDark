@@ -4,6 +4,14 @@ from controller.DBreader import *
 
 
 class TestDBReader(TestCase):
+
+    def setUp(self) -> None:
+        root = Path(__file__).parent.parent.resolve()
+        root = os.path.join(root, "resources")
+        path = os.path.join(root, 'BladesInTheDark.db')
+        self.connection = sqlite3.connect(path)
+        self.cursor = connection.cursor()
+
     def test_query_special_abilities(self):
         self.assertEqual([SpecialAbility("Mule", "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.")],
                          query_special_abilities("Mule"))
@@ -34,3 +42,28 @@ class TestDBReader(TestCase):
         self.assertEqual([Vice("To Guard", None), Vice("To Destroy", None), Vice("To Discover", None),
                           Vice("To Acquire", None), Vice("To Labour at", None)],
                          query_vice(character_class="Hull"))
+
+    def test_query_character_sheets(self):
+        self.assertEqual(['Cutter',
+                          'Hound',
+                          'Leech',
+                          'Lurk',
+                          'Slide',
+                          'Spider',
+                          'Whisper',
+                          'Ghost',
+                          'Hull',
+                          'Vampire'], query_character_sheets(canon=True))
+
+        self.assertEqual(['Ghost',
+                          'Hull',
+                          'Vampire'], query_character_sheets(spirit=True))
+
+        self.assertEqual(['Ghost',
+                          'Hull',
+                          'Vampire'], query_character_sheets(True, True))
+
+        cursor.execute("""SELECT COUNT(*) FROM CharacterSheet""")
+        query = cursor.fetchall()[0][0]
+
+        self.assertEqual(query, len(query_character_sheets()))
