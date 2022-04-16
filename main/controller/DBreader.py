@@ -1,9 +1,10 @@
 import os
 import sqlite3
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from character.Action import Action
+from character.Attribute import Attribute
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 
@@ -52,13 +53,12 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     return abilities
 
 
-def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
+def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
 
     :param sheet: represents the sheet of the Crew or PC of interest.
-        If this parameter is None and peculiar is False, the complete list of xp triggers is retrieved;
-        If this parameter is None and peculiar is True, only the peculiar xp triggers of each sheet are retrieved;
+        If this parameter is None and peculiar is None, the complete list of xp triggers is retrieved;
         If this parameter is not None, the targets are the triggers of the specified sheet.
     :param peculiar: True if only the peculiar triggers are the targets, False if all the triggers are the targets
     :return: a list of strings, representing the xp triggers
@@ -83,19 +83,19 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = False) -> List[str]:
         else:
             return []
 
-        if not peculiar:
-            q_where += "and Peculiar is False"
+        if peculiar is not None:
+            q_where += "and Peculiar is {}".format(peculiar)
         query = q_select + q_from + q_where
     else:
-        if peculiar:
+        if peculiar is not None:
             query = """
             SELECT Description
             FROM XpTrigger NATURAL JOIN Crew_Xp 
-            WHERE Peculiar is True
+            WHERE Peculiar is {}
             UNION
             SELECT Description
             FROM XpTrigger NATURAL JOIN Char_Xp 
-            WHERE Peculiar is True"""
+            WHERE Peculiar is {}""".format(peculiar, peculiar)
 
     cursor.execute(query)
     rows = cursor.fetchall()
@@ -171,7 +171,7 @@ def query_action_list(attr: str) -> List[Action]:
 
 def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
     """
-    Retrieve the list of Vices of the specified character class or the specified vice.
+    Retrieves the list of Vices of the specified character class or the specified vice.
 
     :param vice: is the Vice of interest
     :param character_class: is the class of interest
@@ -189,7 +189,6 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
         if character_class is not None:
             q_where += "WHERE class = '{}'".format(str(character_class).capitalize())
 
-    print(q_select + q_from + q_where)
     cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
@@ -199,3 +198,64 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
         vices.append(Vice(elem[0], elem[1]))
 
     return vices
+
+
+def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]:
+    """
+    Retrieves the list of sheets of the specified character class or type.
+    If default values are used (None) all the sheets are retrieved
+
+    :param canon: if True the targets are all the canon sheets; if False the targets are all the non-canon sheets
+    :param spirit: if True the targets are all the spirit sheets; if False the targets are all the non-spirit sheets
+    :return: list of the required sheets
+    """
+    q_select = "SELECT class"
+    q_from = "\nFROM CharacterSheet"
+    q_where = "\n"
+
+    if canon is not None:
+        q_where += "WHERE canon IS {}".format(canon)
+
+        if spirit is not None:
+            q_where += " AND spirit IS {}".format(spirit)
+
+    elif spirit is not None:
+        q_where += "WHERE spirit IS {}".format(spirit)
+
+    cursor.execute(q_select + q_from + q_where)
+
+    rows = cursor.fetchall()
+
+    sheets = []
+    for elem in rows:
+        sheets.append(elem[0])
+
+    return sheets
+
+
+def query_attributes() -> List[Attribute]:
+    cursor.execute("""
+    SELECT DISTINCT attribute
+    FROM Action
+    ORDER BY attribute
+    """)
+
+    attribute_names = []
+    for elem in cursor.fetchall():
+        attribute_names.append(elem[0])
+
+    attributes = []
+    for i in range(len(attribute_names)):
+        attributes.append(Attribute(attribute_names[i], query_action_list(attribute_names[i])))
+
+    return attributes
+
+
+def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
+    cursor.execute("""
+    SELECT Action, Dots
+    FROM Char_Action 
+    WHERE Character = '{}'  
+    """.format(sheet))
+
+    return cursor.fetchall()

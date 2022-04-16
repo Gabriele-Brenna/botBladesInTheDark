@@ -1,42 +1,14 @@
 from abc import abstractmethod
 from typing import List
 
+from character.Action import Action
 from character.Attribute import Attribute
 from character.Character import Character
 from component.Clock import Clock
-from controller.DBreader import query_special_abilities, query_action_list
+from controller.DBreader import query_special_abilities, query_attributes, query_initial_dots
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
-
-
-def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:
-    """
-    Filters the abilities that only contain "ghost" in them except "ghost form"
-
-    :param abilities: list of abilities to filter
-    :return: a list of only "ghost" abilities
-    """
-    ghost_abilities = []
-    for ability in abilities:
-        if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
-            ghost_abilities.append(ability)
-    return ghost_abilities
-
-
-def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[SpecialAbility]:
-    """
-    Method used during the migration to a "Spirit PC".
-    Calls get_ghost_abilities and fetch the peculiar ability of the destination Spirit PC.
-
-    :param abilities: list of SpecialAbility to filter
-    :param sheet: the specified Spirit PC
-    :return: a list of SpecialAbility containing all the "ghost" abilities and the peculiar SpecialAbility of
-            the specified sheet
-    """
-    class_abilities = get_ghost_abilities(abilities)
-    class_abilities.insert(0, query_special_abilities(sheet, True)[0])
-    return class_abilities
 
 
 class PC(Character):
@@ -49,7 +21,7 @@ class PC(Character):
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None,
                  abilities: List[SpecialAbility] = None, playbook: Playbook = Playbook(8),
-                 insight: Attribute = None, prowess: Attribute = None, resolve: Attribute = None,
+                 attributes: List[Attribute] = None,
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None) -> None:
         super().__init__(name, description)
@@ -78,15 +50,9 @@ class PC(Character):
             abilities = []
         self.abilities = abilities
         self.playbook = playbook
-        if insight is None:
-            insight = Attribute(query_action_list("Insight"), 6)
-        self.insight = insight
-        if prowess is None:
-            prowess = Attribute(query_action_list("Prowess"), 6)
-        self.prowess = prowess
-        if resolve is None:
-            resolve = Attribute(query_action_list("Resolve"), 6)
-        self.resolve = resolve
+        if attributes is None:
+            attributes = query_attributes()
+        self.attributes = attributes
         self.load = load
         if xp_triggers is None:
             xp_triggers = []
@@ -196,8 +162,9 @@ class PC(Character):
 
     def clear_consumable(self):
         """
-        Clear all the consumable of the PC (items, load and armors).
+        Clear all the 'consumable' of the PC (items, load, armors and downtime_activities ).
         """
+        self.downtime_activities.clear()
         self.items.clear()
         self.load = 0
         for i in range(len(self.armors)):
@@ -270,6 +237,63 @@ class PC(Character):
         """
         self.description += "\n" + note
 
+    def get_attribute_by_name(self, attribute: str) -> Attribute:
+        """
+        Gets the specified Attribute of the PC, given its name
+
+        :param attribute: the name of the Attribute to get
+        :return: the specified Attribute (None if not exists)
+        """
+        for attr in self.attributes:
+            if attr.name.lower() == attribute.lower():
+                return attr
+
+    def get_action_by_name(self, action: str) -> Action:
+        """
+        Gets the specified Action of the PC, given its name
+
+        :param action: the name of the Action to get
+        :return: the specified Action (None if not exists)
+        """
+        for attr in self.attributes:
+            for act in attr.actions:
+                if act.name.lower() == action.lower():
+                    return act
+
+    def get_attribute_level(self, attribute: str) -> int:
+        """
+        Gets the specified Attribute's level of the PC, given its name
+
+        :param attribute: the name of the Attribute
+        :return: the Attribute's level (None if not exists)
+        """
+        attr = self.get_attribute_by_name(attribute)
+        if attr is not None:
+            return attr.attribute_level()
+
+    def get_action_rating(self, action: str) -> int:
+        """
+        Gets the specified Action's rating of the PC, given its name
+
+        :param action: the name of the Action
+        :return: the Action's level (None if not exists)
+        """
+        act = self.get_action_by_name(action)
+        if act is not None:
+            return act.rating
+
+    def add_action_dots(self, action: str, dots: int) -> bool:
+        """
+        Adds the specified amount of action dots to the specified Action
+
+        :param action: the name of the Action
+        :param dots: the number of dots to add
+        :return: True if the dots are correctly added, False otherwise (None if not exists)
+        """
+        act = self.get_action_by_name(action)
+        if act is not None:
+            return act.add_dots(dots)
+
     @abstractmethod
     def migrate(self, mc: super.__class__):
         pass
@@ -283,3 +307,43 @@ class PC(Character):
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
+
+
+def get_ghost_abilities(abilities: List[SpecialAbility]) -> List[SpecialAbility]:
+    """
+    Filters the abilities that only contain "ghost" in them except "ghost form"
+
+    :param abilities: list of abilities to filter
+    :return: a list of only "ghost" abilities
+    """
+    ghost_abilities = []
+    for ability in abilities:
+        if "ghost" in ability.name.lower() and ability.name.lower() != "ghost form":
+            ghost_abilities.append(ability)
+    return ghost_abilities
+
+
+def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[SpecialAbility]:
+    """
+    Method used during the migration to a "Spirit PC".
+    Calls get_ghost_abilities and fetch the peculiar ability of the destination Spirit PC.
+
+    :param abilities: list of SpecialAbility to filter
+    :param sheet: the specified Spirit PC
+    :return: a list of SpecialAbility containing all the "ghost" abilities and the peculiar SpecialAbility of
+            the specified sheet
+    """
+    class_abilities = get_ghost_abilities(abilities)
+    class_abilities.insert(0, query_special_abilities(sheet, True)[0])
+    return class_abilities
+
+
+def add_initial_dots(pc: PC, sheet: str):
+    """
+    Adds the initial action dots of a specified sheet to a PC, fetching them from the db.
+
+    :param pc: the PC that needs the initial dots
+    :param sheet: the character sheet of the PC
+    """
+    for elem in query_initial_dots(sheet.capitalize()):
+        pc.add_action_dots(elem[0], elem[1])

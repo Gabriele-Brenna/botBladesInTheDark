@@ -20,8 +20,8 @@ class Human(Owner):
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 9,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
-                 playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
+                 playbook: Playbook = Playbook(8), attributes: List[Attribute] = None,
+                 load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0, vice: Vice = Vice(),
                  pc_class: str = "", friend: NPC = NPC(), enemy: NPC = NPC()) -> None:
 
@@ -29,7 +29,7 @@ class Human(Owner):
             xp_triggers = query_xp_triggers(self.__class__.__name__)
 
         super().__init__(name, alias, look, heritage, background, stress_level, stress_limit, traumas,
-                         items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
+                         items, harms, healing, armors, abilities, playbook, attributes, load,
                          xp_triggers, description, downtime_activities, coin, stash, vice)
         self.pc_class = pc_class
         self.friend = friend

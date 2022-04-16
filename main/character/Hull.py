@@ -15,8 +15,8 @@ class Hull(PC):
                  heritage: str = "", background: str = "", stress_level: int = 0, stress_limit: int = 10,
                  traumas: List[str] = None, items: List[Item] = None, harms: List[List[str]] = None,
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
-                 playbook: Playbook = Playbook(8), insight: Attribute = None, prowess: Attribute = None,
-                 resolve: Attribute = None, load: int = 0, xp_triggers: List[str] = None, description: str = "",
+                 playbook: Playbook = Playbook(8), attributes: List[Attribute] = None, load: int = 0,
+                 xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "small",
                  migrating_character: PC = None) -> None:
 
@@ -29,7 +29,7 @@ class Hull(PC):
 
             super().__init__(name, alias, look, heritage, background, stress_level, stress_limit,
                              traumas,
-                             items, harms, healing, armors, abilities, playbook, insight, prowess, resolve, load,
+                             items, harms, healing, armors, abilities, playbook, attributes, load,
                              xp_triggers, description, downtime_activities)
 
         if functions is None:
@@ -52,10 +52,9 @@ class Hull(PC):
 
         super().__init__(mc.name, mc.alias, mc.look, mc.heritage, mc.background, 0,
                          10, None, None, None, None, None, get_class_abilities(mc.abilities, self.__class__.__name__),
-                         mc.playbook, mc.insight, mc.prowess, mc.resolve, 0, query_xp_triggers(self.__class__.__name__),
+                         mc.playbook, mc.attributes, 0, query_xp_triggers(self.__class__.__name__),
                          mc.description, None)
-        self.prowess.action_dots("skirmish", 1)
-        self.resolve.action_dots("attune", 1)
+        add_initial_dots(self, self.__class__.__name__)
 
     def change_pc_class(self, new_class: str):
         pass

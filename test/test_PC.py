@@ -1,10 +1,13 @@
 from unittest import TestCase
 
+from character.Action import Action
+from character.Attribute import Attribute
 from character.PC import PC
 from character.Item import Item
+from controller.DBreader import query_action_list
 
 
-class TestCharacter(TestCase):
+class TestPC(TestCase):
     def setUp(self) -> None:
         self.character = PC(items=[Item("knife", "miracle blade", 1),
                                    Item("grenade", "art is an explosion", 2, 2)],
@@ -48,7 +51,6 @@ class TestCharacter(TestCase):
         self.assertEqual([["Distracted"], ["Deep Cut to Arm"], ["Broken Leg"]], self.character.harms)
 
     def test_add_harm_full_level(self):
-
         self.character.harms = [["Scared", "Battered"], ["Seduced"], []]
 
         self.assertEqual(2, self.character.add_harm(1, "Broken leg"))
@@ -132,3 +134,36 @@ class TestCharacter(TestCase):
         self.assertEqual(2, self.deadManWalking.tick_healing_clock(7))
         self.assertEqual(0, self.deadManWalking.healing.progress)
         self.assertEqual([[], [], []], self.deadManWalking.harms)
+
+    def test_get_attribute_by_name(self):
+        self.assertEqual(Attribute("Insight", query_action_list("Insight")),
+                         self.character.get_attribute_by_name("insight"))
+
+        self.assertIsNone(self.character.get_attribute_by_name(""))
+
+    def test_get_action_by_name(self):
+        self.assertEqual(Action("hunt"), self.character.get_action_by_name("Hunt"))
+
+        self.assertIsNone(self.character.get_action_by_name(""))
+
+    def test_get_attribute_level(self):
+        self.assertEqual(0, self.character.get_attribute_level("Prowess"))
+
+        self.assertIsNone(self.character.get_attribute_level(""))
+
+    def test_get_action_rating(self):
+        self.assertEqual(0, self.character.get_action_rating("Study"))
+
+        self.assertIsNone(self.character.get_action_rating(""))
+
+    def test_add_action_dots(self):
+        self.assertTrue(self.character.add_action_dots("Study", 3))
+        self.assertEqual(3, self.character.get_action_rating("Study"))
+
+        self.assertFalse(self.character.add_action_dots("Study", 5))
+        self.assertEqual(4, self.character.get_action_rating("Study"))
+
+        self.assertFalse(self.character.add_action_dots("Study", -5))
+        self.assertEqual(0, self.character.get_action_rating("Study"))
+
+        self.assertIsNone(self.character.add_action_dots("", 2))
