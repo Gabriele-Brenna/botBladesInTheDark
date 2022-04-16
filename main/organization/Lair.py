@@ -14,6 +14,12 @@ class Lair:
             claims = []
         self.claims = claims
 
+    @classmethod
+    def from_json(cls, data):
+        claims = list(map(Claim.from_json, data["claims"]))
+        data.pop("claims")
+        return cls(**data, claims=claims)
+
     def __repr__(self) -> str:
         return """Location: {}
     Description: {}""".format(self.location, self.description)

@@ -51,6 +51,10 @@ class Cohort:
         """
         self.edges.append(new_edge)
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return """
         {} {}:

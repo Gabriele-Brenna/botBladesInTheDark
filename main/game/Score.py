@@ -1,3 +1,4 @@
+import copy
 from typing import List, Union
 
 from character.PC import PC
@@ -36,6 +37,10 @@ class Score:
                 self.target_tier = self.target.faction.tier
         else:
             self.target_tier = 1
+
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

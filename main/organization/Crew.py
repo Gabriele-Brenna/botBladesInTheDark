@@ -1,3 +1,5 @@
+import copy
+import json
 from typing import List
 
 from controller.DBreader import query_xp_triggers, exists_crew
@@ -222,6 +224,23 @@ class Crew(Organization):
             self.xp_triggers = query_xp_triggers(new_type)
             return True
         return False
+
+    @classmethod
+    def from_json(cls, data: dict):
+        lair = Lair.from_json(data["lair"])
+        upgrades = list(map(Upgrade.from_json, data["upgrades"]))
+        contact = NPC.from_json(data["contact"])
+        abilities = SpecialAbility.from_json(data["abilities"])
+        cohorts = list(map(Cohort.from_json, data["cohorts"]))
+        prison_claims = list(map(Claim.from_json, data["prison_claims"]))
+        data.pop(lair)
+        data.pop(upgrades)
+        data.pop(contact)
+        data.pop(abilities)
+        data.pop(cohorts)
+        data.pop(prison_claims)
+        return cls(**data, lair=lair, upgrades=upgrades, contact=contact, abilities=abilities,
+                   cohorts=cohorts, prison_claims=prison_claims)
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

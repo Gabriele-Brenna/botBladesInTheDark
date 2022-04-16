@@ -12,6 +12,10 @@ class NPC(Character):
         self.role = role
         self.faction = faction
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return str(self.__dict__)
 
