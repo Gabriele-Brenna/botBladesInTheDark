@@ -238,27 +238,58 @@ class PC(Character):
         self.description += "\n" + note
 
     def get_attribute_by_name(self, attribute: str) -> Attribute:
+        """
+        Gets the specified Attribute of the PC, given its name
+
+        :param attribute: the name of the Attribute to get
+        :return: the specified Attribute (None if not exists)
+        """
         for attr in self.attributes:
             if attr.name.lower() == attribute.lower():
                 return attr
 
     def get_action_by_name(self, action: str) -> Action:
+        """
+        Gets the specified Action of the PC, given its name
+
+        :param action: the name of the Action to get
+        :return: the specified Action (None if not exists)
+        """
         for attr in self.attributes:
             for act in attr.actions:
                 if act.name.lower() == action.lower():
                     return act
 
     def get_attribute_level(self, attribute: str) -> int:
+        """
+        Gets the specified Attribute's level of the PC, given its name
+
+        :param attribute: the name of the Attribute
+        :return: the Attribute's level (None if not exists)
+        """
         attr = self.get_attribute_by_name(attribute)
         if attr is not None:
             return attr.attribute_level()
 
     def get_action_rating(self, action: str) -> int:
+        """
+        Gets the specified Action's rating of the PC, given its name
+
+        :param action: the name of the Action
+        :return: the Action's level (None if not exists)
+        """
         act = self.get_action_by_name(action)
         if act is not None:
             return act.rating
 
     def add_action_dots(self, action: str, dots: int) -> bool:
+        """
+        Adds the specified amount of action dots to the specified Action
+
+        :param action: the name of the Action
+        :param dots: the number of dots to add
+        :return: True if the dots are correctly added, False otherwise (None if not exists)
+        """
         act = self.get_action_by_name(action)
         if act is not None:
             return act.add_dots(dots)
@@ -308,5 +339,11 @@ def get_class_abilities(abilities: List[SpecialAbility], sheet: str) -> List[Spe
 
 
 def add_initial_dots(pc: PC, sheet: str):
+    """
+    Adds the initial action dots of a specified sheet to a PC, fetching them from the db.
+
+    :param pc: the PC that needs the initial dots
+    :param sheet: the character sheet of the PC
+    """
     for elem in query_initial_dots(sheet.capitalize()):
         pc.add_action_dots(elem[0], elem[1])
