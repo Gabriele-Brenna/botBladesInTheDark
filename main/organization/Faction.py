@@ -32,6 +32,10 @@ class Faction(Organization):
             self.status = -3
         return self.status
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return super().__repr__() + """
     District: {}

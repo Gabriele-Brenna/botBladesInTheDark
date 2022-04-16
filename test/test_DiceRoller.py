@@ -46,13 +46,18 @@ class Test(TestCase):
     @unittest.skip("random_dice_distribution")
     def test_random_dice_distribution(self):
         for i in range(100):
-            n_rolls = 1000*1000
+            n_rolls = 1000 * 1000
             lowest = 0.165
             highest = 0.168
             results = list(roll_dice(n_rolls)[1])
 
             for j in range(6):
-                avg = results.count(i+1)/n_rolls
-                print("Testing value {}: ".format(i+1))
+                avg = results.count(i + 1) / n_rolls
+                print("Testing value {}: ".format(i + 1))
                 print(avg)
                 self.assertTrue(lowest <= avg <= highest)
+
+    @unittest.skip("important_decision_making")
+    def test_important_decision(self):
+        #se passa pari, se non passa dispari
+        self.assertEqual(roll_dice(1)[0] % 2, 0)

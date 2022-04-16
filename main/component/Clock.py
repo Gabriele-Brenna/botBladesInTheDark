@@ -32,6 +32,10 @@ class Clock:
         if segments is not None:
             self.segments = segments
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return """{}: 
     segments: {}
