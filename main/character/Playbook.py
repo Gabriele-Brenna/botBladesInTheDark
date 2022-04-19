@@ -41,6 +41,10 @@ class Playbook:
             return self.add_points(int(i/self.exp_limit))
         return False
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return str(self.__dict__)
 

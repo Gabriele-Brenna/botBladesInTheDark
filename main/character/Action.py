@@ -25,6 +25,10 @@ class Action:
             return False
         return True
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
     def __repr__(self) -> str:
         return """{}: {}""".format(self.name, self.rating)
 

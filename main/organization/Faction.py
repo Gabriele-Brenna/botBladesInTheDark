@@ -1,7 +1,10 @@
+import copy
+
 from organization.Organization import Organization
+from utility.ISavable import ISavable
 
 
-class Faction(Organization):
+class Faction(Organization, ISavable):
     """
     The organization of the NPC's
     """

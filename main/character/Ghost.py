@@ -4,9 +4,10 @@ from controller.DBreader import *
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.ISavable import pop_dict_items
 
 
-class Ghost(PC):
+class Ghost(PC, ISavable):
     """
     Represents the ghost PC of the game
     """
@@ -56,6 +57,19 @@ class Ghost(PC):
 
     def change_pc_class(self, new_class: str):
         pass
+
+    @classmethod
+    def from_json(cls, data: dict):
+        items = list(map(Item.from_json, data["items"]))
+        healing = Clock.from_json(data["healing"])
+        abilities = list(map(SpecialAbility.from_json, data["abilities"]))
+        playbook = Playbook.from_json(data["playbook"])
+        attributes = list(map(Attribute.from_json, data["attributes"]))
+        pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes"])
+        return cls(**data, items=items, healing=healing, abilities=abilities, playbook=playbook, attributes=attributes)
+
+    def save_to_dict(self) -> dict:
+        return {**{"Class": "Ghost"}, **super().save_to_dict()}
 
     def __repr__(self) -> str:
         return str(self.__dict__)

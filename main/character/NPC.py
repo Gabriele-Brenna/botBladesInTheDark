@@ -1,8 +1,11 @@
+import copy
+
 from character.Character import Character
 from organization.Organization import Organization
+from utility.ISavable import ISavable
 
 
-class NPC(Character):
+class NPC(Character, ISavable):
     """
     Non-Playable-PC of the game.
     """
@@ -15,6 +18,12 @@ class NPC(Character):
     @classmethod
     def from_json(cls, data):
         return cls(**data)
+
+    def save_to_dict(self) -> dict:
+        temp = super().save_to_dict()
+        if self.faction is not None:
+            temp["faction"] = self.faction.name
+        return temp
 
     def __repr__(self) -> str:
         return str(self.__dict__)

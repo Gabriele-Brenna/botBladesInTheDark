@@ -9,9 +9,10 @@ from controller.DBreader import query_special_abilities, query_attributes, query
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.ISavable import ISavable
 
 
-class PC(Character):
+class PC(Character, ISavable):
     """
     Represent each type of playable character
     """

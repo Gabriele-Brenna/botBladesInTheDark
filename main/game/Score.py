@@ -4,9 +4,10 @@ from typing import List, Union
 from character.PC import PC
 from organization.Faction import Faction
 from character.NPC import NPC
+from utility.ISavable import ISavable
 
 
-class Score:
+class Score(ISavable):
     """
     Models the score activity of the game
     """
@@ -41,6 +42,11 @@ class Score:
     @classmethod
     def from_json(cls, data):
         return cls(**data)
+
+    def save_to_dict(self) -> dict:
+        temp = super().save_to_dict()
+        temp["target"] = self.target.name
+        return temp
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

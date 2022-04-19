@@ -10,9 +10,10 @@ from character.NPC import NPC
 from organization.Organization import Organization
 from component.SpecialAbility import SpecialAbility
 from organization.Upgrade import Upgrade
+from utility.ISavable import ISavable, pop_dict_items
 
 
-class Crew(Organization):
+class Crew(Organization, ISavable):
     """
     The organization of the playing characters.
     """
@@ -230,17 +231,17 @@ class Crew(Organization):
         lair = Lair.from_json(data["lair"])
         upgrades = list(map(Upgrade.from_json, data["upgrades"]))
         contact = NPC.from_json(data["contact"])
-        abilities = SpecialAbility.from_json(data["abilities"])
+        abilities = list(map(SpecialAbility.from_json, data["abilities"]))
         cohorts = list(map(Cohort.from_json, data["cohorts"]))
         prison_claims = list(map(Claim.from_json, data["prison_claims"]))
-        data.pop(lair)
-        data.pop(upgrades)
-        data.pop(contact)
-        data.pop(abilities)
-        data.pop(cohorts)
-        data.pop(prison_claims)
+        pop_dict_items(data, ["lair", "upgrades", "contact", "abilities", "cohorts", "prison_claims"])
         return cls(**data, lair=lair, upgrades=upgrades, contact=contact, abilities=abilities,
                    cohorts=cohorts, prison_claims=prison_claims)
+
+    def save_to_dict(self) -> dict:
+        temp = super().save_to_dict()
+        temp["contact"] = self.contact.save_to_dict()
+        return temp
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

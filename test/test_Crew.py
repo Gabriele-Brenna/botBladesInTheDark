@@ -1,3 +1,4 @@
+import json
 from unittest import TestCase
 
 from organization.Claim import Claim
@@ -154,5 +155,8 @@ class TestCrew(TestCase):
         self.shadows.change_crew_type("Bravos")
         self.assertEqual("Bravos", self.shadows.type)
 
-
+    def test_save_and_load_json(self):
+        temp_str = json.dumps(self.smugglers.save_to_dict(), indent=5)
+        temp_obj = Crew.from_json(json.loads(temp_str))
+        self.assertEqual(temp_obj, self.smugglers)
 

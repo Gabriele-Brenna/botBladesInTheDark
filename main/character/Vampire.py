@@ -1,3 +1,5 @@
+import copy
+
 from character.PC import *
 from component.Clock import Clock
 from controller.DBreader import *
@@ -6,9 +8,10 @@ from character.NPC import NPC
 from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.ISavable import pop_dict_items
 
 
-class Vampire(Owner):
+class Vampire(Owner, ISavable):
     """
     Represents the vampire PC of the game
     """
@@ -74,6 +77,25 @@ class Vampire(Owner):
 
     def change_pc_class(self, new_class: str):
         pass
+
+    @classmethod
+    def from_json(cls, data: dict):
+        items = list(map(Item.from_json, data["items"]))
+        healing = Clock.from_json(data["healing"])
+        abilities = list(map(SpecialAbility.from_json, data["abilities"]))
+        playbook = Playbook.from_json(data["playbook"])
+        attributes = list(map(Attribute.from_json, data["attributes"]))
+        dark_servants = list(map(NPC.from_json, data["dark_servants"]))
+        pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes", "vice", "dark_servants"])
+        return cls(**data, items=items, healing=healing, abilities=abilities, playbook=playbook, attributes=attributes,
+                   dark_servants=dark_servants)
+
+    def save_to_dict(self) -> dict:
+        temp = super().save_to_dict()
+        temp["dark_servants"] = []
+        for i in self.dark_servants:
+            temp["dark_servants"].append(i.save_to_dict())
+        return {**{"Class": "Vampire"}, **temp}
 
     def __repr__(self) -> str:
         return str(self.__dict__)

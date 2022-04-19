@@ -1,4 +1,7 @@
-class Clock:
+from utility.ISavable import ISavable
+
+
+class Clock(ISavable):
     """
     Represent the clocks of the game used to keep track of complex events
     """

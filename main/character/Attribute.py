@@ -2,6 +2,7 @@ from typing import List
 
 from character.Action import Action
 from character.Playbook import Playbook
+from utility.ISavable import pop_dict_items
 
 
 class Attribute(Playbook):
@@ -51,6 +52,12 @@ class Attribute(Playbook):
             if a.name.lower() == action.lower():
                 return a.rating
         raise Exception("{} doesn't exit".format(action))
+
+    @classmethod
+    def from_json(cls, data):
+        actions = list(map(Action.from_json, data["actions"]))
+        pop_dict_items(data, ["actions"])
+        return cls(**data, actions=actions)
 
     def __repr__(self) -> str:
         return str(self.__dict__)
