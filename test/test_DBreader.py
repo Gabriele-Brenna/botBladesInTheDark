@@ -13,15 +13,48 @@ class TestDBReader(TestCase):
         self.cursor = connection.cursor()
 
     def test_query_special_abilities(self):
+        cursor.execute("""SELECT COUNT(*) FROM SpecialAbility""")
+        query = cursor.fetchone()[0]
+        self.assertEqual(query, len(query_special_abilities()))
+
         self.assertEqual([SpecialAbility("Mule", "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.")],
                          query_special_abilities("Mule"))
         self.assertEqual([SpecialAbility("Battleborn", "You may expend your special armor to reduce harm from an "
                                                        "attack in combat or to push yourself during a fight. ")],
                          query_special_abilities("Cutter", True))
 
+        self.assertEqual([SpecialAbility("Deadly", "Each PC may add +1 action rating to Hunt, Prowl, "
+                                                   "or Skirmish (up to a max rating of 3).")],
+                         query_special_abilities("Assassins", True))
+
     def test_query_xp_triggers(self):
-        # TODO
-        pass
+        cursor.execute("""SELECT COUNT(*) FROM XpTrigger""")
+        query = cursor.fetchone()[0]
+        self.assertEqual(query, len(query_xp_triggers()))
+
+        self.assertEqual(["You addressed a challenge with knowledge or arcane power."],
+                         query_xp_triggers("Whisper", True))
+
+        self.assertEqual(["Bolster your crew's reputation or develop a new one.",
+                          "Contend with challenges above your current station.",
+                          "Every time you roll a desperate action, mark xp in that action's attribute.",
+                          "Express the goals, drives, inner conflict, or essential nature of the crew.",
+                          "You expressed your beliefs, drives, heritage, or background.",
+                          "You struggled with issues from your vice or traumas (or strictures)/ need or "
+                          "glooms / wear during the session."],
+                         query_xp_triggers(peculiar=False))
+
+        self.assertEqual(["Contend with challenges above your current station.",
+                          "Bolster your crew's reputation or develop a new one.",
+                          "Express the goals, drives, inner conflict, or essential nature of the crew."],
+                         query_xp_triggers("Cult", peculiar=False))
+
+        self.assertEqual(["Every time you roll a desperate action, mark xp in that action's attribute.",
+                          'You struggled with issues from your vice or traumas (or strictures)/ need or '
+                          'glooms / wear during the session.',
+                          'You exacted vengeance upon those whom you deem deserving.',
+                          'You expressed your outrage or anger, or settled scores from your heritage or '
+                          'background.'], query_xp_triggers("Ghost"))
 
     def test_exists_character(self):
         self.assertTrue(exists_character("Hound"))
@@ -65,7 +98,7 @@ class TestDBReader(TestCase):
                           'Vampire'], query_character_sheets(True, True))
 
         cursor.execute("""SELECT COUNT(*) FROM CharacterSheet""")
-        query = cursor.fetchall()[0][0]
+        query = cursor.fetchone()[0]
 
         self.assertEqual(query, len(query_character_sheets()))
 
