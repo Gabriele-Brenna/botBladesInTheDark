@@ -33,10 +33,18 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     q_where = "\n"
 
     if peculiar is True:
-        q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
-        q_where += "WHERE C.peculiar is True"
-        if special_ability is not None:
-            q_where += " AND C.character = '{}'".format(special_ability)
+        if exists_character(special_ability):
+            q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
+            q_where += "WHERE C.peculiar is True"
+            if special_ability is not None:
+                q_where += " AND C.character = '{}'".format(special_ability)
+        elif exists_crew(special_ability):
+            q_from += " JOIN Crew_SA C ON S.name = C.SpecialAbility"
+            q_where += "WHERE C.peculiar is True"
+            if special_ability is not None:
+                q_where += " AND C.crew = '{}'".format(special_ability)
+        else:
+            return []
 
     else:
         if special_ability is not None:

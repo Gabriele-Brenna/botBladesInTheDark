@@ -136,6 +136,12 @@ class PC(Character, ISavable):
             self.harms[i + 1].clear()
 
     def tick_healing_clock(self, ticks: int) -> int:
+        """
+        Advance the progress of the Pc's healing clock adding the specified number of ticks
+
+        :param ticks: the number of ticks to add
+        :return: how many times the PC healed (how many times the clock has been completed calling the method)
+        """
         healed = 0
         for i in range(ticks):
             if self.healing.tick(1):
