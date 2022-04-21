@@ -1,4 +1,3 @@
-import json
 from unittest import TestCase
 
 from character.Action import Action
@@ -19,7 +18,9 @@ from organization.Crew import Crew
 from organization.Faction import Faction
 from organization.Lair import Lair
 from organization.Upgrade import Upgrade
-from utility.ISavable import pop_dict_items
+from utility.ISavable import save_to_json
+from utility.Json_Save import crew_from_json, factions_from_json, clocks_from_json, characters_from_json, \
+    score_from_json, npcs_from_json
 
 
 class Test(TestCase):
@@ -53,6 +54,7 @@ class Test(TestCase):
         self.harry = NPC("Harry", "Court's wizard", self.unseen, "Cool scar")
         self.bob = NPC("Bob", "The Builder", self.rail_jacks, "Can we fix it? Yes we can")
 
+        self.npcs = [self.caesar, self.harry, self.bob]
 
         self.geralt = Human("Geralt", "White Wolf", items=[Item("Aerondight", "Silver Sword"),
                                                            Item("Ekhidna Decoction", "More stamina, more life")],
@@ -71,10 +73,10 @@ class Test(TestCase):
                                                                Attribute("Resolve", [Action("Attune", 3)])],
                              dark_servants=[NPC("Orianna"), self.harry])
         self.jeeg = Hull("Jeeg", "Robot d'acciaio", healing=Clock("Healing"),
-                          abilities=[SpecialAbility("Automaton", "Spirit animating clock")],
-                          playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
-                                                            Attribute("Prowess", [Action("Skirmish", 3)]),
-                                                            Attribute("Resolve", [Action("Attune", 3)])])
+                         abilities=[SpecialAbility("Automaton", "Spirit animating clock")],
+                         playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
+                                                           Attribute("Prowess", [Action("Skirmish", 3)]),
+                                                           Attribute("Resolve", [Action("Attune", 3)])])
         self.longlocks = Ghost("Longlocks", "A princess", healing=Clock("Healing"),
                                abilities=[SpecialAbility("Ghost Form", "Electroplasmic vapor")],
                                playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
@@ -82,19 +84,49 @@ class Test(TestCase):
                                                                  Attribute("Resolve", [Action("Attune", 3)])]
                                )
 
+        self.characters = [self.geralt, self.regis, self.jeeg, self.longlocks]
+
         self.clocks = [Clock("Project elephant"), Clock("Killing Dettlaff")]
 
         self.score_npc = Score("Steal Benny", ["Geralt", "Regis"], 2, self.bob)
-        self.score_npc = Score("Brake the air conditioning", ["Jeeg", "Longlocks"], 6, self.imperial)
+        self.score_faction = Score("Brake the air conditioning", ["Jeeg", "Longlocks"], 6, self.imperial)
 
-    def test_pop_dict_items(self):
-        dictionary = {"Ethan": "Whisper", "Eleanor": "Spider", "Alan": "Hound", "Drako": "Leech"}
+    def test_crew_from_json(self):
+        crew_str = save_to_json([self.smugglers])
+        crew = crew_from_json(crew_str)
+        self.assertEqual(self.smugglers, crew)
 
-        pop_dict_items(dictionary, ["Ethan", "Alan"])
-        self.assertEqual(dictionary, {"Eleanor": "Spider", "Drako": "Leech"})
+    def test_factions_from_json(self):
+        factions_str = save_to_json(self.factions)
+        factions = factions_from_json(factions_str)
+        self.assertEqual(self.factions, factions)
 
-        pop_dict_items(dictionary, [])
-        self.assertEqual(dictionary, {"Eleanor": "Spider", "Drako": "Leech"})
+    def test_clocks_from_json(self):
+        clocks_str = save_to_json(self.clocks)
+        clocks = clocks_from_json(clocks_str)
+        self.assertEqual(self.clocks, clocks)
 
-        pop_dict_items(dictionary, ["Eleanor", "Drako"])
-        self.assertEqual(dictionary, {})
+    def test_characters_from_json(self):
+        characters_str = save_to_json(self.characters)
+        characters = characters_from_json(characters_str)
+        characters[1].dark_servants[1].faction = self.unseen
+        self.assertEqual(self.characters, characters)
+
+    def test_score_from_json(self):
+        score_npc_str = save_to_json([self.score_npc])
+        score_npc = score_from_json(score_npc_str)
+        score_npc.target = self.bob
+        self.assertEqual(self.score_npc, score_npc)
+
+        score_faction_str = save_to_json([self.score_faction])
+        score_faction = score_from_json(score_faction_str)
+        score_faction.target = self.imperial
+        self.assertEqual(self.score_faction, score_faction)
+
+    def test_npcs_from_json(self):
+        npcs_str = save_to_json(self.npcs)
+        npcs = npcs_from_json(npcs_str)
+        npcs[0].faction = self.imperial
+        npcs[1].faction = self.unseen
+        npcs[2].faction = self.rail_jacks
+        self.assertEqual(self.npcs, npcs)

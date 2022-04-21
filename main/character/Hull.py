@@ -79,7 +79,7 @@ class Hull(PC, ISavable):
         abilities = list(map(SpecialAbility.from_json, data["abilities"]))
         playbook = Playbook.from_json(data["playbook"])
         attributes = list(map(Attribute.from_json, data["attributes"]))
-        pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes", "vice"])
+        pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes"])
         return cls(**data, items=items, healing=healing, abilities=abilities, playbook=playbook, attributes=attributes)
 
     def save_to_dict(self) -> dict:
