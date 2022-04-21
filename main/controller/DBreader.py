@@ -267,3 +267,16 @@ def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
     """.format(sheet))
 
     return cursor.fetchall()
+
+
+def query_last_game_id() -> int:
+    cursor.execute("""
+    SELECT Max(Game_ID)
+    FROM Game
+    """)
+
+    result = cursor.fetchone()[0]
+    if result is not None:
+        return result
+    else:
+        return 0

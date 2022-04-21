@@ -1,3 +1,4 @@
+import json
 from unittest import TestCase
 
 from organization.Faction import Faction
@@ -34,3 +35,19 @@ class TestScore(TestCase):
         self.robbery.calc_target_tier()
         self.assertEqual(5, self.robbery.target_tier)
 
+    def test_save_and_load_json(self):
+        self.score_npc = Score("Scoring", target=self.NPC_target)
+        temp_str = json.dumps(self.score_npc.save_to_dict(), indent=5)
+        temp_dict = json.loads(temp_str)
+        temp_obj = Score.from_json(temp_dict)
+        self.assertEqual(self.NPC_target.name, temp_obj.target)
+        temp_obj.target = self.NPC_target
+        self.assertEqual(self.score_npc, temp_obj)
+
+        self.score_faction = Score("Breaking", target=self.faction_target)
+        temp_str = json.dumps(self.score_faction.save_to_dict(), indent=5)
+        temp_dict = json.loads(temp_str)
+        temp_obj = Score.from_json(temp_dict)
+        self.assertEqual(self.faction_target.name, temp_obj.target)
+        temp_obj.target = self.faction_target
+        self.assertEqual(self.score_faction, temp_obj)
