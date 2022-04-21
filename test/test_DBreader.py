@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 from controller.DBreader import *
@@ -106,3 +107,18 @@ class TestDBReader(TestCase):
         self.assertEqual([Attribute("Insight", query_action_list("Insight")),
                           Attribute("Prowess", query_action_list("Prowess")),
                           Attribute("Resolve", query_action_list("Resolve"))], query_attributes())
+
+    @unittest.skip("test_query_last_game_id")
+    def test_query_last_game_id(self):
+        self.assertEqual(0, query_last_game_id())
+
+        cursor.execute("""
+        INSERT INTO Game (Title,Tel_Chat_ID)
+        VALUES ("title",1234) 
+        """)
+
+        self.assertEqual(1, query_last_game_id())
+
+        cursor.execute("""
+        DELETE FROM Game
+        """)
