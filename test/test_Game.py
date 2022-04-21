@@ -42,6 +42,9 @@ class TestGame(TestCase):
     def test_see_clocks(self):
         self.game.clocks.append(Clock("Burn the city", 7, 3))
         self.game.clocks.append(Clock("Infiltrate the manor", 10, 3))
+
+        self.assertEqual([Clock("Burn the city", 7, 3), Clock("Infiltrate the manor", 10, 3)], self.game.see_clocks())
+
         self.game.clocks.append(Clock("Burn the boss", 4, 3))
         self.game.clocks.append(Clock("Steal the goats", 5, 8))
 
