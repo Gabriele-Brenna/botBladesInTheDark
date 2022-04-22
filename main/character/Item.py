@@ -1,4 +1,7 @@
-class Item:
+from utility.ISavable import ISavable
+
+
+class Item(ISavable):
     """
     Models what the player can use during the game.
     """

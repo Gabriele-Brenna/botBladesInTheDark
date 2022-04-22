@@ -20,7 +20,7 @@ from organization.Lair import Lair
 from organization.Upgrade import Upgrade
 from utility.ISavable import save_to_json
 from utility.Json_Save import crew_from_json, factions_from_json, clocks_from_json, characters_from_json, \
-    score_from_json, npcs_from_json
+    npcs_from_json, items_from_json, scores_from_json
 
 
 class Test(TestCase):
@@ -56,8 +56,9 @@ class Test(TestCase):
 
         self.npcs = [self.caesar, self.harry, self.bob]
 
-        self.geralt = Human("Geralt", "White Wolf", items=[Item("Aerondight", "Silver Sword"),
-                                                           Item("Ekhidna Decoction", "More stamina, more life")],
+        self.items = [Item("Aerondight", "Silver Sword"), Item("Ekhidna Decoction", "More stamina, more life")]
+
+        self.geralt = Human("Geralt", "White Wolf", items=self.items,
                             healing=Clock("Healing"), abilities=[SpecialAbility("Alchemist", "Great at making potions"),
                                                                  SpecialAbility("Venomous", "Immune to poison")],
                             playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
@@ -91,8 +92,10 @@ class Test(TestCase):
         self.score_npc = Score("Steal Benny", ["Geralt", "Regis"], 2, self.bob)
         self.score_faction = Score("Brake the air conditioning", ["Jeeg", "Longlocks"], 6, self.imperial)
 
+        self.scores = [self.score_npc, self.score_faction]
+
     def test_crew_from_json(self):
-        crew_str = save_to_json([self.smugglers])
+        crew_str = save_to_json(self.smugglers)
         crew = crew_from_json(crew_str)
         self.assertEqual(self.smugglers, crew)
 
@@ -112,16 +115,22 @@ class Test(TestCase):
         characters[1].dark_servants[1].faction = self.unseen
         self.assertEqual(self.characters, characters)
 
-    def test_score_from_json(self):
+    def test_scores_from_json(self):
         score_npc_str = save_to_json([self.score_npc])
-        score_npc = score_from_json(score_npc_str)
-        score_npc.target = self.bob
-        self.assertEqual(self.score_npc, score_npc)
+        scores_npc = scores_from_json(score_npc_str)
+        scores_npc[0].target = self.bob
+        self.assertEqual(self.score_npc, scores_npc[0])
 
-        score_faction_str = save_to_json([self.score_faction])
-        score_faction = score_from_json(score_faction_str)
-        score_faction.target = self.imperial
-        self.assertEqual(self.score_faction, score_faction)
+        scores_str = save_to_json(self.scores)
+        scores = scores_from_json(scores_str)
+        scores[0].target = self.bob
+        scores[1].target = self.imperial
+        self.assertEqual(self.scores, scores)
+
+        empty_score = []
+        temp_str = save_to_json(empty_score)
+        temp = scores_from_json(temp_str)
+        self.assertEqual(empty_score, temp)
 
     def test_npcs_from_json(self):
         npcs_str = save_to_json(self.npcs)
@@ -130,3 +139,8 @@ class Test(TestCase):
         npcs[1].faction = self.unseen
         npcs[2].faction = self.rail_jacks
         self.assertEqual(self.npcs, npcs)
+
+    def test_items_from_json(self):
+        items_str = save_to_json(self.items)
+        items = items_from_json(items_str)
+        self.assertEqual(self.items, items)

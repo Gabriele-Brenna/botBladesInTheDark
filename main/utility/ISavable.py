@@ -1,6 +1,6 @@
 import copy
 import json
-from typing import List
+from typing import List, Union
 
 
 class ISavable:
@@ -13,12 +13,11 @@ def pop_dict_items(data: dict, items: List[str]):
         data.pop(elem)
 
 
-def save_to_json(to_save: List[ISavable]) -> str:
-    len_to_save = len(to_save)
-    if len_to_save == 1:
-        return json.dumps(to_save[0].save_to_dict(), indent=5)
-    elif len_to_save > 1:
+def save_to_json(to_save: Union[List[ISavable], ISavable]) -> str:
+    if isinstance(to_save, ISavable):
+        return json.dumps(to_save.save_to_dict(), indent=5)
+    else:
         temp = []
-        for i in range(len_to_save):
+        for i in range(len(to_save)):
             temp.append(to_save[i].save_to_dict())
         return json.dumps(temp, indent=5)

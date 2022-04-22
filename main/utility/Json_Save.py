@@ -1,12 +1,17 @@
+import copy
 import json
 from typing import List
 
 from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Human import Human
+from character.Item import Item
 from character.NPC import NPC
 from character.Vampire import Vampire
 from component.Clock import Clock
+from controller.DBreader import query_game_json, query_users, query_pc_json
+from game.Game import Game
+from game.Player import Player
 from game.Score import Score
 from organization.Crew import Crew
 from organization.Faction import Faction
@@ -46,8 +51,9 @@ def characters_from_json(characters: str):
     return characters
 
 
-def score_from_json(score: str):
-    return Score.from_json(json.loads(score))
+def scores_from_json(scores: str):
+    data = json.loads(scores)
+    return list(map(Score.from_json, data))
 
 
 def npcs_from_json(npcs: str):
@@ -55,27 +61,57 @@ def npcs_from_json(npcs: str):
     return list(map(NPC.from_json, data))
 
 
-def from_json(crew_str: str, factions_str: str, npcs_str: str, characters_str: str, score_str: str, clocks_str: str):
-    factions = factions_from_json(factions_str)
+def items_from_json(items: str):
+    data = json.loads(items)
+    return list(map(Item.from_json, data))
 
-    clocks = clocks_from_json(clocks_str)
 
-    npcs = npcs_from_json(npcs_str)
-    for npc in npcs:
+def setup(game: Game):
+    db_game = query_game_json(game.identifier)
+    factions = factions_from_json(db_game["Faction_JSON"])
+    game.factions = factions
+
+    clocks = clocks_from_json(db_game["Clock_JSON"])
+    game.clocks = clocks
+
+    NPCs = npcs_from_json(db_game["NPC_JSON"])
+    for npc in NPCs:
         npc.faction = find_obj(npc.faction, factions)
+    game.NPCs = NPCs
 
-    crew = crew_from_json(crew_str)
-    crew.contact = find_obj(crew.contact, npcs)
+    crew = crew_from_json(db_game["Crew_JSON"])
+    crew.contact = find_obj(crew.contact, NPCs)
+    game.crew = crew
 
-    characters = characters_from_json(characters_str)
-    for c in characters:
-        c.friend = find_obj(c.friend, npcs)
-        c.enemy = find_obj(c.enemy, npcs)
+    temp = copy.deepcopy(factions)
+    temp.append(NPCs)
+    scores = scores_from_json(db_game["Score_JSON"])
+    for score in scores:
+        score.target = find_obj(score.target, temp)
+    game.scores = scores
 
-    score = score_from_json(score_str)
-    temp = factions.append(npcs)
-    print(factions)
-    score.target = find_obj(score.target, temp)
+    crafted_items = items_from_json(db_game["Crafted_Item_JSON"])
+    game.crafted_items = crafted_items
+
+    journal = db_game["Journal"]
+    game.journal = journal
+
+    users = []
+    users_tuple = query_users(game.identifier)
+
+    for t in users_tuple:
+        users.append(Player(*t))
+
+    characters_dict = query_pc_json(game.identifier)
+
+    for u in users:
+        characters = characters_from_json(characters_dict[u.player_id])
+        for c in characters:
+            c.friend = find_obj(c.friend, NPCs)
+            c.enemy = find_obj(c.enemy, NPCs)
+        u.characters = characters
+
+    game.users = users
 
 
 def find_obj(name: str, to_search: List):

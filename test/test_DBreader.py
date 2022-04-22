@@ -122,3 +122,12 @@ class TestDBReader(TestCase):
         cursor.execute("""
         DELETE FROM Game
         """)
+
+    def test_query_game_json(self):
+        pass
+
+    def test_query_users(self):
+        pass
+
+    def test_query_pc_json(self):
+        pass

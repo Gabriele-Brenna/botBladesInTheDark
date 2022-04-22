@@ -280,3 +280,47 @@ def query_last_game_id() -> int:
         return result
     else:
         return 0
+
+
+def query_game_json(game_id: int, files: List = None) -> dict:
+    q_select = "SELECT "
+    if files is None:
+        files = ["Crew_JSON", "Crafted_Item_JSON", "NPC_JSON", "Faction_JSON", "Score_JSON", "Clock_JSON", "Journal"]
+
+    for i in range(len(files)-1):
+        q_select += files[i] + ", "
+    q_select += files[len(files)-1]
+
+    query = q_select + """
+    FROM Game
+    WHERE Game_ID = {}""".format(game_id)
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    dict_json = {}
+    for i in range(len(files)):
+        dict_json[files[i]] = rows[0][i]
+    return dict_json
+
+
+def query_users(game_id: int) -> List:
+    cursor.execute("""
+    SELECT Name, Tel_ID, Master 
+    FROM User JOIN User_Game ON Tel_ID = User_ID
+    WHERE Game_ID = {}""".format(game_id))
+    return cursor.fetchall()
+
+
+def query_pc_json(game_id: int) -> dict:
+    cursor.execute("""
+    SELECT User_ID, Char_JSON
+    FROM User_Game
+    WHERE Game_ID = {}""".format(game_id))
+
+    dict_json = {}
+    rows = cursor.fetchall()
+
+    for t in rows:
+        dict_json[t[0]] = t[1]
+    return dict_json
