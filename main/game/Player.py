@@ -51,7 +51,7 @@ class Player:
         """
         c = self.get_character_by_name(name)
         if c is not None and exists_character(new_class):
-            c.change_pc_class(new_class)
+            c.change_pc_class(new_class.lower().capitalize())
             return True
         return False
 

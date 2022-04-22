@@ -28,6 +28,8 @@ class TestDBReader(TestCase):
                                                    "or Skirmish (up to a max rating of 3).")],
                          query_special_abilities("Assassins", True))
 
+        self.assertFalse(query_special_abilities("AAAAA", True))
+
     def test_query_xp_triggers(self):
         cursor.execute("""SELECT COUNT(*) FROM XpTrigger""")
         query = cursor.fetchone()[0]

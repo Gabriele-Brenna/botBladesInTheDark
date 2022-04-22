@@ -25,7 +25,6 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     :param peculiar: if True, the search is restricted to peculiar abilities only.
     :return: a list of SpecialAbility objects
     """
-
     q_select = "SELECT S.name, S.description"
 
     q_from = "\nFROM SpecialAbility S"
@@ -33,6 +32,7 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     q_where = "\n"
 
     if peculiar is True:
+        special_ability = special_ability.lower().capitalize()
         if exists_character(special_ability):
             q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
             q_where += "WHERE C.peculiar is True"
@@ -126,7 +126,7 @@ def exists_character(sheet: str) -> bool:
             SELECT *
             FROM CharacterSheet
             WHERE class = '{}'
-            """.format(sheet))
+            """.format(sheet.lower().capitalize()))
 
     rows = cursor.fetchall()
 
@@ -146,7 +146,7 @@ def exists_crew(sheet: str) -> bool:
             SELECT *
             FROM CrewSheet
             WHERE type = '{}'
-            """.format(sheet))
+            """.format(sheet.lower().capitalize()))
 
     rows = cursor.fetchall()
 

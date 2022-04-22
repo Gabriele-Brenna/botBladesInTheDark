@@ -11,10 +11,13 @@ class TestPlaybook(TestCase):
         print("EXP: " + str(self.standardPlaybook.exp))
 
     def test_add_points(self):
-        self.emptyPlaybook.add_points(5)
+        self.assertTrue(self.emptyPlaybook.add_points(5))
         self.assertEqual(5, self.emptyPlaybook.points)
-        self.standardPlaybook.add_points(3)
+        self.assertTrue(self.standardPlaybook.add_points(3))
         self.assertEqual(4, self.standardPlaybook.points)
+
+        self.assertFalse(self.emptyPlaybook.add_points(-24))
+        self.assertEqual(0, self.emptyPlaybook.points)
 
     def test_add_exp(self):
         self.emptyPlaybook.add_exp(5)

@@ -11,7 +11,7 @@ from character.Vampire import Vampire
 
 class TestPlayer(TestCase):
     def setUp(self) -> None:
-        self.human = Human("Marg", stress_level=420, harms=[[], ["black hole sun burn"], []])
+        self.human = Human("Marg", stress_level=420, harms=[[], ["black hole sun burn"], []], pc_class="Whisper")
         self.human.add_action_dots("attune", 2)
         self.human.add_action_dots("hunt", 1)
         self.ghost = Ghost("Casper", abilities=[SpecialAbility("Ghost Form", ""),
@@ -21,6 +21,12 @@ class TestPlayer(TestCase):
                                                                "supernatural."),
                                                 SpecialAbility("Calculating", "")])
         self.player = Player("p1", 1, False, [self.human, self.ghost])
+
+    def test_change_character_class(self):
+        self.assertFalse(self.player.change_character_class("Marg", "Cult"))
+        self.assertTrue(self.player.change_character_class("Marg", "cUtter"))
+
+        self.assertEqual("Cutter", self.player.get_character_by_name("Marg").pc_class)
 
     def test_migrate_character_type(self):
         self.player.migrate_character_type("marg", "Ghost")
