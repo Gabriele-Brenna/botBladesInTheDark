@@ -228,6 +228,13 @@ class Crew(Organization, ISavable):
 
     @classmethod
     def from_json(cls, data: dict):
+        """
+        Method used to create an instance of this object given a dictionary. All the complex object that are attribute
+        of this class will call their from_json class method
+
+        :param data: dictionary of the object
+        :return: Crew
+        """
         lair = Lair.from_json(data["lair"])
         upgrades = list(map(Upgrade.from_json, data["upgrades"]))
         contact = NPC.from_json(data["contact"])
@@ -239,6 +246,12 @@ class Crew(Organization, ISavable):
                    cohorts=cohorts, prison_claims=prison_claims)
 
     def save_to_dict(self) -> dict:
+        """
+        Reimplement save_to_dict method of ISavable by changing the value of the item "contact" using the save_to_dict
+        method in the NPC class
+
+        :return: dictionary of the object
+        """
         temp = super().save_to_dict()
         temp["contact"] = self.contact.save_to_dict()
         return temp

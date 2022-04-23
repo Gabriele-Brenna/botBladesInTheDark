@@ -283,6 +283,13 @@ def query_last_game_id() -> int:
 
 
 def query_game_json(game_id: int, files: List = None) -> dict:
+    """
+    Retrieves selected json string from the Game table in the BladesInTheDark DataBase related to a specific game ID
+
+    :param game_id: int representing the ID of the specific Game
+    :param files: list of files to retrieve from the table. If the list is None it will retrieve all the files.
+    :return: dictionary containing the json string got from the DataBase
+    """
     q_select = "SELECT "
     if files is None:
         files = ["Crew_JSON", "Crafted_Item_JSON", "NPC_JSON", "Faction_JSON", "Score_JSON", "Clock_JSON", "Journal"]
@@ -305,6 +312,12 @@ def query_game_json(game_id: int, files: List = None) -> dict:
 
 
 def query_users(game_id: int) -> List:
+    """
+    Retrieve all the User_ID and Name of the users with a specific Game_ID attribute
+
+    :param game_id: int representing the specific Game_ID
+    :return: list of tuples containing Tel_ID and Name of the users
+    """
     cursor.execute("""
     SELECT Name, Tel_ID, Master 
     FROM User JOIN User_Game ON Tel_ID = User_ID
@@ -313,6 +326,12 @@ def query_users(game_id: int) -> List:
 
 
 def query_pc_json(game_id: int) -> dict:
+    """
+    Retrieve all Users_ID and Char_JSON of a specific Game_ID
+
+    :param game_id: int representing the specific Game_ID
+    :return: dictionary containing all json files with their respective user
+    """
     cursor.execute("""
     SELECT User_ID, Char_JSON
     FROM User_Game

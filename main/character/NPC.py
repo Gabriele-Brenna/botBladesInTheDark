@@ -17,9 +17,21 @@ class NPC(Character, ISavable):
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary
+
+        :param data: dictionary of the object
+        :return: NPC
+        """
         return cls(**data)
 
     def save_to_dict(self) -> dict:
+        """
+        Reimplement save_to_dict method of ISavable by changing the value of the key "Faction" only to the name of the
+        NPC's Faction and not the dictionary of the Faction.
+
+        :return: dictionary of the object
+        """
         temp = super().save_to_dict()
         if self.faction is not None:
             temp["faction"] = self.faction.name

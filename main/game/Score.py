@@ -41,9 +41,21 @@ class Score(ISavable):
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary
+
+        :param data: dictionary of the object
+        :return: Score
+        """
         return cls(**data)
 
     def save_to_dict(self) -> dict:
+        """
+        Reimplement save_to_dict method of ISavable by removing setting the value of the item "target" in the object
+        dictionary only to the name of the attribute target
+
+        :return: dictionary of the object
+        """
         temp = super().save_to_dict()
         temp["target"] = self.target.name
         return temp

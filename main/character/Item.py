@@ -28,6 +28,12 @@ class Item(ISavable):
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary
+
+        :param data: dictionary of the object
+        :return: Item
+        """
         return cls(**data)
 
     def __eq__(self, o: object) -> bool:

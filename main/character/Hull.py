@@ -74,15 +74,22 @@ class Hull(PC, ISavable):
 
     @classmethod
     def from_json(cls, data: dict):
-        items = list(map(Item.from_json, data["items"]))
-        healing = Clock.from_json(data["healing"])
-        abilities = list(map(SpecialAbility.from_json, data["abilities"]))
-        playbook = Playbook.from_json(data["playbook"])
-        attributes = list(map(Attribute.from_json, data["attributes"]))
-        pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes"])
-        return cls(**data, items=items, healing=healing, abilities=abilities, playbook=playbook, attributes=attributes)
+        """
+        Method used to create an instance of this object given a dictionary. All the complex object that are attribute
+        of this class will call their from_json class method
+
+        :param data: dictionary of the object
+        :return: Hull
+        """
+        temp = pc_from_json(data)
+        return cls(**data, **temp)
 
     def save_to_dict(self) -> dict:
+        """
+        Reimplement save_to_dict method of ISavable by adding the item "Class" at the dictionary of the object
+
+        :return: dictionary of the object
+        """
         return {**{"Class": "Hull"}, **super().save_to_dict()}
 
     def __repr__(self) -> str:

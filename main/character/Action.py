@@ -27,6 +27,12 @@ class Action:
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary
+
+        :param data: dictionary of the object
+        :return: Action
+        """
         return cls(**data)
 
     def __repr__(self) -> str:

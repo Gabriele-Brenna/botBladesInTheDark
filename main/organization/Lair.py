@@ -16,6 +16,13 @@ class Lair:
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary. For the list of Claims, that are a complex
+        object, class the class method from_json in the Claim
+
+        :param data: dictionary of the object
+        :return: Lair
+        """
         claims = list(map(Claim.from_json, data["claims"]))
         data.pop("claims")
         return cls(**data, claims=claims)

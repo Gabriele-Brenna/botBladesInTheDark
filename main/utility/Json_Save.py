@@ -18,20 +18,45 @@ from organization.Faction import Faction
 
 
 def crew_from_json(crew: str):
+    """
+    This method is used to load a Crew from a json string
+
+    :param crew: string with json syntax
+    :return: Crew
+    """
     return Crew.from_json(json.loads(crew))
 
 
 def factions_from_json(factions: str):
+    """
+    This method is used to load a list of Factions from a json string
+
+    :param factions: string with json syntax
+    :return: list of Factions
+    """
     data = json.loads(factions)
     return list(map(Faction.from_json, data))
 
 
 def clocks_from_json(clocks: str):
+    """
+    This method is used to load a list of Clocks from a json string
+
+    :param clocks: string with json syntax
+    :return: list of Clocks
+    """
     data = json.loads(clocks)
     return list(map(Clock.from_json, data))
 
 
 def characters_from_json(characters: str):
+    """
+    This method is used to load a list of PCs from a json string. Depending on the Class attribute it will load a Human,
+    a Vampire, a Hull or a Ghost
+
+    :param characters: string with json syntax
+    :return: list of PCs
+    """
     data = json.loads(characters)
     characters = []
     for d in data:
@@ -52,21 +77,44 @@ def characters_from_json(characters: str):
 
 
 def scores_from_json(scores: str):
+    """
+    This method is used to load a list of Scores from a json string
+
+    :param scores: string with json syntax
+    :return: list of Scores
+    """
     data = json.loads(scores)
     return list(map(Score.from_json, data))
 
 
-def npcs_from_json(npcs: str):
-    data = json.loads(npcs)
+def npcs_from_json(NPCs: str):
+    """
+    This method is used to load a list of NPCs from a json string
+    
+    :param NPCs: string with json syntax
+    :return: list of NPCs
+    """
+    data = json.loads(NPCs)
     return list(map(NPC.from_json, data))
 
 
 def items_from_json(items: str):
+    """
+    This method is used to load a list of Items from a json string
+
+    :param items: string with json syntax
+    :return: list of Items
+    """
     data = json.loads(items)
     return list(map(Item.from_json, data))
 
 
-def setup(game: Game):
+def setup(game: Game) -> None:
+    """
+    This method is used to set all the Game's attribute contained in the DataBase via json strings.
+
+    :param game: Game whose attributes will be set
+    """
     db_game = query_game_json(game.identifier)
     factions = factions_from_json(db_game["Faction_JSON"])
     game.factions = factions
@@ -115,6 +163,13 @@ def setup(game: Game):
 
 
 def find_obj(name: str, to_search: List):
+    """
+    Method used to find an object in a list given its name
+
+    :param name: string with the name of the object
+    :param to_search: list of object that have an attribute name
+    :return: object with matching name
+    """
     for obj in to_search:
         if obj.name == name:
             return obj

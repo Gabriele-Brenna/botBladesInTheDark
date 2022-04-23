@@ -55,6 +55,13 @@ class Attribute(Playbook):
 
     @classmethod
     def from_json(cls, data):
+        """
+        Method used to create an instance of this object given a dictionary. Since it has a list of Actions as an
+        attribute it will call the from_json method of the class Action
+
+        :param data: dictionary of the object
+        :return: Attribute
+        """
         actions = list(map(Action.from_json, data["actions"]))
         pop_dict_items(data, ["actions"])
         return cls(**data, actions=actions)
