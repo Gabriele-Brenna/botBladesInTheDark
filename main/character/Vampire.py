@@ -37,7 +37,7 @@ class Vampire(Owner, ISavable):
                              traumas,
                              items, harms, healing, armors, abilities, playbook, attributes, load,
                              xp_triggers, description, downtime_activities, coin, stash,
-                             vice=query_vice("Life Essence")[0])
+                             vice=query_vice(character_class=self.__class__.__name__)[0])
         self.playbook.exp_limit = 10
         for attr in self.attributes:
             attr.exp_limit = 8

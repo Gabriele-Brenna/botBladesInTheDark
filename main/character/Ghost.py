@@ -4,7 +4,6 @@ from controller.DBreader import *
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
-from utility.ISavable import pop_dict_items
 
 
 class Ghost(PC, ISavable):
@@ -35,7 +34,7 @@ class Ghost(PC, ISavable):
             enemies_rivals = []
 
         self.enemies_rivals = enemies_rivals
-        self.need = query_vice("Need of Life Essence")[0]
+        self.need = query_vice(character_class=self.__class__.__name__)[0]
 
     def migrate(self, mc: super.__class__):
         """
