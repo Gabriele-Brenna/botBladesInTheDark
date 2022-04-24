@@ -370,7 +370,7 @@ def query_game_json(game_id: int, files: List = None) -> dict:
     return dict_json
 
 
-def query_users(game_id: int) -> List:
+def query_users_from_game(game_id: int) -> List[Tuple[str, int, bool]]:
     """
     Retrieve all the User_ID and Name of the users with a specific Game_ID attribute
 

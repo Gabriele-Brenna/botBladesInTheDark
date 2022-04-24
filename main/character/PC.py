@@ -353,7 +353,7 @@ def add_initial_dots(pc: PC, sheet: str):
     :param sheet: the character sheet of the PC
     """
     for elem in query_initial_dots(sheet.capitalize()):
-        pc.add_action_dots(elem[0], elem[1])
+        pc.add_action_dots(*elem)
 
 
 def pc_from_json(data):

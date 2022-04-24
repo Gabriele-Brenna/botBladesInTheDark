@@ -9,7 +9,7 @@ from character.Item import Item
 from character.NPC import NPC
 from character.Vampire import Vampire
 from component.Clock import Clock
-from controller.DBreader import query_game_json, query_users, query_pc_json
+from controller.DBreader import query_game_json, query_users_from_game, query_pc_json
 from game.Game import Game
 from game.Player import Player
 from game.Score import Score
@@ -145,7 +145,7 @@ def setup(game: Game) -> None:
     game.journal = journal
 
     users = []
-    users_tuple = query_users(game.identifier)
+    users_tuple = query_users_from_game(game.identifier)
 
     for t in users_tuple:
         users.append(Player(*t))
