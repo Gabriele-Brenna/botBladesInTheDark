@@ -7,15 +7,12 @@ from controller.DBreader import *
 class TestDBReader(TestCase):
 
     def setUp(self) -> None:
-        root = Path(__file__).parent.parent.resolve()
-        root = os.path.join(root, "resources")
-        path = os.path.join(root, 'BladesInTheDark.db')
-        self.connection = sqlite3.connect(path)
-        self.cursor = connection.cursor()
+        self.connection = establish_connection()
+        self.cursor = self.connection.cursor()
 
     def test_query_special_abilities(self):
-        cursor.execute("""SELECT COUNT(*) FROM SpecialAbility""")
-        query = cursor.fetchone()[0]
+        self.cursor.execute("""SELECT COUNT(*) FROM SpecialAbility""")
+        query = self.cursor.fetchone()[0]
         self.assertEqual(query, len(query_special_abilities()))
 
         self.assertEqual([SpecialAbility("Mule", "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.")],
@@ -31,8 +28,8 @@ class TestDBReader(TestCase):
         self.assertFalse(query_special_abilities("AAAAA", True))
 
     def test_query_xp_triggers(self):
-        cursor.execute("""SELECT COUNT(*) FROM XpTrigger""")
-        query = cursor.fetchone()[0]
+        self.cursor.execute("""SELECT COUNT(*) FROM XpTrigger""")
+        query = self.cursor.fetchone()[0]
         self.assertEqual(query, len(query_xp_triggers()))
 
         self.assertEqual(["You addressed a challenge with knowledge or arcane power."],
@@ -100,8 +97,8 @@ class TestDBReader(TestCase):
                           'Hull',
                           'Vampire'], query_character_sheets(True, True))
 
-        cursor.execute("""SELECT COUNT(*) FROM CharacterSheet""")
-        query = cursor.fetchone()[0]
+        self.cursor.execute("""SELECT COUNT(*) FROM CharacterSheet""")
+        query = self.cursor.fetchone()[0]
 
         self.assertEqual(query, len(query_character_sheets()))
 
@@ -114,14 +111,14 @@ class TestDBReader(TestCase):
     def test_query_last_game_id(self):
         self.assertEqual(0, query_last_game_id())
 
-        cursor.execute("""
+        self.cursor.execute("""
         INSERT INTO Game (Title,Tel_Chat_ID)
         VALUES ("title",1234) 
         """)
 
         self.assertEqual(1, query_last_game_id())
 
-        cursor.execute("""
+        self.cursor.execute("""
         DELETE FROM Game
         """)
 
