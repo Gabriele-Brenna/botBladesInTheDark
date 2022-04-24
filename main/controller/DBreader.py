@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from pathlib import Path
+from sqlite3 import Connection
 from typing import List, Tuple
 
 from character.Action import Action
@@ -8,11 +9,12 @@ from character.Attribute import Attribute
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 
-root_dir = Path(__file__).parent.parent.parent.resolve()
-root_dir = os.path.join(root_dir, "resources")
-db_path = os.path.join(root_dir, 'BladesInTheDark.db')
-connection = sqlite3.connect(db_path)
-cursor = connection.cursor()
+
+def establish_connection() -> Connection:
+    root_dir = Path(__file__).parent.parent.parent.resolve()
+    root_dir = os.path.join(root_dir, "resources")
+    db_path = os.path.join(root_dir, 'BladesInTheDark.db')
+    return sqlite3.connect(db_path)
 
 
 def query_special_abilities(special_ability: str = None, peculiar: bool = False) -> List[SpecialAbility]:
@@ -25,6 +27,9 @@ def query_special_abilities(special_ability: str = None, peculiar: bool = False)
     :param peculiar: if True, the search is restricted to peculiar abilities only.
     :return: a list of SpecialAbility objects
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     q_select = "SELECT S.name, S.description"
 
     q_from = "\nFROM SpecialAbility S"
@@ -71,6 +76,9 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
     :param peculiar: True if only the peculiar triggers are the targets, False if all the triggers are the targets
     :return: a list of strings, representing the xp triggers
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     q_select = "SELECT Description"
 
     q_from = "\nFROM XpTrigger"
@@ -122,6 +130,9 @@ def exists_character(sheet: str) -> bool:
     :param sheet: is the character to check
     :return: True if the character exists, False otherwise
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
             SELECT *
             FROM CharacterSheet
@@ -142,6 +153,9 @@ def exists_crew(sheet: str) -> bool:
     :param sheet: is the crew to check
     :return: True if the crew exists, False otherwise
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
             SELECT *
             FROM CrewSheet
@@ -162,6 +176,9 @@ def query_action_list(attr: str) -> List[Action]:
     :param attr: is the Attribute of interest
     :return: a list of Actions
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT name
     FROM Action
@@ -185,6 +202,8 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
     :param character_class: is the class of interest
     :return: a list of Vices
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
 
     q_select = "SELECT name, description"
     q_from = "\nFROM Vice"
@@ -217,6 +236,9 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
     :param spirit: if True the targets are all the spirit sheets; if False the targets are all the non-spirit sheets
     :return: list of the required sheets
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     q_select = "SELECT class"
     q_from = "\nFROM CharacterSheet"
     q_where = "\n"
@@ -242,6 +264,14 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
 
 
 def query_attributes() -> List[Attribute]:
+    """
+    Retrieves the list of all Attributes of the game
+
+    :return: a list of Attributes with all the corresponding Actions
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT DISTINCT attribute
     FROM Action
@@ -260,6 +290,15 @@ def query_attributes() -> List[Attribute]:
 
 
 def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
+    """
+    Retrieves the initial Action dots of the specified character sheet.
+
+    :param sheet: is the character sheet of interest
+    :return: a list of tuples: each one contains the name of the action and its initial dots
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT Action, Dots
     FROM Char_Action 
@@ -270,6 +309,14 @@ def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
 
 
 def query_last_game_id() -> int:
+    """
+    Retrieves the last added game id
+
+    :return: the maximum id value of game present in the DataBase. If there is no game, it returns 0.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT Max(Game_ID)
     FROM Game
@@ -284,19 +331,31 @@ def query_last_game_id() -> int:
 
 def query_game_json(game_id: int, files: List = None) -> dict:
     """
-    Retrieves selected json string from the Game table in the BladesInTheDark DataBase related to a specific game ID
+    Retrieves selected json strings from the Game table in the BladesInTheDark DataBase related to a specific game ID
 
     :param game_id: int representing the ID of the specific Game
     :param files: list of files to retrieve from the table. If the list is None it will retrieve all the files.
-    :return: dictionary containing the json string got from the DataBase
+    :return: dictionary containing the json strings got from the DataBase
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     q_select = "SELECT "
     if files is None:
-        files = ["Crew_JSON", "Crafted_Item_JSON", "NPC_JSON", "Faction_JSON", "Score_JSON", "Clock_JSON", "Journal"]
+        cursor.execute("""
+        SELECT name
+        FROM PRAGMA_TABLE_INFO('Game')
+        WHERE name LIKE '%JSON%' or name = 'Journal'""")
 
-    for i in range(len(files)-1):
+        rows = cursor.fetchall()
+
+        files = []
+        for el in rows:
+            files.append(el[0])
+
+    for i in range(len(files) - 1):
         q_select += files[i] + ", "
-    q_select += files[len(files)-1]
+    q_select += files[len(files) - 1]
 
     query = q_select + """
     FROM Game
@@ -318,6 +377,9 @@ def query_users(game_id: int) -> List:
     :param game_id: int representing the specific Game_ID
     :return: list of tuples containing Tel_ID and Name of the users
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT Name, Tel_ID, Master 
     FROM User JOIN User_Game ON Tel_ID = User_ID
@@ -332,6 +394,9 @@ def query_pc_json(game_id: int) -> dict:
     :param game_id: int representing the specific Game_ID
     :return: dictionary containing all json files with their respective user
     """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
     cursor.execute("""
     SELECT User_ID, Char_JSON
     FROM User_Game
