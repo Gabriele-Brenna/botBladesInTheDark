@@ -8,13 +8,7 @@ from character.Action import Action
 from character.Attribute import Attribute
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
-
-
-def establish_connection() -> Connection:
-    root_dir = Path(__file__).parent.parent.parent.resolve()
-    root_dir = os.path.join(root_dir, "resources")
-    db_path = os.path.join(root_dir, 'BladesInTheDark.db')
-    return sqlite3.connect(db_path)
+from controller.DBmanager import *
 
 
 def query_special_abilities(special_ability: str = None, peculiar: bool = False) -> List[SpecialAbility]:
@@ -121,52 +115,6 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
         xp_triggers.append(trigger[0])
 
     return xp_triggers
-
-
-def exists_character(sheet: str) -> bool:
-    """
-    Checks if the specified sheet has a matching value in the CharacterSheet table of the database
-
-    :param sheet: is the character to check
-    :return: True if the character exists, False otherwise
-    """
-    connection = establish_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("""
-            SELECT *
-            FROM CharacterSheet
-            WHERE class = '{}'
-            """.format(sheet.lower().capitalize()))
-
-    rows = cursor.fetchall()
-
-    if not rows:
-        return False
-    return True
-
-
-def exists_crew(sheet: str) -> bool:
-    """
-    Checks if the specified sheet has a matching value in the CrewSheet table of the database
-
-    :param sheet: is the crew to check
-    :return: True if the crew exists, False otherwise
-    """
-    connection = establish_connection()
-    cursor = connection.cursor()
-
-    cursor.execute("""
-            SELECT *
-            FROM CrewSheet
-            WHERE type = '{}'
-            """.format(sheet.lower().capitalize()))
-
-    rows = cursor.fetchall()
-
-    if not rows:
-        return False
-    return True
 
 
 def query_action_list(attr: str) -> List[Action]:

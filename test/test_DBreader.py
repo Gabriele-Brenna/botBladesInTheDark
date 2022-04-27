@@ -56,14 +56,6 @@ class TestDBReader(TestCase):
                           'You expressed your outrage or anger, or settled scores from your heritage or '
                           'background.'], query_xp_triggers("Ghost"))
 
-    def test_exists_character(self):
-        self.assertTrue(exists_character("Hound"))
-        self.assertFalse(exists_character("Dark Elf"))
-
-    def test_exists_crew(self):
-        self.assertTrue(exists_crew("Cult"))
-        self.assertFalse(exists_crew("Whalers"))
-
     def test_query_action_list(self):
         self.assertEqual([Action("hunt"), Action("study"), Action("survey"), Action("tinker")],
                          query_action_list("Insight"))
