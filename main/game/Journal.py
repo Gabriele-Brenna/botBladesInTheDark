@@ -1,6 +1,8 @@
+import json
 import os
-from pathlib import Path
 from typing import List
+
+from utility.FilesManager import path_finder, get_resources_folder
 
 index = 1
 
@@ -9,15 +11,12 @@ class Journal:
     """
     Keeps track of what happens in the game by writing it in a text file.
     """
-    def __init__(self, name: str = None, notes: List[str] = None, indentation: int = 0) -> None:
+    def __init__(self, name: str = None, notes: List[str] = None, indentation: int = 0, lang: str = "ENG") -> None:
         if name is None:
             global index
-            file_name = "Journal{}.txt".format(str(index))
+            file_name = "Journal{}.html".format(str(index))
             index += 1
-            # TODO: path finder
-            root_dir = Path(__file__).parent.parent.parent.resolve()
-            root_dir = os.path.join(root_dir, "resources")
-            self.name = os.path.join(root_dir, file_name)
+            self.name = os.path.join(get_resources_folder(), file_name)
         else:
             self.name = name
         file = open(self.name, 'w')
@@ -26,6 +25,8 @@ class Journal:
             notes = []
         self.notes = notes
         self.indentation = indentation
+        with open(path_finder("{}.json".format(lang.upper())), 'r') as f:
+            self.lang = json.load(f)["Journal"]
 
     def delete_note(self, number: int = 1):
         """
