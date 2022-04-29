@@ -19,11 +19,11 @@ from organization.Faction import Faction
 from organization.Lair import Lair
 from organization.Upgrade import Upgrade
 from utility.ISavable import save_to_json
-from utility.Json_Save import crew_from_json, factions_from_json, clocks_from_json, characters_from_json, \
+from utility.FilesLoader import crew_from_json, factions_from_json, clocks_from_json, characters_from_json, \
     npcs_from_json, items_from_json, scores_from_json
 
 
-class Test(TestCase):
+class TestFilesLoader(TestCase):
     def setUp(self) -> None:
         self.smugglers = Crew(
             "Contrabbandieri",

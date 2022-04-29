@@ -1,7 +1,3 @@
-import os
-import sqlite3
-from pathlib import Path
-from sqlite3 import Connection
 from typing import List, Tuple
 
 from character.Action import Action
@@ -279,7 +275,7 @@ def query_last_game_id() -> int:
 
 def query_game_json(game_id: int, files: List = None) -> dict:
     """
-    Retrieves selected json strings from the Game table in the BladesInTheDark DataBase related to a specific game ID
+    Retrieves selected json strings from the Game table in the BladesInTheDark DataBase related to a specific game ID.
 
     :param game_id: int representing the ID of the specific Game
     :param files: list of files to retrieve from the table. If the list is None it will retrieve all the files.
@@ -293,7 +289,7 @@ def query_game_json(game_id: int, files: List = None) -> dict:
         cursor.execute("""
         SELECT name
         FROM PRAGMA_TABLE_INFO('Game')
-        WHERE name LIKE '%JSON%' or name = 'Journal'""")
+        WHERE name LIKE '%JSON%' or name = 'Journal' or name = 'State'""")
 
         rows = cursor.fetchall()
 
@@ -320,7 +316,7 @@ def query_game_json(game_id: int, files: List = None) -> dict:
 
 def query_users_from_game(game_id: int) -> List[Tuple[str, int, bool]]:
     """
-    Retrieve all the User_ID and Name of the users with a specific Game_ID attribute
+    Retrieve all the User_ID and Name of the users with a specific Game_ID attribute.
 
     :param game_id: int representing the specific Game_ID
     :return: list of tuples containing Tel_ID and Name of the users
@@ -337,7 +333,7 @@ def query_users_from_game(game_id: int) -> List[Tuple[str, int, bool]]:
 
 def query_pc_json(game_id: int) -> dict:
     """
-    Retrieve all Users_ID and Char_JSON of a specific Game_ID
+    Retrieve all Users_ID and Char_JSON of a specific Game_ID.
 
     :param game_id: int representing the specific Game_ID
     :return: dictionary containing all json files with their respective user

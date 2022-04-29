@@ -115,10 +115,88 @@ class TestDBReader(TestCase):
         """)
 
     def test_query_game_json(self):
-        pass
+        self.cursor.execute("""
+        INSERT INTO Game
+        VALUES (1, "Game1", 1, '{"Assassins": "Hit man"}', '{"Aerondight": "Magical silver sword"}', 
+        '{"Dandelion": "An humble bard"}', '{"The Unseen": "One you see them you can not unsee them"}', 
+        '{"Jenny o the Woods": "Love can make you become a nightwraith"}', '{"Healing": "How long will it take?"}',
+        'Welcome to Blades in the Dark', 1)""")
+        self.connection.commit()
 
-    def test_query_users(self):
-        pass
+        dict1 = {'Crew_JSON': '{"Assassins": "Hit man"}', 'Crafted_Item_JSON': '{"Aerondight": "Magical silver sword"}',
+                 'NPC_JSON': '{"Dandelion": "An humble bard"}',
+                 'Faction_JSON': '{"The Unseen": "One you see them you can not unsee them"}',
+                 'Score_JSON': '{"Jenny o the Woods": "Love can make you become a nightwraith"}',
+                 'Clock_JSON': '{"Healing": "How long will it take?"}', 'Journal': 'Welcome to Blades in the Dark',
+                 'State': 1}
+
+        dict2 = {'NPC_JSON': '{"Dandelion": "An humble bard"}',
+                 'Faction_JSON': '{"The Unseen": "One you see them you can not unsee them"}',
+                 'Score_JSON': '{"Jenny o the Woods": "Love can make you become a nightwraith"}'}
+
+        self.assertEqual(dict1, query_game_json(1))
+
+        self.assertEqual(dict2, query_game_json(1, ['NPC_JSON', 'Faction_JSON', 'Score_JSON']))
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
+        self.connection.commit()
+
+    def test_query_users_from_game(self):
+        self.cursor.execute("""
+        INSERT INTO User 
+        VALUES (1, "Aldo")""")
+        self.cursor.execute("""
+        INSERT INTO User
+        VALUES (2, "Giovanni")""")
+        self.cursor.execute("""
+        INSERT INTO User
+        VALUES (3, "Giacomo")""")
+        self.cursor.execute("""
+        INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+        VALUES (1, "Game1", 1)""")
+        self.cursor.execute("""
+        INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+        VALUES (2, "Game2", 1)""")
+        self.cursor.execute("""
+        INSERT INTO User_Game (User_ID, Game_ID, Master)
+        VALUES (1, 1, TRUE)""")
+        self.cursor.execute("""
+        INSERT INTO User_Game (User_ID, Game_ID)
+        VALUES (2, 1)""")
+        self.cursor.execute("""
+        INSERT INTO User_Game (User_ID, Game_ID)
+        VALUES (3, 2)""")
+        self.connection.commit()
+
+        first_game = [('Aldo', 1, 1), ('Giovanni', 2, None)]
+        second_game = [('Giacomo', 3, None)]
+        self.assertEqual(first_game, query_users_from_game(1))
+        self.assertEqual(second_game, query_users_from_game(2))
+
+        self.cursor.execute("DELETE FROM Game")
+        self.cursor.execute("DELETE FROM User")
+        self.connection.commit()
 
     def test_query_pc_json(self):
-        pass
+        self.cursor.execute("""
+                INSERT INTO User 
+                VALUES (1, "Aldo")""")
+        self.cursor.execute("""
+                INSERT INTO User
+                VALUES (2, "Giovanni")""")
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                VALUES (1, "Game1", 1)""")
+        self.cursor.execute("""
+                INSERT INTO User_Game 
+                VALUES (1, 1, "{'Character': 'JSON'}", TRUE)""")
+        self.cursor.execute("""
+                INSERT INTO User_Game 
+                VALUES (2, 1, "{'Character': 'JSON'}", TRUE)""")
+        self.connection.commit()
+
+        self.assertEqual({1: "{'Character': 'JSON'}", 2: "{'Character': 'JSON'}"}, query_pc_json(1))
+
+        self.cursor.execute("DELETE FROM Game")
+        self.cursor.execute("DELETE FROM User")
+        self.connection.commit()

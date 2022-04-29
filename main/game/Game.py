@@ -10,6 +10,8 @@ from game.Score import Score
 from organization.Crew import Crew
 from organization.Faction import Faction
 
+FREE_PLAY, SCORE_PHASE, DOWNTIME_PHASE = range(3)
+
 
 class Game:
     """
@@ -18,7 +20,7 @@ class Game:
     def __init__(self, identifier: int = query_last_game_id()+1, title: str = "Game" + str(query_last_game_id()+1),
                  users: List[Player] = None, NPCs: List[NPC] = None, crew: Crew = Crew(),
                  factions: List[Faction] = None, clocks: List[Clock] = None, scores: List[Score] = None,
-                 crafted_items: List[Item] = None, journal: Journal = Journal()) -> None:
+                 crafted_items: List[Item] = None, journal: Journal = Journal(), state: int = FREE_PLAY) -> None:
         self.identifier = identifier
         self.title = title
         if users is None:
@@ -42,6 +44,9 @@ class Game:
         self.crafted_items = crafted_items
         self.journal = journal
         self.n_clock = 100 * identifier
+        if state < 0 or state > 2:
+            state = FREE_PLAY
+        self.state = state
 
     def get_project_clocks(self) -> List[Clock]:
         """

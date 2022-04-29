@@ -254,6 +254,38 @@ def insert_journal(game_id: int, journal: str) -> bool:
     return False
 
 
+def insert_state(game_id: int, state: int) -> bool:
+    """
+    Insert the current state inside Game table in BladesInTheDark Database.
+
+    :param game_id: int representing the identifier of the game
+    :param state: int representing the current state
+    :return: True if the journal has been added, False otherwise
+    """
+    if isinstance(game_id, int) and isinstance(state, int):
+
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        try:
+
+            if not exists_game(game_id):
+                raise DatabaseError("Wrong game selected")
+
+            cursor.execute("""
+            UPDATE Game
+            SET State = {}
+            WHERE Game_ID = {}""".format(state, game_id))
+
+            connection.commit()
+
+        except DatabaseError:
+            traceback.print_exc()
+            return False
+        return True
+    return False
+
+
 def insert_user(user_id: int, name: str) -> bool:
     """
     Insert a new user in the User table in the BladesInTheDark Database.

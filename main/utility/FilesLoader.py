@@ -144,6 +144,9 @@ def setup(game: Game) -> None:
     journal = db_game["Journal"]
     game.journal = journal
 
+    state = db_game["State"]
+    game.state = state
+
     users = []
     users_tuple = query_users_from_game(game.identifier)
 

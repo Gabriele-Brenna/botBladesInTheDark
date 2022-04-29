@@ -9,7 +9,7 @@ class Journal:
     """
     Keeps track of what happens in the game by writing it in a text file.
     """
-    def __init__(self, name: str = None, notes: List[str] = None) -> None:
+    def __init__(self, name: str = None, notes: List[str] = None, indentation: int = 0) -> None:
         if name is None:
             global index
             file_name = "Journal{}.txt".format(str(index))
@@ -25,6 +25,7 @@ class Journal:
         if notes is None:
             notes = []
         self.notes = notes
+        self.indentation = indentation
 
     def delete_note(self, number: int = 1):
         """
