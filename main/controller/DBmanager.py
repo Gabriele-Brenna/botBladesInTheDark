@@ -86,6 +86,29 @@ def exists_game(game_id: int) -> bool:
     return True
 
 
+def exists_user(user_tel_id: int) -> bool:
+    """
+    Checks if the specified user has a matching value in the User table of the database
+
+    :param user_tel_id: is the user to check
+    :return: True if the user exists, False otherwise
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                SELECT *
+                FROM User
+                WHERE Tel_ID = {}
+                """.format(user_tel_id))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
+
+
 def is_json(myjson) -> bool:
     """
     Check if an object is a json string or not.

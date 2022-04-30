@@ -302,7 +302,9 @@ def insert_user(user_id: int, name: str) -> bool:
             cursor.execute("""
             INSERT INTO User
             VALUES (?, ?)
-            """, (user_id, name))
+            ON CONFLICT (Tel_ID)
+            DO UPDATE SET name = '{}'
+            """.format(name), (user_id, name))
 
             connection.commit()
         except DatabaseError:

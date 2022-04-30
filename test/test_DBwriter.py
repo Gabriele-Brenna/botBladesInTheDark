@@ -115,7 +115,7 @@ class TestDBwriter(TestCase):
         self.assertTrue(insert_user(1, "Aldo"))
 
         # Tel_ID already present
-        self.assertFalse(insert_user(1, "Giacomo"))
+        self.assertTrue(insert_user(1, "Giacomo"))
 
         self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1")
         self.connection.commit()

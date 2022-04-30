@@ -1,6 +1,50 @@
 {
   "Bot": {
+
+    "start": {
+      "0": "Welcome to the Blades in the Dark's telegram Bot by : Niccolo\u0301 Bergamaschi, Gabriele Brenna and Leandro Bognanni.",
+      "1": "License {} : This work is based on Blades in the Dark (found at http://www.bladesinthedark.com/), product of One Seven Design, developed and authored by John Harper, and licensed for our use under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).",
+      "2": "Create a group chat with your friends and invite them all to \n/login.\n After the registration you can start playing.\n If you have any questions, pls use \n/help"
+    },
+
+    "greet_chat_members":  {
+      "0": "Scoundrel {} was bragged to Doskvol by {}", "1": "{} executed {} for his crimes"
+    },
+
+    "help_msg": {
+      "default": {
+        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E)",
+        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction\n\n/login - register your telegram account by choosing a username"
+      },
+      "commands": {
+
+      }
+    },
+
+    "start_login": {
+      "0": "You are approaching Doskvol, to register: <a href=\"{}\">[\uD83D\uDD10  CLICK HERE  \uD83D\uDD10]</a> "
+    },
+
+    "login": {
+      "0": "Please, enter your Nickname:",
+      "1": "You are already registered\nWrite your new username or /cancel"
+    },
+
+    "login_receive_username": {
+      "0": "Username saved",
+      "1": "Something went wrong..."
+    },
+
+    "cancel": {
+      "0": "Command canceled"
+    }
+
+
+
+
+
   },
+
   "Journal": {
   }
 }
