@@ -1,7 +1,6 @@
-import copy
-import json
 from typing import List
 
+from character.Playbook import Playbook
 from controller.DBreader import query_xp_triggers, exists_crew
 from organization.Claim import Claim
 from organization.Cohort import Cohort
@@ -20,7 +19,7 @@ class Crew(Organization, ISavable):
     def __init__(self, name: str = "", type: str = "", reputation: str = "", lair: Lair = Lair(),
                  upgrades: List[Upgrade] = None, contact: NPC = NPC(), description: str = "",
                  abilities: List[SpecialAbility] = None, rep: int = 0, tier: int = 0, hold: bool = True,
-                 heat: int = 0, wanted_level: int = 0, exp: int = 0, cohorts: List[Cohort] = None,
+                 heat: int = 0, wanted_level: int = 0, crew_exp: Playbook = Playbook(10, 0, 0), cohorts: List[Cohort] = None,
                  coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
                  prison_claims: List[Claim] = None) -> None:
         super().__init__(name, tier, hold)
@@ -33,7 +32,7 @@ class Crew(Organization, ISavable):
         self.rep = rep
         self.heat = heat
         self.wanted_level = wanted_level
-        self.exp = exp
+        self.crew_exp = crew_exp
         if cohorts is None:
             cohorts = []
         self.cohorts = cohorts
@@ -240,10 +239,11 @@ class Crew(Organization, ISavable):
         contact = NPC.from_json(data["contact"])
         abilities = list(map(SpecialAbility.from_json, data["abilities"]))
         cohorts = list(map(Cohort.from_json, data["cohorts"]))
+        crew_exp = Playbook.from_json(data["crew_exp"])
         prison_claims = list(map(Claim.from_json, data["prison_claims"]))
-        pop_dict_items(data, ["lair", "upgrades", "contact", "abilities", "cohorts", "prison_claims"])
+        pop_dict_items(data, ["lair", "upgrades", "contact", "abilities", "cohorts", "crew_exp", "prison_claims"])
         return cls(**data, lair=lair, upgrades=upgrades, contact=contact, abilities=abilities,
-                   cohorts=cohorts, prison_claims=prison_claims)
+                   cohorts=cohorts, crew_exp=crew_exp, prison_claims=prison_claims)
 
     def save_to_dict(self) -> dict:
         """

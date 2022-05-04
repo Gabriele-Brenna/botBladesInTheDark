@@ -173,8 +173,8 @@ class TestDBReader(TestCase):
         self.assertEqual(first_game, query_users_from_game(1))
         self.assertEqual(second_game, query_users_from_game(2))
 
-        self.cursor.execute("DELETE FROM Game")
-        self.cursor.execute("DELETE FROM User")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1 OR Game_ID = 2")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 OR Tel_ID = 2 OR Tel_ID = 3")
         self.connection.commit()
 
     def test_query_pc_json(self):
@@ -197,6 +197,6 @@ class TestDBReader(TestCase):
 
         self.assertEqual({1: "{'Character': 'JSON'}", 2: "{'Character': 'JSON'}"}, query_pc_json(1))
 
-        self.cursor.execute("DELETE FROM Game")
-        self.cursor.execute("DELETE FROM User")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 OR Tel_ID = 2")
         self.connection.commit()
