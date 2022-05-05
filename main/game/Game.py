@@ -136,3 +136,6 @@ class Game:
         :return: the first Score that matches the search
         """
         return max(self.scores, key=lambda score: len(score.participants))
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

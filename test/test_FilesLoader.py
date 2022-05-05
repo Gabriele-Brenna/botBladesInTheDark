@@ -1,26 +1,12 @@
 from unittest import TestCase
 
-from character.Action import Action
-from character.Attribute import Attribute
-from character.Ghost import Ghost
-from character.Hull import Hull
-from character.Human import Human
-from character.Item import Item
-from character.NPC import NPC
 from character.Playbook import Playbook
-from character.Vampire import Vampire
-from character.Vice import Vice
-from component.Clock import Clock
-from component.SpecialAbility import SpecialAbility
-from game.Score import Score
+from controller.DBwriter import insert_game
 from organization.Claim import Claim
-from organization.Crew import Crew
-from organization.Faction import Faction
 from organization.Lair import Lair
 from organization.Upgrade import Upgrade
 from utility.ISavable import save_to_json
-from utility.FilesLoader import crew_from_json, factions_from_json, clocks_from_json, characters_from_json, \
-    npcs_from_json, items_from_json, scores_from_json
+from utility.FilesLoader import *
 
 
 class TestFilesLoader(TestCase):
@@ -144,3 +130,16 @@ class TestFilesLoader(TestCase):
         items_str = save_to_json(self.items)
         items = items_from_json(items_str)
         self.assertEqual(self.items, items)
+
+    def test_load_games(self):
+        insert_game(-1, "Game1", 1)
+        insert_game(-2, "Game2", 2)
+
+        self.assertEqual([Game(identifier=-2, title="Game2", chat_id=2), Game(identifier=-1, title="Game1", chat_id=1)],
+                         load_games())
+
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
+        connection.commit()
