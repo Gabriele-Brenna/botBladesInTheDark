@@ -352,3 +352,32 @@ def query_pc_json(game_id: int) -> dict:
     for t in rows:
         dict_json[t[0]] = t[1]
     return dict_json
+
+
+def query_users_names(user_id: int = None) -> List[str]:
+    """
+    Retrieves the list of registered users' names.
+
+    :param user_id: if passed, the specific username associated to this id is searched.
+    :return: a list of usernames
+    """
+
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query="""
+    SELECT Name
+    FROM User"""
+
+    if user_id is not None:
+        query + "WHERE Tel_ID = {}".format(user_id)
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    usernames = []
+    for user in rows:
+        usernames.append(user[0])
+    return usernames
+
