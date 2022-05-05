@@ -384,3 +384,31 @@ def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
         for t in rows:
             games_info.append({"identifier": t[0], "title": t[1], "chat_id": t[2]})
     return games_info
+
+
+def query_users_names(user_id: int = None) -> List[str]:
+    """
+    Retrieves the list of registered users' names.
+
+    :param user_id: if passed, the specific username associated to this id is searched.
+    :return: a list of usernames
+    """
+
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query="""
+    SELECT Name
+    FROM User"""
+
+    if user_id is not None:
+        query + "WHERE Tel_ID = {}".format(user_id)
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    usernames = []
+    for user in rows:
+        usernames.append(user[0])
+    return usernames
