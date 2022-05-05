@@ -354,10 +354,11 @@ def query_pc_json(game_id: int) -> dict:
     return dict_json
 
 
-def query_games_info(game_id: int = None) -> List[Dict]:
+def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
     """
     Retrieves the Game_ID, Title and Tel_Chat_ID of all the games stored in the Data Base
 
+    :param chat_id: if this parameter is passed, only the info about the game of the specified chat are retrieved.
     :param game_id: if this parameter is passed, only the info of the specified game are retrieved.
     :return:
     """
@@ -368,7 +369,10 @@ def query_games_info(game_id: int = None) -> List[Dict]:
        SELECT Game_ID, Title, Tel_Chat_ID
        FROM Game"""
 
-    if game_id is not None:
+    if chat_id is not None:
+        query += "\nWHERE Tel_Chat_ID = {}".format(chat_id)
+
+    elif game_id is not None:
         query += "\nWHERE Game_ID = {}".format(game_id)
 
     cursor.execute(query)
@@ -379,5 +383,4 @@ def query_games_info(game_id: int = None) -> List[Dict]:
     if rows:
         for t in rows:
             games_info.append({"identifier": t[0], "title": t[1], "chat_id": t[2]})
-
     return games_info
