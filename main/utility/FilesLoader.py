@@ -9,7 +9,7 @@ from character.Item import Item
 from character.NPC import NPC
 from character.Vampire import Vampire
 from component.Clock import Clock
-from controller.DBreader import query_game_json, query_users_from_game, query_pc_json
+from controller.DBreader import *
 from game.Game import Game
 from game.Player import Player
 from game.Score import Score
@@ -107,6 +107,23 @@ def items_from_json(items: str):
     """
     data = json.loads(items)
     return list(map(Item.from_json, data))
+
+
+def load_games() -> List[Game]:
+    """
+    Fetches from the Data Base all the stored Games and proceeds calling the setup() for all of them.
+
+    :return: a list of Games
+    """
+    games_info = query_games_info()
+    games = []
+    if games_info:
+        for elem in games_info:
+            game = Game(**elem)
+            setup(game)
+            games.append(game)
+
+    return games
 
 
 def setup(game: Game) -> None:
