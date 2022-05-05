@@ -7,12 +7,16 @@ from telegram.ext import *
 from telegram import *
 from telegram.utils import helpers
 
+from controller.Controller import Controller
 from controller.DBreader import *
 from controller.DBwriter import *
 from utility.FilesManager import *
 
-# loading of default language dict
-with open(path_finder('Eng.json'), 'r', encoding="utf8") as lang_f:
+# instantiates the Controller.
+controller = Controller()
+
+# loading of default language dict.
+with open(path_finder('ENG.json'), 'r', encoding="utf8") as lang_f:
     default_lang = json.load(lang_f)["Bot"]
 
 
@@ -109,7 +113,8 @@ def user_is_registered(update: Update, context: CallbackContext) -> bool:
 def test(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Test done")
     print("TEST")
-    print("Sender: " + str(get_user_id(update)))
+    print("Sender Data: ")
+    print("\t{}".format(update.message.from_user))
     print("-----------------user_data NO LANG--------------------------------------------")
     new_user_data = {}
     for key in context.user_data:
@@ -175,6 +180,27 @@ def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, c
                                input_field_placeholder=input_field_placeholder)
 
 
+def show_pc(update: Update, context: CallbackContext) -> None:
+    """
+    Displays the PCs stored in the user_data of the sender.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    if "myPCs" not in context.user_data:
+        update.message.reply_text("You don't have any PCs yet. Use /createPC to make one")
+        return
+
+    text = "<b>Your PCs</b>🔪:\n"
+    for pc in context.user_data["myPCs"]:
+        text += "\n"
+        text += "<b><i>{}</i></b>:\n".format(pc["name"])
+        for key in pc:
+            if key != "name":
+                text += "\t<i><u>{}</u></i>: {}\n".format(key, pc[key])
+    update.message.reply_text(text, parse_mode=ParseMode.HTML)
+
+
 def start_bot():
     """
     Starts the telegram bot. It loads the token from 'Token.txt', sets the persistence and instantiate the Updater
@@ -237,6 +263,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("createGame".casefold(), create_game)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_game_title)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_conv)],
+            name="conv_createGame",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(CommandHandler("myPCs".casefold(), show_pc))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
@@ -278,7 +318,7 @@ def help_msg(update: Update, context: CallbackContext) -> None:
             update.message.reply_text(placeholders["commands"][context.args[0].lower()], parse_mode=ParseMode.HTML)
         except:
             auto_delete_message(update.message.reply_text(placeholders["commands"]["error"].format(context.args[0]),
-                                             parse_mode=ParseMode.HTML))
+                                                          parse_mode=ParseMode.HTML))
 
 
 def end_conv(update: Update, context: CallbackContext) -> int:
@@ -306,6 +346,7 @@ def auto_delete_message(message: Message, timer: float = 5.0) -> None:
     :param message: the message to delete
     :param timer: the time to wait before the deletion.
     """
+
     def execute(m: Message, t: float) -> None:
         time.sleep(t)
         m.delete()
@@ -464,8 +505,8 @@ def create_pc_state_switcher(update: Update, context: CallbackContext) -> int:
 
     for i in range(len(keyboard)):
         if choice == keyboard[i]:
-            context.bot.callback_data_cache.clear_callback_data()
-            context.bot.callback_data_cache.clear_callback_queries()
+            #context.bot.callback_data_cache.clear_callback_data()
+            #context.bot.callback_data_cache.clear_callback_queries()
             user_id = query.from_user.id
             query.delete_message()
             context.user_data["create_pc"]["message"] = context.bot.sendMessage(chat_id=user_id,
@@ -485,6 +526,7 @@ def create_pc_name(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
+    # TODO: controllare se negli user_data se è gia presente un pc con questo nome? altrimenti come glieli mostriamo?
     create_pc_update_inline_keyboard(update, context, "name")
     update.message.delete()
 
@@ -679,13 +721,53 @@ def create_pc_end(update: Update, context: CallbackContext) -> int:
     except:
         pass
 
-
     context.user_data.pop("create_pc")
 
     return end_conv(update, context)
 
 
 # ------------------------------------------conv_createPC---------------------------------------------------------------
+
+
+# ------------------------------------------conv_createGame-------------------------------------------------------------
+
+def create_game(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the creation of a Game checking if the user is already registered.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    if not user_is_registered(update, context):
+        return ConversationHandler.END
+
+    placeholders = get_lang(context, create_game.__name__)
+    update.message.reply_text(placeholders["0"])
+
+    return 0
+
+
+def create_game_title(update: Update, context: CallbackContext) -> None:
+    """
+    Handles the choice of the Game's title and adds it to the Controller's games list
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    placeholders = get_lang(context, create_game_title.__name__)
+
+    game_id = controller.add_game(update.message.chat_id, update.message.text)
+
+    update.message.reply_text(placeholders["0"].format(update.message.text, game_id), parse_mode=ParseMode.HTML)
+
+    print(controller.games)
+    return ConversationHandler.END
+
+
+# ------------------------------------------conv_createGame------------------------------------------------------------
+
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """

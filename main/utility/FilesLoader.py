@@ -9,7 +9,7 @@ from character.Item import Item
 from character.NPC import NPC
 from character.Vampire import Vampire
 from component.Clock import Clock
-from controller.DBreader import query_game_json, query_users_from_game, query_pc_json
+from controller.DBreader import *
 from game.Game import Game
 from game.Player import Player
 from game.Score import Score
@@ -109,6 +109,23 @@ def items_from_json(items: str):
     return list(map(Item.from_json, data))
 
 
+def load_games() -> List[Game]:
+    """
+    Fetches from the Data Base all the stored Games and proceeds calling the setup() for all of them.
+
+    :return: a list of Games
+    """
+    games_info = query_games_info()
+    games = []
+    if games_info:
+        for elem in games_info:
+            game = Game(**elem)
+            setup(game)
+            games.append(game)
+
+    return games
+
+
 def setup(game: Game) -> None:
     """
     This method is used to set all the Game's attribute contained in the DataBase via json strings.
@@ -116,40 +133,42 @@ def setup(game: Game) -> None:
     :param game: Game whose attributes will be set
     """
     db_game = query_game_json(game.identifier)
-    factions = factions_from_json(db_game["Faction_JSON"])
-    game.factions = factions
 
-    clocks = clocks_from_json(db_game["Clock_JSON"])
-    game.clocks = clocks
+    if db_game["Faction_JSON"] is not None:
+        game.factions = factions_from_json(db_game["Faction_JSON"])
 
-    NPCs = npcs_from_json(db_game["NPC_JSON"])
-    for npc in NPCs:
-        npc.faction = find_obj(npc.faction, factions)
-    game.NPCs = NPCs
+    if db_game["Clock_JSON"] is not None:
+        game.clocks = clocks_from_json(db_game["Clock_JSON"])
 
-    crew = crew_from_json(db_game["Crew_JSON"])
-    crew.contact = find_obj(crew.contact, NPCs)
-    game.crew = crew
+    if db_game["NPC_JSON"] is not None:
+        game.NPCs = npcs_from_json(db_game["NPC_JSON"])
+        for npc in game.NPCs:
+            npc.faction = find_obj(npc.faction, game.factions)
 
-    temp = copy.deepcopy(factions)
-    temp.append(NPCs)
-    scores = scores_from_json(db_game["Score_JSON"])
-    for score in scores:
-        score.target = find_obj(score.target, temp)
-    game.scores = scores
+    if db_game["Crew_JSON"] is not None:
+        crew = crew_from_json(db_game["Crew_JSON"])
+        crew.contact = find_obj(crew.contact, game.NPCs)
+        game.crew = crew
 
-    crafted_items = items_from_json(db_game["Crafted_Item_JSON"])
-    game.crafted_items = crafted_items
+    if db_game["Score_JSON"] is not None:
+        temp = copy.deepcopy(game.factions)
+        temp.append(game.NPCs)
+        scores = scores_from_json(db_game["Score_JSON"])
+        for score in scores:
+            score.target = find_obj(score.target, temp)
+        game.scores = scores
 
-    journal = db_game["Journal"]
-    game.journal = journal
+    if db_game["Crafted_Item_JSON"] is not None:
+        game.crafted_items = items_from_json(db_game["Crafted_Item_JSON"])
 
-    state = db_game["State"]
-    game.state = state
+    if db_game["Journal"] is not None:
+        game.journal = db_game["Journal"]
+
+    if db_game["State"] is not None:
+        game.state = db_game["State"]
 
     users = []
     users_tuple = query_users_from_game(game.identifier)
-
     for t in users_tuple:
         users.append(Player(*t))
 
@@ -158,8 +177,8 @@ def setup(game: Game) -> None:
     for u in users:
         characters = characters_from_json(characters_dict[u.player_id])
         for c in characters:
-            c.friend = find_obj(c.friend, NPCs)
-            c.enemy = find_obj(c.enemy, NPCs)
+            c.friend = find_obj(c.friend, game.NPCs)
+            c.enemy = find_obj(c.enemy, game.NPCs)
         u.characters = characters
 
     game.users = users

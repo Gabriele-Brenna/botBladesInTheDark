@@ -200,3 +200,20 @@ class TestDBReader(TestCase):
         self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
         self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 OR Tel_ID = 2")
         self.connection.commit()
+
+    def test_query_games_info(self):
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                VALUES (-1, "Game1", 1)""")
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                VALUES (-2, "Game2", 2)""")
+        self.connection.commit()
+
+        self.assertEqual([{"identifier": -2, "title": "Game2", "chat_id": 2},
+                          {"identifier": -1, "title": "Game1", "chat_id": 1}], query_games_info())
+
+        self.assertEqual([{"identifier": -1, "title": "Game1", "chat_id": 1}], query_games_info(-1))
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
+        self.connection.commit()

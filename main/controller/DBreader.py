@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from character.Action import Action
 from character.Attribute import Attribute
@@ -381,3 +381,32 @@ def query_users_names(user_id: int = None) -> List[str]:
         usernames.append(user[0])
     return usernames
 
+
+
+def query_games_info(game_id: int = None) -> List[Dict]:
+    """
+    Retrieves the Game_ID, Title and Tel_Chat_ID of all the games stored in the Data Base
+
+    :param game_id: if this parameter is passed, only the info of the specified game are retrieved.
+    :return:
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+       SELECT Game_ID, Title, Tel_Chat_ID
+       FROM Game"""
+
+    if game_id is not None:
+        query += "\nWHERE Game_ID = {}".format(game_id)
+
+    cursor.execute(query)
+
+    games_info = []
+    rows = cursor.fetchall()
+
+    if rows:
+        for t in rows:
+            games_info.append({"identifier": t[0], "title": t[1], "chat_id": t[2]})
+
+    return games_info

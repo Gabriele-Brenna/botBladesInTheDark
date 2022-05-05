@@ -91,8 +91,15 @@
 
     "create_pc_end": {
       "0": "Cannot save a partially described PC. Please fill all the fields."
-    }
+    },
 
+    "create_game": {
+      "0": "Insert the name of the game"
+    },
+
+    "create_game_title": {
+      "0": "Game <u>{}</u> created successfully with id: {}"
+    }
 
 
 
