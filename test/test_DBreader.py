@@ -217,3 +217,20 @@ class TestDBReader(TestCase):
 
         self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
         self.connection.commit()
+
+    def test_query_game_ids(self):
+        self.cursor.execute("""
+                       INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                       VALUES (-1, "Game1", 1)""")
+        self.cursor.execute("""
+                       INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                       VALUES (-2, "Game2", 2)""")
+        self.connection.commit()
+
+        self.assertEqual([-1], query_game_ids(title="Game1"))
+        self.assertEqual([-1], query_game_ids(tel_chat_id=1))
+        self.assertEqual([-2], query_game_ids(2, "Game2"))
+        self.assertEqual([-2, -1], query_game_ids())
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
+        self.connection.commit()
