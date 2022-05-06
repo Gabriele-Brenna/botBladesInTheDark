@@ -137,5 +137,19 @@ class Game:
         """
         return max(self.scores, key=lambda score: len(score.participants))
 
+    def get_master(self) -> Player:
+        """
+        Searches the list of users and gets the one who is master.
+
+        :return: a Player with the attribute is_master = True
+        """
+        for p in self.users:
+            if p.is_master:
+                return p
+
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
+
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+

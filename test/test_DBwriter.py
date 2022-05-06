@@ -121,27 +121,25 @@ class TestDBwriter(TestCase):
         self.connection.commit()
 
     def test_insert_user_game(self):
-        insert_game(1, "Game1", 1)
-        insert_user(1, "Aldo")
-        insert_user(2, "Giovanni")
-        insert_user(3, "Giacomo")
+        insert_game(-1, "Game1", -1)
+        insert_user(-1, "Aldo")
+        insert_user(-2, "Giovanni")
+        insert_user(-3, "Giacomo")
 
-        self.assertTrue(insert_user_game(1, 1, '{"Ronny": "A whisper"}', False))
-        self.assertTrue(insert_user_game(2, 1, master=True))
-        self.assertTrue(insert_user_game(3, 1))
+        self.assertTrue(insert_user_game(-1, -1, '{"Ronny": "A whisper"}', False))
+        self.assertTrue(insert_user_game(-2, -1, master=True))
+        self.assertTrue(insert_user_game(-3, -1))
 
         # Game_ID not present
-        self.assertFalse(insert_user_game(1, 2))
+        self.assertFalse(insert_user_game(-1, 2))
 
         # User_ID not present
-        self.assertFalse(insert_user_game(4, 1))
+        self.assertFalse(insert_user_game(4, -1))
 
-        # User_ID and Game_ID already present
-        self.assertFalse(insert_user_game(1, 1))
-
-        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
-        self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 or Tel_ID = 2 or Tel_ID = 3")
-        self.cursor.execute("DELETE FROM User_Game WHERE Game_ID = 1 and (User_ID = 1 or User_ID = 2 or User_ID = 3)")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = -1 or Tel_ID = -2 or Tel_ID = -3")
+        self.cursor.execute("DELETE FROM User_Game "
+                            "WHERE Game_ID = -1 and (User_ID = -1 or User_ID = -2 or User_ID = -3)")
 
         self.connection.commit()
 
@@ -273,4 +271,17 @@ class TestDBwriter(TestCase):
         self.assertFalse(insert_complex_relation("Crew_SA", "Assassins", "Mule", 2))
 
         self.cursor.execute("DELETE FROM Char_Action WHERE Character = 'Hull' and Action = 'Prowl'")
+        self.connection.commit()
+
+    def test_delete_user_game(self):
+        insert_game(-1, "Game1", -1)
+        insert_user(-1, "Aldo")
+
+        insert_user_game(-1, -1, '{"Jonny": "A whisper"}', False)
+
+        delete_user_game(-1, -1)
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = -1")
+
         self.connection.commit()

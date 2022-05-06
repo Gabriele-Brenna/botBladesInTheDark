@@ -92,6 +92,19 @@ def get_user_id(update: Update) -> int:
         return update.message.from_user.id
 
 
+def get_user_pc(context: CallbackContext) -> List[str]:
+    """
+    Searches the user_data in order to find (if present) the user's created characters.
+
+    :param context: instance of CallbackContext linked to the user.
+    :return: a list of the names of the user's characters. An empty list if the user has no characters yet.
+    """
+    if "myPCs" in context.user_data:
+        return list(context.user_data["myPCs"].keys())
+
+    return []
+
+
 def user_is_registered(update: Update, context: CallbackContext) -> bool:
     """
     Checks if the user is registered in the Database. If not, it sends a message with the request of login.
@@ -276,6 +289,20 @@ def start_bot():
     )
 
     dispatcher.add_handler(CommandHandler("myPCs".casefold(), show_pc))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("join".casefold(), join)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, join_game_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, join_add_player)],
+                2: [MessageHandler(Filters.text & ~Filters.command, join_complete_pc)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_conv)],
+            name="conv_join",
+            persistent=True
+        )
+    )
 
     # -----------------------------------------START--------------------------------------------------------------------
 
@@ -481,6 +508,7 @@ def create_pc(update: Update, context: CallbackContext) -> int:
                                                                        inline=True))
 
     context.user_data.setdefault("create_pc", {})["keyboard"] = copy.deepcopy(placeholders["keyboard"])
+    context.user_data["create_pc"]["pc"] = {}
     context.user_data["create_pc"]["query_menu"] = query_menu
 
     return 0
@@ -505,8 +533,6 @@ def create_pc_state_switcher(update: Update, context: CallbackContext) -> int:
 
     for i in range(len(keyboard)):
         if choice == keyboard[i]:
-            #context.bot.callback_data_cache.clear_callback_data()
-            #context.bot.callback_data_cache.clear_callback_queries()
             user_id = query.from_user.id
             query.delete_message()
             context.user_data["create_pc"]["message"] = context.bot.sendMessage(chat_id=user_id,
@@ -526,7 +552,10 @@ def create_pc_name(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    # TODO: controllare se negli user_data se è gia presente un pc con questo nome? altrimenti come glieli mostriamo?
+    placeholders = get_lang(context, create_pc_name.__name__)
+    if update.message.text.lower() in get_user_pc(context):
+        auto_delete_message(update.message.reply_text(placeholders["0"].format(update.message.text),
+                                                      parse_mode=ParseMode.HTML), 8.0)
     create_pc_update_inline_keyboard(update, context, "name")
     update.message.delete()
 
@@ -703,21 +732,25 @@ def create_pc_end(update: Update, context: CallbackContext) -> int:
     command = update.message.text
     placeholders = get_lang(context, create_pc_end.__name__)
 
+    dict_create_pc = context.user_data["create_pc"]
+
     if "done".casefold() in command:
         if {"name", "alias", "look", "heritage", "background", "pc_class", "vice"}.issubset(
-                context.user_data["create_pc"]["pc"].keys()):
-            context.user_data.setdefault("myPCs", []).append(context.user_data["create_pc"]["pc"])
+                dict_create_pc["pc"].keys()):
+            context.user_data.setdefault("myPCs",
+                                         {})[dict_create_pc["pc"]["name"].lower()] = dict_create_pc["pc"]
         else:
-            update.message.reply_text(placeholders["0"])
+            auto_delete_message(update.message.reply_text(placeholders["0"]))
+            update.message.delete()
             return 0
 
     try:
-        context.user_data["create_pc"]["query_menu"].delete()
+        dict_create_pc["query_menu"].delete()
     except:
         pass
 
     try:
-        context.user_data["create_pc"]["message"].delete()
+        dict_create_pc["message"].delete()
     except:
         pass
 
@@ -762,11 +795,74 @@ def create_game_title(update: Update, context: CallbackContext) -> None:
 
     update.message.reply_text(placeholders["0"].format(update.message.text, game_id), parse_mode=ParseMode.HTML)
 
-    print(controller.games)
     return ConversationHandler.END
 
 
-# ------------------------------------------conv_createGame------------------------------------------------------------
+# ------------------------------------------conv_createGame-------------------------------------------------------------
+
+
+# ------------------------------------------conv_join-------------------------------------------------------------------
+
+
+def join(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, join.__name__)
+
+    titles = []
+    for elem in query_games_info(update.message.chat_id):
+        titles.append(elem["title"])
+
+    context.user_data.setdefault("join", {})["message"] = update.message.reply_text(placeholders["0"],
+                                                                                    reply_markup=custom_kb(titles))
+
+    return 0
+
+
+def join_game_name(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, join_game_name.__name__)
+    context.user_data["join"]["message"].delete()
+
+    titles = []
+    for elem in query_games_info(update.message.chat_id):
+        titles.append(elem["title"])
+
+    if update.message.text not in titles:
+        auto_delete_message(update.message.reply_text(placeholders["0"].format(update.message.text),
+                                                      parse_mode=ParseMode.HTML), 10)
+        return ConversationHandler.END
+
+    context.user_data["join"]["game_name"] = update.message.text
+
+    buttons = get_user_pc(context)
+    buttons.append("as Master")
+    context.user_data["join"]["message"] = update.message.reply_text(placeholders["1"], reply_markup=custom_kb(buttons))
+
+    return 1
+
+
+def join_add_player(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, join_add_player.__name__)
+
+    if update.message.text not in get_user_pc(context) and update.message.text.lower() != "as master":
+        auto_delete_message(update.message.reply_text(placeholders[""]), 10)
+        return ConversationHandler.END
+
+    is_master = False
+    if update.message.text.lower() == "as master":
+        is_master = True
+    controller.update_user_in_game(get_user_id(update), update.message.chat_id,
+                                   context.user_data["join"]["game_name"], is_master)
+
+    if is_master:
+        return end_conv(update, context)
+    else:
+        return 2
+
+
+def join_complete_pc(update: Update, context: CallbackContext) -> int:
+    pass
+
+
+# ------------------------------------------conv_join-------------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

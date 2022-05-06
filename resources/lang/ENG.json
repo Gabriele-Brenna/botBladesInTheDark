@@ -56,6 +56,10 @@
       "1": "Select an existing class.\n/data for more info."
     },
 
+    "create_pc_name": {
+      "0": "⚠ You already have a PC named <u>{}</u>, if you don't change name, it will be overwritten. ⚠"
+    },
+
     "create_pc_state_switcher": {
       "0": "What's your name?",
       "1": "What would you like to be called?",
@@ -90,7 +94,7 @@
     },
 
     "create_pc_end": {
-      "0": "Cannot save a partially described PC. Please fill all the fields."
+      "0": "⚠ Cannot save a partially described PC. Please fill all the fields."
     },
 
     "create_game": {
@@ -99,9 +103,16 @@
 
     "create_game_title": {
       "0": "Game <u>{}</u> created successfully with id: {}"
+    },
+
+    "join": {
+      "0": "Write the name of the game you want to join"
+    },
+
+    "join_game_name": {
+      "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame",
+      "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game."
     }
-
-
 
 
   },

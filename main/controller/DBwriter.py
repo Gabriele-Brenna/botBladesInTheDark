@@ -332,7 +332,10 @@ def insert_user_game(user_id: int, game_id: int, char_json: str = None, master: 
         try:
             cursor.execute("""
                         INSERT INTO User_Game
-                        VALUES ({}, {}, '{}', {})""".format(user_id, game_id, char_json, master))
+                        VALUES ({}, {}, '{}', {})
+                        ON CONFLICT (User_ID, Game_ID) DO 
+                        UPDATE SET (Char_JSON, Master) = (?, ?)""".format(user_id, game_id, char_json, master,),
+                           (char_json, master))
 
             connection.commit()
         except DatabaseError:
@@ -786,4 +789,29 @@ def insert_starting_cohort(crew: str, gang_exp: bool, cohort_type: str) -> bool:
     """
     if isinstance(crew, str) and isinstance(gang_exp, bool) and isinstance(cohort_type, str):
         return insert_complex_relation("Starting_Cohort", crew, gang_exp, cohort_type)
+    return False
+
+
+def delete_user_game(user_id: int, game_id: int) -> bool:
+    """
+    Removes the specified occurrence in the User_Game table from the Data Baase
+
+    :param user_id: telegram id of the user.
+    :param game_id: identifier of the game.
+    :return:
+    """
+    if isinstance(user_id, int) and isinstance(game_id, int):
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute("""
+            DELETE FROM User_Game WHERE (User_ID, Game_ID) = ({}, {})
+            """.format(user_id, game_id))
+
+            connection.commit()
+        except DatabaseError:
+            traceback.print_exc()
+            return False
+        return True
     return False
