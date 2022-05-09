@@ -325,17 +325,16 @@ def insert_user_game(user_id: int, game_id: int, char_json: str = None, master: 
     :return: True if the row has been added, False otherwise
     """
     if isinstance(user_id, int) and isinstance(game_id, int) and (char_json is None or is_json(char_json)) \
-            and isinstance(master, bool):
+            and isinstance(master, int) and (master == 0 or master == 1):
         connection = establish_connection()
         cursor = connection.cursor()
 
         try:
             cursor.execute("""
                         INSERT INTO User_Game
-                        VALUES ({}, {}, '{}', {})
+                        VALUES (?, ?, ?, ?)
                         ON CONFLICT (User_ID, Game_ID) DO 
-                        UPDATE SET (Char_JSON, Master) = (?, ?)""".format(user_id, game_id, char_json, master,),
-                           (char_json, master))
+                        UPDATE SET (Char_JSON, Master) = (?, ?)""", (user_id, game_id, char_json, master, char_json, master))
 
             connection.commit()
         except DatabaseError:
@@ -379,7 +378,8 @@ def insert_claim(name: str, description: str, prison: bool) -> bool:
     :param prison: if the claim is a prison claim or not
     :return: True if the claim is added, False otherwise
     """
-    if isinstance(name, str) and isinstance(description, str) and isinstance(prison, bool):
+    if isinstance(name, str) and isinstance(description, str) and isinstance(prison, int) \
+            and (prison == 0 or prison == 1):
         connection = establish_connection()
         cursor = connection.cursor()
 
@@ -564,7 +564,7 @@ def insert_xp_trigger(description: str, crew_char: bool) -> bool:
     :param crew_char: True if it's a crew upgrade, False otherwise
     :return: True if the xp trigger is added, False otherwise
     """
-    if isinstance(description, str) and isinstance(crew_char, bool):
+    if isinstance(description, str) and isinstance(crew_char, int) and (crew_char == 0 or crew_char == 1):
         connection = establish_connection()
         cursor = connection.cursor()
 
@@ -692,7 +692,8 @@ def insert_char_xp(character: str, xp_id: int, peculiar: bool) -> bool:
     :param peculiar: True if the xp trigger is peculiar of the character class, False otherwise
     :return: True if the relation is added, False otherwise
     """
-    if isinstance(character, str) and isinstance(xp_id, int) and isinstance(peculiar, bool):
+    if isinstance(character, str) and isinstance(xp_id, int) and isinstance(peculiar, int) \
+            and (peculiar == 0 or peculiar == 1):
         return insert_complex_relation("Char_Xp", character, xp_id, peculiar)
     return False
 
@@ -732,7 +733,8 @@ def insert_crew_sa(crew: str, sa: str, peculiar: bool) -> bool:
     :param peculiar: True if the special ability is peculiar of the crew type, False otherwise
     :return: True if the relation is added, False otherwise
     """
-    if isinstance(crew, str) and isinstance(sa, str) and isinstance(peculiar, bool):
+    if isinstance(crew, str) and isinstance(sa, str) and isinstance(peculiar, int) \
+            and (peculiar == 0 or peculiar == 1):
         return insert_complex_relation("Crew_SA", crew, sa, peculiar)
     return False
 
@@ -773,7 +775,8 @@ def insert_crew_xp(crew: str, xp_id: int, peculiar: bool) -> bool:
     :param peculiar: True if the xp trigger is peculiar of the crew type, False otherwise
     :return: True if the relation is added, False otherwise
     """
-    if isinstance(crew, str) and isinstance(xp_id, int) and isinstance(peculiar, bool):
+    if isinstance(crew, str) and isinstance(xp_id, int) and isinstance(peculiar, int) \
+            and (peculiar == 0 or peculiar == 1):
         return insert_complex_relation("Crew_Xp", crew, xp_id, peculiar)
     return False
 
@@ -787,7 +790,8 @@ def insert_starting_cohort(crew: str, gang_exp: bool, cohort_type: str) -> bool:
     :param cohort_type: type of the cohort
     :return: True if the relation is added, False otherwise
     """
-    if isinstance(crew, str) and isinstance(gang_exp, bool) and isinstance(cohort_type, str):
+    if isinstance(crew, str) and isinstance(gang_exp, int) and (gang_exp == 0 or gang_exp == 1) \
+            and isinstance(cohort_type, str):
         return insert_complex_relation("Starting_Cohort", crew, gang_exp, cohort_type)
     return False
 

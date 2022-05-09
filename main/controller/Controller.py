@@ -47,6 +47,16 @@ class Controller:
         :param pc: dict containing all the information about a pc. If None, no pc is added to the player.
         """
         game_id = query_game_ids(chat_id, game_title)[0]
+        human = None
+        if pc is not None:
+            action_dots = pc.pop("action_dots")
+            human = Human.from_json(pc)
+
+            # Transforming the dict into a list of tuples
+            action_dots = list(action_dots.items())
+            for action in action_dots:
+                human.add_action_dots(*action)
+
         for game in self.games:
             if game.identifier == game_id:
 
@@ -65,17 +75,22 @@ class Controller:
 
                         if is_master:
                             user.is_master = is_master
-                        if pc is not None:
-                            user.characters.append(Human(**pc))
+                        if human is not None:
+                            user.characters.append(human)
 
                         insert_user_game(player_id, game_id, save_to_json(user.characters), user.is_master)
                         return
 
                 # New user
-                human = None
+                """human = None
                 if pc is not None:
-                    human = [Human(**pc)]
+                    human = [Human.from_json(pc)]"""
                 new_player = Player(query_users_names(player_id)[0], player_id, is_master, human)
                 game.users.append(new_player)
 
                 insert_user_game(player_id, game_id, save_to_json(new_player.characters), is_master)
+
+    def __repr__(self) -> str:
+        return str(self.games)
+
+

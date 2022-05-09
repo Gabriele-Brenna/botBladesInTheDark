@@ -90,6 +90,8 @@ def get_user_id(update: Update) -> int:
     """
     if update.message is not None:
         return update.message.from_user.id
+    elif update.callback_query is not None:
+        return update.callback_query.from_user.id
 
 
 def get_user_pc(context: CallbackContext) -> List[str]:
@@ -125,6 +127,14 @@ def user_is_registered(update: Update, context: CallbackContext) -> bool:
 
 def test(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Test done")
+    context.user_data.setdefault("myPCs", {})["pippo"] = {'name': 'Pippo', 'alias': 'Giovannino', 'look': 'Goofy',
+                                                          'heritage': 'Akoros', 'background': 'Underworld',
+                                                          'pc_class': 'Whisper', 'vice': {'name': "Weird",
+                                                                                          'description': 'better not',
+                                                                                          'purveyor': "Topolino's house"
+                                                                                          },
+                                                          'description': 'yes'}
+
     print("TEST")
     print("Sender Data: ")
     print("\t{}".format(update.message.from_user))
@@ -140,6 +150,16 @@ def test(update: Update, context: CallbackContext) -> None:
     print("------------------------------------------------------------------------------")
     print("-----------------bot_data----------------------------------------------------")
     print(context.bot_data)
+    print("------------------------------------------------------------------------------")
+    print("-----------------callback_query-----------------------------------------------")
+    print(update.callback_query)
+    print("------------------------------------------------------------------------------")
+
+
+def print_controller(update: Update, context: CallbackContext):
+    update.message.reply_text("Controller printed")
+    print("-----------------CONTROLLER----------------------------------------------------")
+    print(controller)
     print("------------------------------------------------------------------------------")
 
 
@@ -193,6 +213,197 @@ def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, c
                                input_field_placeholder=input_field_placeholder)
 
 
+def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = True,
+                              inline: bool = True, split_row: int = 3) -> ReplyMarkup:
+    """
+    Builds a custom keyboard with buttons surrounded with others buttons with + and - symbols.
+
+    :param central_buttons: list of the central buttons.
+    :param back_button: True if the BACK button must be added at the end of the keyboard, False otherwise.
+    :param inline: False if the custom keyboard should be a ReplyKeyboardMarkup, True if an InlineKeyboard.
+    :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
+    :return: a ReplyMarkup object.
+    """
+    buttons = []
+    callbacks = []
+    for button in central_buttons:
+        buttons.append("➖")
+        buttons.append(button)
+        buttons.append("➕")
+
+        button = button.split(":")[0]
+        callbacks.append(button + " -1")
+        callbacks.append(button)
+        callbacks.append(button + " +1")
+
+    if back_button:
+        buttons.append("🔙 BACK")
+        callbacks.append("BACK")
+
+    return custom_kb(buttons, inline, split_row, callbacks)
+
+
+def store_value_and_update_kb(update: Update, context: CallbackContext, tags: List[str], value: Union[str, dict, list],
+                              lang_source: str = None, btn_label: str = None, split_row: int = None):
+    """
+    Update the Inline keyboard of the conversation, according to the last section chosen and filled by the user.
+    It also stores the last information received during the conversation.
+    It calls add_tag_in_user_data and update_inline_keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :param tags: the list of tags representing the target key dict in user_data.
+    :param value: the value to store in the target dict.
+    :param lang_source: the tag representing the target dict in the language dictionary.
+            If None the first element of tags' list is used.
+    :param btn_label: the text of the selected button.
+            If None the last element of tags' list is used.
+    :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
+    """
+    if btn_label is None:
+        btn_label = tags[-1]
+    if lang_source is None:
+        lang_source = tags[0]
+
+    add_tag_in_user_data(context, tags, value)
+    update_inline_keyboard(update, context, tags[0], btn_label, lang_source, split_row)
+
+
+def add_tag_in_user_data(context: CallbackContext, tags: List[str], value: Union[str, dict]):
+    """
+    Stores the passed value in the target dict.
+
+    :param context: instance of CallbackContext linked to the user.
+    :param tags: the list of tags representing the target key dict in user_data.
+    :param value: the value to store in the target dict.
+    """
+    pointer = context.user_data
+    for i in range(len(tags) - 1):
+        pointer.setdefault(tags[i], {})
+        pointer = pointer[tags[i]]
+    pointer[tags[-1]] = value
+
+
+def update_inline_keyboard(update: Update, context: CallbackContext, command: str, btn_label: str,
+                           lang_source: str, split_row: int = None):
+    """
+    Update the Inline keyboard of the conversation, according to the last section chosen and filled by the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :param command: represents the command that starts the conversation.
+    :param btn_label: the text of the selected button.
+            If None the last element of tags' list is used.
+    :param lang_source: the tag representing the target dict in the language dictionary.
+            If None the first element of tags' list is used.
+    :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
+    """
+    context.user_data[command]["message"].delete()
+    placeholders = get_lang(context, lang_source)
+
+    user_id = get_user_id(update)
+    updated_kb = context.user_data[command]["keyboard"]
+    print(btn_label)
+
+    for i in range(len(updated_kb)):
+        print(updated_kb[i])
+        if btn_label.lower() in updated_kb[i].lower():
+            print("found")
+            updated_kb[i] = btn_label.capitalize() + " ✅"
+
+    query_menu = context.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
+                                         reply_markup=custom_kb(updated_kb, split_row=split_row, inline=True))
+
+    context.user_data[command]["query_menu"] = query_menu
+
+
+def query_state_switcher(update: Update, context: CallbackContext, conversation: str, placeholders: dict,
+                         keyboards: List[List[str]], index_inlines: List[int] = None, starting_state: int = 1) -> int:
+    """
+    Handles the callback query from an Inline keyboard by redirecting the user in the correct state of the conversation
+    and sending him the associated message.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :param conversation: represents the btn_label of the conversation in the user_data.
+    :param placeholders: is the dictionary containing all the phrases to send.
+    :param keyboards: the list of the keyboards to send as reply_markup for each state.
+    :param index_inlines: list of the indexes of the keyboards that must be inline.
+    :param starting_state: the first state among the possible switches.
+    :return: the next state of the specified conversation.
+    """
+    if index_inlines is None:
+        index_inlines = []
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    keyboard = context.user_data[conversation]["keyboard"]
+
+    for i in range(len(keyboard)):
+        inline = False
+        if choice == keyboard[i]:
+            if i in index_inlines:
+                inline = True
+            query.delete_message()
+            context.user_data[conversation]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
+                                                                                 text=placeholders[str(i)],
+                                                                                 reply_markup=custom_kb(
+                                                                                     keyboards[i], inline=inline))
+            return i + starting_state
+    return 0
+
+
+def invalid_state_choice(update: Update, context: CallbackContext, command: str, placeholders: dict):
+    """
+    Handles an invalid choice of the user during a state of a conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :param command: represents the command that starts the conversation.
+    :param placeholders: is the dict containing the replies to send.
+    """
+    context.user_data[command]["message"].delete()
+    auto_delete_message(update.message.reply_text(placeholders["0"]))
+    context.user_data[command]["message"] = update.message.reply_text(text=placeholders["1"])
+    update.message.delete()
+
+
+def end_conv(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the abort of a conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    placeholders = get_lang(context, end_conv.__name__)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
+    auto_delete_message(update.message, 3.0)
+
+    auto_delete_message(message, 3.0)
+    return ConversationHandler.END
+
+
+def auto_delete_message(message: Message, timer: float = 5.0) -> None:
+    """
+    Delete the given message after the specified amount of time (in seconds)
+    running a separate Thread using a self-contained function.
+
+    :param message: the message to delete
+    :param timer: the time to wait before the deletion.
+    """
+
+    def execute(m: Message, t: float) -> None:
+        time.sleep(t)
+        m.delete()
+
+    Thread(target=execute, args=(message, timer)).start()
+
+
 def show_pc(update: Update, context: CallbackContext) -> None:
     """
     Displays the PCs stored in the user_data of the sender.
@@ -236,6 +447,7 @@ def start_bot():
     dispatcher.add_handler(ChatMemberHandler(track_chats, ChatMemberHandler.MY_CHAT_MEMBER))
 
     dispatcher.add_handler(CommandHandler("test".casefold(), test))
+    dispatcher.add_handler(CommandHandler("controller".casefold(), print_controller))
 
     dispatcher.add_handler(CommandHandler("help".casefold(), help_msg))
 
@@ -296,9 +508,16 @@ def start_bot():
             states={
                 0: [MessageHandler(Filters.text & ~Filters.command, join_game_name)],
                 1: [MessageHandler(Filters.text & ~Filters.command, join_add_player)],
-                2: [MessageHandler(Filters.text & ~Filters.command, join_complete_pc)]
+                2: [CallbackQueryHandler(join_complete_pc_state_switcher)],
+                3: [MessageHandler(Filters.text & ~Filters.command, join_complete_pc_ability)],
+                4: [CallbackQueryHandler(join_complete_pc_dots)],
+                5: [MessageHandler(Filters.text & ~Filters.command, join_complete_pc_friend)],
+                6: [MessageHandler(Filters.text & ~Filters.command, join_complete_pc_enemy)],
+                7: [CallbackQueryHandler(join_complete_pc_action_selection)]
             },
-            fallbacks=[CommandHandler("cancel".casefold(), end_conv)],
+            per_chat=False,
+            fallbacks=[CommandHandler("cancel".casefold(), join_end),
+                       CommandHandler("done".casefold(), join_end)],
             name="conv_join",
             persistent=True
         )
@@ -346,39 +565,6 @@ def help_msg(update: Update, context: CallbackContext) -> None:
         except:
             auto_delete_message(update.message.reply_text(placeholders["commands"]["error"].format(context.args[0]),
                                                           parse_mode=ParseMode.HTML))
-
-
-def end_conv(update: Update, context: CallbackContext) -> int:
-    """
-    Handles the abort of a conversation.
-
-    :param update: instance of Update sent by the user.
-    :param context: instance of CallbackContext linked to the user.
-    :return: ConversationHandler.END
-    """
-    placeholders = get_lang(context, end_conv.__name__)
-
-    message = update.message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
-    auto_delete_message(update.message, 3.0)
-
-    auto_delete_message(message, 3.0)
-    return ConversationHandler.END
-
-
-def auto_delete_message(message: Message, timer: float = 5.0) -> None:
-    """
-    Delete the given message after the specified amount of time (in seconds)
-    running a separate Thread using a self-contained function.
-
-    :param message: the message to delete
-    :param timer: the time to wait before the deletion.
-    """
-
-    def execute(m: Message, t: float) -> None:
-        time.sleep(t)
-        m.delete()
-
-    Thread(target=execute, args=(message, timer)).start()
 
 
 def start_login(update: Update, context: CallbackContext) -> None:
@@ -441,46 +627,6 @@ def login_receive_username(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_createPC---------------------------------------------------------------
 
-def create_pc_update_inline_keyboard(update: Update, context: CallbackContext, tag: str, wrapper_tag: str = None):
-    """
-    Update the Inline keyboard of the conv_createPC, according to the last section chosen and filled by the user.
-    It also stores the last information received during the conversation.
-
-    :param update: instance of Update sent by the user.
-    :param context: instance of CallbackContext linked to the user.
-    :param tag: is the tag to check in the user_data.
-    :param wrapper_tag: is an optional tag that wraps the tag.
-    """
-    placeholders = get_lang(context, create_pc.__name__)
-    user_id = get_user_id(update)
-    context.user_data["create_pc"]["message"].delete()
-
-    if wrapper_tag is None:
-        context.user_data.setdefault("create_pc", {}).setdefault("pc", {})[tag] = update.message.text
-    else:
-        context.user_data.setdefault("create_pc",
-                                     {}).setdefault("pc",
-                                                    {}).setdefault(wrapper_tag,
-                                                                   {})[tag] = update.message.text
-
-    updated_kb = context.user_data["create_pc"]["keyboard"]
-
-    if tag == "description":
-        tag = "notes"
-    if tag == "pc_class":
-        tag = "class"
-    if wrapper_tag is not None:
-        tag = wrapper_tag
-    for i in range(len(updated_kb)):
-        if tag in updated_kb[i].casefold():
-            updated_kb[i] = tag.capitalize() + " ✅"
-
-    query_menu = update.message.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
-                                                reply_markup=custom_kb(updated_kb, split_row=4, inline=True))
-
-    context.user_data["create_pc"]["query_menu"] = query_menu
-
-
 def create_pc(update: Update, context: CallbackContext) -> int:
     """
     Handles the creation of a PC checking if the user is already registered.
@@ -520,33 +666,26 @@ def create_pc_state_switcher(update: Update, context: CallbackContext) -> int:
     and sending him the associated message.
 
     :param update: instance of Update sent by the user.
-    :param context: instance of CallbackContext linked to the user.:
+    :param context: instance of CallbackContext linked to the user.
     :return: next conversation's state.
     """
     placeholders = get_lang(context, create_pc_state_switcher.__name__)
-    keyboard = context.user_data["create_pc"]["keyboard"]
+    keyboards = placeholders["keyboards"]
 
-    query = update.callback_query
-    query.answer()
+    keyboards.append(query_character_sheets(canon=True, spirit=False))
 
-    choice = query.data
+    vices = []
+    for vice in query_vice(as_dict=True, character_class="Human"):
+        if isinstance(vice, dict):
+            vices.append(vice["name"])
+    keyboards.append(vices)
 
-    for i in range(len(keyboard)):
-        if choice == keyboard[i]:
-            user_id = query.from_user.id
-            query.delete_message()
-            context.user_data["create_pc"]["message"] = context.bot.sendMessage(chat_id=user_id,
-                                                                                text=placeholders[str(i)],
-                                                                                reply_markup=custom_kb(
-                                                                                    placeholders[
-                                                                                        "keyboard_" + str(i)]))
-            return i + 1
-    return 0
+    return query_state_switcher(update, context, "create_pc", placeholders, keyboards)
 
 
 def create_pc_name(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("name") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("name") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
@@ -556,7 +695,7 @@ def create_pc_name(update: Update, context: CallbackContext) -> int:
     if update.message.text.lower() in get_user_pc(context):
         auto_delete_message(update.message.reply_text(placeholders["0"].format(update.message.text),
                                                       parse_mode=ParseMode.HTML), 8.0)
-    create_pc_update_inline_keyboard(update, context, "name")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "name"], value=update.message.text, split_row=3)
     update.message.delete()
 
     return 0
@@ -564,13 +703,14 @@ def create_pc_name(update: Update, context: CallbackContext) -> int:
 
 def create_pc_alias(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("alias") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("alias") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "alias")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "alias"],
+                              value=update.message.text, split_row=3)
     update.message.delete()
 
     return 0
@@ -578,13 +718,13 @@ def create_pc_alias(update: Update, context: CallbackContext) -> int:
 
 def create_pc_look(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("look") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("look") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "look")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "look"], value=update.message.text, split_row=3)
     update.message.delete()
 
     return 0
@@ -592,13 +732,14 @@ def create_pc_look(update: Update, context: CallbackContext) -> int:
 
 def create_pc_heritage(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("heritage") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("heritage") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "heritage")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "heritage"],
+                              value=update.message.text, split_row=3)
     update.message.delete()
 
     return 0
@@ -606,13 +747,14 @@ def create_pc_heritage(update: Update, context: CallbackContext) -> int:
 
 def create_pc_background(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("background") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("background") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "background")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "background"],
+                              value=update.message.text, split_row=3)
     update.message.delete()
 
     return 0
@@ -629,10 +771,7 @@ def create_pc_vice_name(update: Update, context: CallbackContext) -> int:
     """
     context.user_data["create_pc"]["message"].delete()
 
-    context.user_data.setdefault("create_pc",
-                                 {}).setdefault("pc",
-                                                {}).setdefault("vice",
-                                                               {})["name"] = update.message.text
+    add_tag_in_user_data(context, ["create_pc", "pc", "vice", "name"], update.message.text)
 
     placeholders = get_lang(context, create_pc_vice_name.__name__)
 
@@ -651,10 +790,7 @@ def create_pc_vice_description(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.:
     :return: the next state of the conversation.
     """
-    context.user_data.setdefault("create_pc",
-                                 {}).setdefault("pc",
-                                                {}).setdefault("vice",
-                                                               {})["description"] = update.message.text
+    add_tag_in_user_data(context, ["create_pc", "pc", "vice", "description"], update.message.text)
 
     placeholders = get_lang(context, create_pc_vice_description.__name__)
 
@@ -666,13 +802,14 @@ def create_pc_vice_description(update: Update, context: CallbackContext) -> int:
 
 def create_pc_vice_purveyor(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tags associated with this state ("vice" and "purveyor") to create_pc_update_inline_keyboard method.
+    Sends the tags associated with this state ("vice" and "purveyor") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "purveyor", "vice")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "vice", "purveyor"],
+                              value=update.message.text, btn_label="vice", split_row=3)
     update.message.delete()
 
     return 0
@@ -680,13 +817,14 @@ def create_pc_vice_purveyor(update: Update, context: CallbackContext) -> int:
 
 def create_pc_description(update: Update, context: CallbackContext) -> int:
     """
-    Sends the tag associated with this state ("description") to create_pc_update_inline_keyboard method.
+    Sends the btn_label associated with this state ("description") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
     :return: the state of the conversation switcher.
     """
-    create_pc_update_inline_keyboard(update, context, "description")
+    store_value_and_update_kb(update, context, tags=["create_pc", "pc", "description"],
+                              value=update.message.text, btn_label="notes", split_row=3)
     update.message.delete()
 
     return 0
@@ -695,7 +833,7 @@ def create_pc_description(update: Update, context: CallbackContext) -> int:
 def create_pc_class(update: Update, context: CallbackContext) -> int:
     """
     Calls a DBmanager method to check if the received class exists and, if so,
-    sends the tag associated with this state ("class") to create_pc_update_inline_keyboard method.
+    sends the btn_label associated with this state ("class") to store_value_and_update_kb method.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -704,16 +842,13 @@ def create_pc_class(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, create_pc_class.__name__)
 
     if exists_character(update.message.text):
-        create_pc_update_inline_keyboard(update, context, "pc_class")
+        store_value_and_update_kb(update, context, tags=["create_pc", "pc", "pc_class"],
+                                  value=update.message.text, btn_label="class", split_row=3)
         update.message.delete()
 
         return 0
     else:
-        context.user_data["create_pc"]["message"].delete()
-        message = update.message.reply_text(placeholders["0"])
-        auto_delete_message(message, 5.0)
-        context.user_data["create_pc"]["message"] = update.message.reply_text(text=placeholders["1"])
-        update.message.delete()
+        invalid_state_choice(update, context, "create_pc", placeholders)
         return 7
 
 
@@ -737,8 +872,8 @@ def create_pc_end(update: Update, context: CallbackContext) -> int:
     if "done".casefold() in command:
         if {"name", "alias", "look", "heritage", "background", "pc_class", "vice"}.issubset(
                 dict_create_pc["pc"].keys()):
-            context.user_data.setdefault("myPCs",
-                                         {})[dict_create_pc["pc"]["name"].lower()] = dict_create_pc["pc"]
+            add_tag_in_user_data(context, tags=["myPCs", dict_create_pc["pc"]["name"].lower()],
+                                 value=dict_create_pc["pc"])
         else:
             auto_delete_message(update.message.reply_text(placeholders["0"]))
             update.message.delete()
@@ -805,11 +940,26 @@ def create_game_title(update: Update, context: CallbackContext) -> None:
 
 
 def join(update: Update, context: CallbackContext) -> int:
+    """
+    Retrieves all the game available for the chat of invocation.
+    Checks if the user is registered.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if not user_is_registered(update, context):
+        return ConversationHandler.END
+
     placeholders = get_lang(context, join.__name__)
 
     titles = []
     for elem in query_games_info(update.message.chat_id):
         titles.append(elem["title"])
+
+    if not titles:
+        update.message.reply_text(placeholders["1"])
+        return ConversationHandler.END
 
     context.user_data.setdefault("join", {})["message"] = update.message.reply_text(placeholders["0"],
                                                                                     reply_markup=custom_kb(titles))
@@ -818,6 +968,14 @@ def join(update: Update, context: CallbackContext) -> int:
 
 
 def join_game_name(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the game selected by the user by checking if is valid.
+    If the game exists it sends the ReplyKeyboard with the list of the user's PCs and the option to join as Master.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
     placeholders = get_lang(context, join_game_name.__name__)
     context.user_data["join"]["message"].delete()
 
@@ -828,6 +986,8 @@ def join_game_name(update: Update, context: CallbackContext) -> int:
     if update.message.text not in titles:
         auto_delete_message(update.message.reply_text(placeholders["0"].format(update.message.text),
                                                       parse_mode=ParseMode.HTML), 10)
+
+        update.message.delete()
         return ConversationHandler.END
 
     context.user_data["join"]["game_name"] = update.message.text
@@ -836,11 +996,23 @@ def join_game_name(update: Update, context: CallbackContext) -> int:
     buttons.append("as Master")
     context.user_data["join"]["message"] = update.message.reply_text(placeholders["1"], reply_markup=custom_kb(buttons))
 
+    update.message.delete()
     return 1
 
 
 def join_add_player(update: Update, context: CallbackContext) -> int:
+    """
+    Checks the validity of user's selection.
+    If the user's choice is to join "as Master", his necessary data are forwarded to update_user_in_game method
+    of the controller.
+    If the user decides to join as a player, the conversation goes on with the completion phase of the selected PC.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation (end_conv() if the user joins as Master).
+    """
     placeholders = get_lang(context, join_add_player.__name__)
+    context.user_data["join"]["message"].delete()
 
     if update.message.text not in get_user_pc(context) and update.message.text.lower() != "as master":
         auto_delete_message(update.message.reply_text(placeholders[""]), 10)
@@ -853,13 +1025,340 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
                                    context.user_data["join"]["game_name"], is_master)
 
     if is_master:
+        update.message.reply_text(placeholders["0"].format(update.message.from_user.username,
+                                                           context.user_data["join"]["game_name"]),
+                                  parse_mode=ParseMode.HTML)
+        update.message.delete()
         return end_conv(update, context)
     else:
+        update.message.reply_text(placeholders["1"].format(update.message.from_user.username,
+                                                           context.user_data["join"]["game_name"],
+                                                           update.message.text),
+                                  parse_mode=ParseMode.HTML,
+                                  quote=False)
+
+        context.user_data["join"]["pc"] = {}
+        context.user_data["join"]["pc"].update(context.user_data["myPCs"][update.message.text.lower()])
+
+        context.user_data["join"]["chat_id"] = update.message.chat_id
+
+        join_complete_pc(update, context)
         return 2
 
 
-def join_complete_pc(update: Update, context: CallbackContext) -> int:
-    pass
+def join_complete_pc(update: Update, context: CallbackContext):
+    """
+    Redirects the user in his private chat by sending him a clickable link if the conversation started in a group chat,
+    and sends him the Inline Keyboard for the PC's attribute selection.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, join_complete_pc.__name__)
+    user_id = get_user_id(update)
+
+    url = helpers.create_deep_linked_url(context.bot.username)
+
+    if update.message.chat.type != "private":
+        update.effective_chat.send_message(placeholders["0"].format(update.message.from_user.username,
+                                                                    context.user_data["join"]["pc"]["name"], url),
+                                           reply_to_message_id=update.message.message_id,
+                                           parse_mode=ParseMode.HTML)
+
+    query_menu = update.message.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
+                                                reply_markup=custom_kb(placeholders["keyboard"],
+                                                                       inline=True))
+
+    context.user_data.setdefault("join", {})["keyboard"] = copy.deepcopy(placeholders["keyboard"])
+    context.user_data["join"]["query_menu"] = query_menu
+
+    update.message.delete()
+
+
+def join_complete_pc_state_switcher(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the callback query from the Inline keyboard by redirecting the user in the correct state of the completion
+    and sending him the associated message.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, join_complete_pc_state_switcher.__name__)
+
+    keyboards = []
+
+    abilities = []
+    for ability in query_special_abilities(sheet=context.user_data["join"]["pc"]["pc_class"], as_dict=True):
+        if isinstance(ability, dict):
+            abilities.append(ability["name"])
+    keyboards.append(abilities)
+
+    keyboards.append(query_attributes(only_names=True))
+
+    strange_friends = []
+    for npc in query_char_strange_friends(pc_class=context.user_data["join"]["pc"]["pc_class"], as_dict=True):
+        if isinstance(npc, dict):
+            strange_friends.append(npc["name"] + ", " + npc["role"])
+    keyboards.append(strange_friends)
+    keyboards.append(strange_friends)
+
+    return query_state_switcher(update, context, "join", placeholders, keyboards, index_inlines=[1], starting_state=3)
+
+
+def join_complete_pc_ability(update: Update, context: CallbackContext) -> int:
+    """
+    If the user chooses a valid option, sends the information associated with this state ("ability")
+    to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, join_complete_pc_ability.__name__)
+
+    ability = query_special_abilities(special_ability=update.message.text, as_dict=True)
+
+    if ability:
+        update.message.delete()
+        store_value_and_update_kb(update, context, tags=["join", "pc", "abilities"], value=ability,
+                                  btn_label="ability", lang_source="join_complete_pc")
+
+        return 2
+    else:
+        invalid_state_choice(update, context, "join", placeholders)
+        return 4
+
+
+def join_complete_pc_dots(update: Update, context: CallbackContext) -> int:
+    """
+    If the user chooses a valid option, sends the information associated with this state ("Action dots")
+    to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, join_complete_pc_dots.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    context.user_data["join"]["selected_attribute"] = choice
+
+    initial_dots = dict((x, y) for x, y in query_initial_dots(context.user_data["join"]["pc"]["pc_class"]))
+    context.user_data["join"].setdefault("action_dots", initial_dots)
+    action_dots = context.user_data["join"]["action_dots"]
+
+    if calc_total_dots(action_dots) == 7:
+        action_dots = initial_dots
+        context.user_data["join"]["action_dots"] = action_dots
+
+    buttons = create_central_buttons_action_dots(action_dots, choice)
+
+    context.user_data["join"]["message"].delete()
+    context.user_data["join"]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
+                                                                   text=placeholders["0"].format(
+                                                                       7 - calc_total_dots(action_dots)),
+                                                                   reply_markup=build_plus_minus_keyboard(buttons))
+    return 7
+
+
+def create_central_buttons_action_dots(action_dots: dict, attribute_selected: str):
+    """
+    Utility method used to create the buttons with the name of the actions and their number of dots associated with the
+    selected attributes.
+
+    :param action_dots: is the dict that contains the actions and their dots.
+    :param attribute_selected: is the user's chosen attribute
+    """
+    buttons = []
+    for action in query_action_list(attr=attribute_selected, as_list=True):
+        action = str(action).lower().capitalize()
+        if action in action_dots:
+            buttons.append("{}: {}".format(action, action_dots[action]))
+        else:
+            buttons.append("{}: 0".format(action))
+    return buttons
+
+
+def calc_total_dots(action_dots: dict) -> int:
+    """
+    Utility method used to calculate the amount of action dots spent by the user so far.
+
+    :param action_dots: is the dictionary of the actions.
+    :return: the amount of spent action dots.
+    """
+    total = 0
+    for key in action_dots:
+        total += action_dots[key]
+    return total
+
+
+def join_complete_pc_action_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the addition or removal of a specific action by the player
+    or the information request about a specific action.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, join_complete_pc_dots.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    action_dots = context.user_data["join"]["action_dots"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        choice = choice.split(" ")
+
+        action_dots.setdefault(choice[0], 0)
+        action_dots[choice[0]] += int(choice[1])
+
+        if action_dots[choice[0]] < 0:
+            action_dots[choice[0]] = 0
+        if action_dots[choice[0]] > 4:
+            action_dots[choice[0]] = 4
+
+        attribute = context.user_data["join"]["selected_attribute"]
+        buttons = create_central_buttons_action_dots(action_dots, attribute)
+
+        if calc_total_dots(action_dots) == 7:
+            print("end")
+            store_value_and_update_kb(update, context, tags=["join", "pc", "action_dots"], value=action_dots,
+                                      btn_label="Action Dots", lang_source="join_complete_pc")
+            return 2
+
+        context.user_data["join"]["message"].delete()
+        context.user_data["join"]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
+                                                                       text=placeholders["0"].format(
+                                                                           7 - calc_total_dots(action_dots)),
+                                                                       reply_markup=build_plus_minus_keyboard(buttons))
+
+        return 7
+
+    elif choice == "BACK":
+        context.user_data["join"]["message"].delete()
+        context.user_data["join"]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
+                                                                       text=placeholders["1"].format(
+                                                                           7 - calc_total_dots(action_dots)),
+                                                                       reply_markup=custom_kb(
+                                                                           query_attributes(only_names=True),
+                                                                           inline=True))
+        return 4
+
+    else:
+        auto_delete_message(context.bot.sendMessage(chat_id=get_user_id(update),
+                                                    text="Sample Text Action Description",
+                                                    ))
+        return 7
+
+
+def join_complete_pc_friend(update: Update, context: CallbackContext) -> int:
+    """
+    If the user chooses a valid option, sends the information associated with this state ("Friend")
+    to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, join_complete_pc_friend.__name__)
+
+    friend: List[dict] = query_char_strange_friends(pc_class=context.user_data["join"]["pc"]["pc_class"],
+                                                    strange_friend=update.message.text.split(",")[0], as_dict=True)
+
+    if friend:
+        update.message.delete()
+        store_value_and_update_kb(update, context, tags=["join", "pc", "friend"], value=friend[0],
+                                  lang_source="join_complete_pc")
+
+        return 2
+    else:
+        invalid_state_choice(update, context, "join", placeholders)
+        return 6
+
+
+def join_complete_pc_enemy(update: Update, context: CallbackContext) -> int:
+    """
+    If the user chooses a valid option, sends the information associated with this state ("Enemy")
+    to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, join_complete_pc_enemy.__name__)
+
+    enemy: List[dict] = query_char_strange_friends(pc_class=context.user_data["join"]["pc"]["pc_class"],
+                                                   strange_friend=update.message.text.split(",")[0], as_dict=True)
+
+    if enemy:
+        update.message.delete()
+        store_value_and_update_kb(update, context, tags=["join", "pc", "enemy"], value=enemy[0],
+                                  lang_source="join_complete_pc")
+
+        return 2
+    else:
+        invalid_state_choice(update, context, "join", placeholders)
+        return 6
+
+
+def join_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /done or /cancel is received.
+    If /done it check if all the necessary fields of the conversation have been filled and, if so,
+    it stores the completed PC in the user_data.
+    If /cancel it deletes the information collected so far.
+    In any case, it exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    command = update.message.text
+    placeholders = get_lang(context, join_end.__name__)
+
+    if "done".casefold() in command:
+        if {"name", "alias", "look", "heritage", "background", "pc_class", "vice",
+            "abilities", "action_dots", "friend", "enemy"}.issubset(
+                context.user_data["join"]["pc"].keys()):
+
+            controller.update_user_in_game(get_user_id(update), context.user_data["join"]["chat_id"],
+                                           context.user_data["join"]["game_name"], pc=context.user_data["join"]["pc"])
+        else:
+            auto_delete_message(update.message.reply_text(placeholders["0"]))
+            update.message.delete()
+            return 0
+
+    delete_conv_from_user_data(context, "join")
+
+    return end_conv(update, context)
+
+
+def delete_conv_from_user_data(context: CallbackContext, command: str):
+    """
+    Deletes the stored info in the user_data about the received command's conversation.
+
+    :param context: instance of CallbackContext linked to the user.
+    :param command: represents the the key of the conversaton in the user_data dict.
+    """
+    dict_command = context.user_data[command]
+    try:
+        dict_command["query_menu"].delete()
+    except:
+        pass
+
+    try:
+        dict_command["message"].delete()
+    except:
+        pass
+
+    context.user_data.pop(command)
 
 
 # ------------------------------------------conv_join-------------------------------------------------------------------

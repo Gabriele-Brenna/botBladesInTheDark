@@ -70,15 +70,7 @@
       "6": "Select your class.",
       "7": "The life of a criminal is stressful... you must have a vice to relief yourself.",
 
-
-      "keyboard_0": [],
-      "keyboard_1": [],
-      "keyboard_2": [],
-      "keyboard_3": ["Akoros","The Dagger Isles", "Iruvia", "Severos", "Skovlan","Tycheros"],
-      "keyboard_4": ["Academic", "Labour", "Law Trade", "Military", "Noble", "Underworld"],
-      "keyboard_5": [],
-      "keyboard_6": ["Cutter", "Hound", "Leech", "Lurk", "Slide", "Spider", "Whisper"],
-      "keyboard_7": ["Faith", "Gambling", "Luxury", "Obligation", "Pleasure", "Stupor", "Weird"]
+      "keyboards": [[], [], [], ["Akoros","The Dagger Isles", "Iruvia", "Severos", "Skovlan","Tycheros"], ["Academic", "Labour", "Law Trade", "Military", "Noble", "Underworld"], []]
     },
 
     "create_pc_vice_name": {
@@ -106,14 +98,52 @@
     },
 
     "join": {
-      "0": "Write the name of the game you want to join"
+      "0": "Write the name of the game you want to join",
+      "1": "There are no games for this chat to join in...\n/createGame to create a new one."
     },
 
     "join_game_name": {
-      "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame",
+      "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame ",
       "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game."
-    }
+    },
 
+    "join_add_player": {
+      "0": "<i>{}</i> joined the game <i>{}</i> as Master.",
+      "1": "<i>{}</i> joined the game <i>{}</i> with <i>{}</i>."
+    },
+
+    "join_complete_pc": {
+      "0": "{} is completing the creation of <i>{}</i> in <a href=\"{}\">private chat</a>",
+      "1": "Complete your PC by selecting the buttons below.\n /done when you are satisfied.\n /cancel if you have changed your mind.",
+      "keyboard": ["Ability", "Action dots", "Friend", "Enemy"]
+    },
+
+    "join_complete_pc_state_switcher": {
+      "0": "Write the name of your initial Special Ability.",
+      "1": "You have 4 action dots to assign. The initial action dots of your class are already present (if you want you can change them too)",
+      "2": "Doskvol is a dark place, but even here you will find some friends. Who is your ally?",
+      "3": "You are not a saint, so a lot of people will struggle against you. Who is your rival?"
+    },
+
+    "join_complete_pc_ability": {
+      "0": "This special ability doesn't exist yet...",
+      "1": "Select an existing ability.\n/data for more info."
+    },
+
+    "join_complete_pc_friend": {
+      "0": "This NPC doesn't belong to your strange friends pool...",
+      "1": "Select another NPC.\n/data for more info."
+    },
+
+    "join_complete_pc_enemy": {
+      "0": "This NPC doesn't belong to your strange friends pool...",
+      "1": "Select another NPC.\n/data for more info."
+    },
+
+    "join_complete_pc_dots": {
+      "0": "Add or remove the action dots of your choice.\n{} points left.",
+      "1": "You have {} action dots left "
+    }
 
   },
 

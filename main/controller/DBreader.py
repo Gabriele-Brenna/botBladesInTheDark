@@ -1,57 +1,65 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 from character.Action import Action
 from character.Attribute import Attribute
+from character.NPC import NPC
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 from controller.DBmanager import *
 
 
-def query_special_abilities(special_ability: str = None, peculiar: bool = False) -> List[SpecialAbility]:
+def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None,
+                            as_dict: bool = False) -> Union[List[SpecialAbility], List[Dict[str, str]]]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
 
+    :param sheet: represents the sheet of interest, both crews and characters.
+    :param peculiar: if True, the search is restricted to peculiar abilities only.
     :param special_ability: represents the name of the ability to get;
         if it is None, the complete list of special abilities is retrieved;
-        if peculiar is set to True this parameter represents the class of interest.
-    :param peculiar: if True, the search is restricted to peculiar abilities only.
+    :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of SpecialAbility objects
     """
     connection = establish_connection()
     cursor = connection.cursor()
 
-    q_select = "SELECT S.name, S.description"
+    q_select = "SELECT Name, Description"
 
-    q_from = "\nFROM SpecialAbility S"
+    q_from = "\nFROM SpecialAbility"
 
     q_where = "\n"
 
-    if peculiar is True:
-        special_ability = special_ability.lower().capitalize()
-        if exists_character(special_ability):
-            q_from += " JOIN Char_SA C ON S.name = C.SpecialAbility"
-            q_where += "WHERE C.peculiar is True"
-            if special_ability is not None:
-                q_where += " AND C.character = '{}'".format(special_ability)
-        elif exists_crew(special_ability):
-            q_from += " JOIN Crew_SA C ON S.name = C.SpecialAbility"
-            q_where += "WHERE C.peculiar is True"
-            if special_ability is not None:
-                q_where += " AND C.crew = '{}'".format(special_ability)
-        else:
-            return []
+    if special_ability is not None:
+        q_where += "WHERE Name = '{}'".format(special_ability)
 
     else:
-        if special_ability is not None:
-            q_where += "WHERE S.name = '{}'".format(special_ability)
+        if sheet is not None:
+            if exists_crew(sheet):
+                q_from += " JOIN Crew_SA ON Name = SpecialAbility"
+                q_where += "WHERE Crew = '{}'".format(sheet)
+            elif exists_character(sheet):
+                q_from += " JOIN Char_SA ON Name = SpecialAbility"
+                q_where += "WHERE Character = '{}'".format(sheet)
+            else:
+                return []
+            if peculiar is not None:
+                q_where += " AND peculiar is {}".format(peculiar)
+        elif peculiar is not None:
+            q_from = "\nFROM (SpecialAbility S LEFT JOIN Crew_SA CREW ON S.Name = CREW.SpecialAbility) LEFT JOIN " \
+                     "Char_SA CHAR ON S.Name = CHAR.SpecialAbility "
+            q_where += "WHERE CREW.peculiar is {} OR CHAR.peculiar is {}".format(peculiar, peculiar)
 
     cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
-    abilities = []
 
-    for ability in rows:
-        abilities.append(SpecialAbility(ability[0], ability[1]))
+    abilities = []
+    for elem in rows:
+        abilities.append({"name": elem[0], "description": elem[1]})
+
+    if not as_dict:
+        for i in range(len(abilities)):
+            abilities[i] = SpecialAbility(**abilities[i])
 
     return abilities
 
@@ -113,37 +121,46 @@ def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
     return xp_triggers
 
 
-def query_action_list(attr: str) -> List[Action]:
+def query_action_list(attr: str = None, as_list: bool = False) -> Union[List[Action], List[str]]:
     """
     Retrieve the list of Actions of the specified attribute
 
     :param attr: is the Attribute of interest
+    :param as_list: if True the result objects will be returned as a list of strings.
     :return: a list of Actions
     """
     connection = establish_connection()
     cursor = connection.cursor()
 
-    cursor.execute("""
+    query = """
     SELECT name
-    FROM Action
-    WHERE attribute = '{}'
-    """.format(attr))
+    FROM Action"""
+
+    if attr is not None:
+        query += "\nWHERE attribute = '{}'".format(attr)
+
+    cursor.execute(query)
 
     rows = cursor.fetchall()
 
     actions = []
     for action in rows:
-        actions.append(Action(str(action[0]).lower()))
+        if as_list:
+            actions.append(str(action[0]).lower())
+        else:
+            actions.append(Action(str(action[0]).lower()))
 
     return actions
 
 
-def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
+def query_vice(vice: str = None, character_class: str = None,
+               as_dict: bool = False) -> Union[List[Vice], List[Dict[str, str]]]:
     """
     Retrieves the list of Vices of the specified character class or the specified vice.
 
     :param vice: is the Vice of interest
     :param character_class: is the class of interest
+    :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of Vices
     """
     connection = establish_connection()
@@ -166,7 +183,11 @@ def query_vice(vice: str = None, character_class: str = None) -> List[Vice]:
 
     vices = []
     for elem in rows:
-        vices.append(Vice(elem[0], elem[1]))
+        vices.append({"name": elem[0], "description": elem[1]})
+
+    if not as_dict:
+        for i in range(len(vices)):
+            vices[i] = Vice(**vices[i])
 
     return vices
 
@@ -207,7 +228,7 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
     return sheets
 
 
-def query_attributes() -> List[Attribute]:
+def query_attributes(only_names: bool = False) -> Union[List[Attribute], List[str]]:
     """
     Retrieves the list of all Attributes of the game
 
@@ -226,11 +247,13 @@ def query_attributes() -> List[Attribute]:
     for elem in cursor.fetchall():
         attribute_names.append(elem[0])
 
-    attributes = []
-    for i in range(len(attribute_names)):
-        attributes.append(Attribute(attribute_names[i], query_action_list(attribute_names[i])))
+    if not only_names:
+        attributes = []
+        for i in range(len(attribute_names)):
+            attributes.append(Attribute(attribute_names[i], query_action_list(attribute_names[i])))
 
-    return attributes
+        return attributes
+    return attribute_names
 
 
 def query_initial_dots(sheet: str) -> List[Tuple[str, int]]:
@@ -445,3 +468,35 @@ def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
     for elem in rows:
         ids.append(elem[0])
     return ids
+
+
+def query_char_strange_friends(pc_class: str = None, strange_friend: str = None, as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
+
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+    SELECT Name, Role
+    FROM Char_Friend JOIN NPC ON NPC = NpcID"""
+
+    if pc_class is not None and strange_friend is not None:
+        query += "\nWHERE Character = '{}' AND Name = '{}'".format(pc_class.lower().capitalize(),
+                                                                   strange_friend.lower().capitalize())
+    elif pc_class is not None:
+        query += "\nWHERE Character = '{}'".format(pc_class.lower().capitalize())
+    elif strange_friend is not None:
+        query += "\nWHERE Name = '{}'".format(strange_friend.lower().capitalize())
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    strange_friends = []
+    for elem in rows:
+        strange_friends.append({"name": elem[0], "role": elem[1]})
+
+    if not as_dict:
+        for i in range(len(strange_friends)):
+            strange_friends[i] = NPC(**strange_friends[i])
+
+    return strange_friends

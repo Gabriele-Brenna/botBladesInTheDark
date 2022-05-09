@@ -4,7 +4,7 @@ class Playbook:
     When an advance is taken from this track a new special ability can be obtained
     """
 
-    def __init__(self, exp_limit: int, exp: int = 0, points: int = 0) -> None:
+    def __init__(self, exp_limit: int = 8, exp: int = 0, points: int = 0) -> None:
         self.exp_limit = exp_limit
         self.points = points
         self.exp = 0

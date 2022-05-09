@@ -356,16 +356,32 @@ def add_initial_dots(pc: PC, sheet: str):
         pc.add_action_dots(*elem)
 
 
-def pc_from_json(data):
+def pc_from_json(data: dict) -> dict:
     """
     Method used to create a dictionary where the values are the attributes of this class.
 
     :param data: dictionary containing the dictionary of the attributes of this class
     :return: dictionary where each item has key = name of class attribute, value = object
     """
-    dictionary = {"items": list(map(Item.from_json, data["items"])), "healing": Clock.from_json(data["healing"]),
-                  "abilities": list(map(SpecialAbility.from_json, data["abilities"])),
-                  "playbook": Playbook.from_json(data["playbook"]),
-                  "attributes": list(map(Attribute.from_json, data["attributes"]))}
-    pop_dict_items(data, ["items", "healing", "abilities", "playbook", "attributes"])
+
+    items = []
+    dictionary = {}
+
+    if "items" in data:
+        dictionary["items"] = list(map(Item.from_json, data["items"]))
+        items.append("items")
+    if "healing" in data:
+        dictionary["healing"] = Clock.from_json(data["healing"])
+        items.append("healing")
+    if "abilities" in data:
+        dictionary["abilities"] = list(map(SpecialAbility.from_json, data["abilities"]))
+        items.append("abilities")
+    if "playbook" in data:
+        dictionary["playbook"] = Playbook.from_json(data["playbook"])
+        items.append("playbook")
+    if "attributes" in data:
+        dictionary["attributes"] = list(map(Attribute.from_json, data["attributes"]))
+        items.append("attributes")
+
+    pop_dict_items(data, items)
     return dictionary

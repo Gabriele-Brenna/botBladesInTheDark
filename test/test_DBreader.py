@@ -16,7 +16,7 @@ class TestDBReader(TestCase):
         self.assertEqual(query, len(query_special_abilities()))
 
         self.assertEqual([SpecialAbility("Mule", "Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.")],
-                         query_special_abilities("Mule"))
+                         query_special_abilities(special_ability="Mule"))
         self.assertEqual([SpecialAbility("Battleborn", "You may expend your special armor to reduce harm from an "
                                                        "attack in combat or to push yourself during a fight. ")],
                          query_special_abilities("Cutter", True))
@@ -234,3 +234,16 @@ class TestDBReader(TestCase):
 
         self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
         self.connection.commit()
+
+    def test_query_char_strange_friends(self):
+        cutter_friends = [{'name': 'Marlane', 'description': '', 'role': 'A pugilist', 'faction': None},
+                          {'name': 'Chael', 'description': '', 'role': 'A vicious thug', 'faction': None},
+                          {'name': 'Mercy', 'description': '', 'role': 'A cold killer', 'faction': None},
+                          {'name': 'Grace', 'description': '', 'role': 'An extortionist', 'faction': None},
+                          {'name': 'Sawtooth', 'description': '', 'role': 'A physicker', 'faction': None}]
+
+        friends = []
+        for i in range(len(cutter_friends)):
+            friends.append(NPC(**cutter_friends[i]))
+
+        self.assertEqual(friends, query_char_strange_friends("cutter"))

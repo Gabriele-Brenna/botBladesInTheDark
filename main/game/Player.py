@@ -67,13 +67,7 @@ class Player:
                 return c
 
     def __repr__(self) -> str:
-        out = """{}:
-    ID: {}
-    is the GM? {}
-    Characters: """.format(self.name, self.player_id, self.is_master)
-        for c in self.characters:
-            out += c.name + "; "
-        return out
+        return str(self.__dict__)
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
