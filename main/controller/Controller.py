@@ -67,7 +67,10 @@ class Controller:
                         master.is_master = False
                         if not master.characters:
                             game.users.remove(master)
-                            delete_user_game(player_id, chat_id)
+                            delete_user_game(master.player_id, game_id)
+                        else:
+                            insert_user_game(master.player_id, game_id, save_to_json(master.characters),
+                                             master.is_master)
 
                 # User already present
                 for user in game.users:
@@ -82,10 +85,9 @@ class Controller:
                         return
 
                 # New user
-                """human = None
-                if pc is not None:
-                    human = [Human.from_json(pc)]"""
-                new_player = Player(query_users_names(player_id)[0], player_id, is_master, human)
+                new_player = Player(query_users_names(player_id)[0], player_id, is_master)
+                if human is not None:
+                    new_player.characters.append(human)
                 game.users.append(new_player)
 
                 insert_user_game(player_id, game_id, save_to_json(new_player.characters), is_master)

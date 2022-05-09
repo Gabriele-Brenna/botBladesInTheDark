@@ -247,3 +247,18 @@ class TestDBReader(TestCase):
             friends.append(NPC(**cutter_friends[i]))
 
         self.assertEqual(friends, query_char_strange_friends("cutter"))
+
+    def test_query_actions(self):
+        self.assertEqual([('Tinker',
+                           'When you Tinker, you fiddle with devices and mechanisms. You might create a '
+                           + 'new gadget or alter an existing item. You might pick a lock or crack a '
+                           + 'safe. You might disable an alarm or trap. You might turn the clockwork and '
+                           + 'electroplasmic devices around the city to your advantage. You could try to '
+                           + 'use your technical expertise to control a vehicle (but Finessing might be '
+                           + 'better).',
+                           'Insight')], query_actions("Tinker"))
+
+        names = []
+        for result in query_actions(attribute="Insight"):
+            names.append(result[0])
+        self.assertEqual(["Hunt", "Study", "Survey", "Tinker"], names)

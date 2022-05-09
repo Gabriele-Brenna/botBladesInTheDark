@@ -470,8 +470,8 @@ def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
     return ids
 
 
-def query_char_strange_friends(pc_class: str = None, strange_friend: str = None, as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
-
+def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
+                               as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
     connection = establish_connection()
     cursor = connection.cursor()
 
@@ -500,3 +500,30 @@ def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
             strange_friends[i] = NPC(**strange_friends[i])
 
     return strange_friends
+
+
+def query_actions(action: str = None, attribute: str = None) -> List[Tuple[str, str, str]]:
+    """
+    Retrieves from the DB the information about a specified Action or group of actions.
+
+    :param action: is the Action to search.
+    :param attribute: is the group of action to search.
+    :return: a list of tuples, containing the name of the Action, its description and its attribute of belonging
+            (in this order)
+    """
+
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+    SELECT *
+    FROM Action"""
+
+    if action is not None:
+        query += "\nWHERE Name = '{}'".format(action)
+    elif attribute is not None:
+        query += "\nWHERE Attribute = '{}'".format(attribute)
+
+    cursor.execute(query)
+
+    return cursor.fetchall()
