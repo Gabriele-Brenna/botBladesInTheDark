@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from character.Action import Action
 from character.Attribute import Attribute
@@ -370,3 +370,96 @@ def query_lang(game_id: int) -> str:
     WHERE Game_ID = {}""".format(game_id))
 
     return cursor.fetchone()[0]
+
+
+def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
+    """
+    Retrieves the Game_ID, Title and Tel_Chat_ID of all the games stored in the Data Base
+
+    :param chat_id: if this parameter is passed, only the info about the game of the specified chat are retrieved.
+    :param game_id: if this parameter is passed, only the info of the specified game are retrieved.
+    :return:
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+       SELECT Game_ID, Title, Tel_Chat_ID
+       FROM Game"""
+
+    if chat_id is not None:
+        query += "\nWHERE Tel_Chat_ID = {}".format(chat_id)
+
+    elif game_id is not None:
+        query += "\nWHERE Game_ID = {}".format(game_id)
+
+    cursor.execute(query)
+
+    games_info = []
+    rows = cursor.fetchall()
+
+    if rows:
+        for t in rows:
+            games_info.append({"identifier": t[0], "title": t[1], "chat_id": t[2]})
+    return games_info
+
+
+def query_users_names(user_id: int = None) -> List[str]:
+    """
+    Retrieves the list of registered users' names.
+
+    :param user_id: if passed, the specific username associated to this id is searched.
+    :return: a list of usernames
+    """
+
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+    SELECT Name
+    FROM User"""
+
+    if user_id is not None:
+        query += "\nWHERE Tel_ID = {}".format(user_id)
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    usernames = []
+    for user in rows:
+        usernames.append(user[0])
+    return usernames
+
+
+def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
+    """
+    Retrieves a list of Game IDs from the Game table in the DB.
+    If no arguments are passed, it retrieves all the IDs of the games.
+
+    :param tel_chat_id: the Telegram chat ID of interest.
+    :param title: The title of the games of interest.
+    :return: a list of int IDs.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+    SELECT Game_ID
+    FROM Game"""
+
+    if tel_chat_id is not None and title is not None:
+        query += "\nWHERE (Tel_Chat_ID, Title) = ({}, '{}')".format(tel_chat_id, title)
+    elif tel_chat_id is not None:
+        query += "\nWHERE Tel_Chat_ID = {}".format(tel_chat_id)
+    elif title is not None:
+        query += "\nWHERE Title = '{}'".format(title)
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    ids = []
+    for elem in rows:
+        ids.append(elem[0])
+    return ids

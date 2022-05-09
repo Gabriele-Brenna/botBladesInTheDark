@@ -10,18 +10,40 @@ from game.Score import Score
 from organization.Crew import Crew
 from organization.Faction import Faction
 
-FREE_PLAY, SCORE_PHASE, DOWNTIME_PHASE = range(3)
+INIT, FREE_PLAY, SCORE_PHASE, DOWNTIME_PHASE = range(4)
 
 
 class Game:
     """
     Represents an instance of a game and keeps track of the participants and their roles
     """
-    def __init__(self, identifier: int = query_last_game_id()+1, title: str = "Game" + str(query_last_game_id()+1),
+    def __init__(self, identifier: int = None, title: str = None,
                  users: List[Player] = None, NPCs: List[NPC] = None, crew: Crew = Crew(),
                  factions: List[Faction] = None, clocks: List[Clock] = None, scores: List[Score] = None,
-                 crafted_items: List[Item] = None, journal: Journal = Journal(), state: int = FREE_PLAY) -> None:
+                 crafted_items: List[Item] = None, journal: Journal = Journal(), state: int = INIT,
+                 chat_id: int = None) -> None:
+        """
+        Constructor of the Game.
+
+        :param identifier: id of this Game instance. If None it is automatically set to the last game id in the DB +1.
+        :param title: title of the Game. If None it is set to "Game[ID]".
+        :param users: list of Players that have joined the Game.
+        :param NPCs: list of NPCs that have been loaded during the Game.
+        :param crew: the Crew of the characters in this Game.
+        :param factions: list of Factions that have been loaded during the Game.
+        :param clocks: list of Clocks that have been started during the Game.
+        :param scores: list of the active Scores.
+        :param crafted_items: list of Items that have been created during the Game.
+        :param journal: Journal of this Game.
+        :param state: is the current state of this Game. When the game is created the state is set to INIT.
+                      (The possible states are INIT, FREE_PLAY, SCORE_PHASE, DOWNTIME_PHASE).
+        :param chat_id: id of the telegram chat that has started the game
+        """
+        if identifier is None:
+            identifier = query_last_game_id()+1
         self.identifier = identifier
+        if title is None:
+            title = "Game" + str(query_last_game_id()+1)
         self.title = title
         if users is None:
             users = []
@@ -47,6 +69,7 @@ class Game:
         if state < 0 or state > 2:
             state = FREE_PLAY
         self.state = state
+        self.chat_id = chat_id
 
     def get_project_clocks(self) -> List[Clock]:
         """
@@ -113,3 +136,20 @@ class Game:
         :return: the first Score that matches the search
         """
         return max(self.scores, key=lambda score: len(score.participants))
+
+    def get_master(self) -> Player:
+        """
+        Searches the list of users and gets the one who is master.
+
+        :return: a Player with the attribute is_master = True
+        """
+        for p in self.users:
+            if p.is_master:
+                return p
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
+
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+

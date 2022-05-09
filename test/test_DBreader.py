@@ -174,8 +174,8 @@ class TestDBReader(TestCase):
         self.assertEqual(first_game, query_users_from_game(1))
         self.assertEqual(second_game, query_users_from_game(2))
 
-        self.cursor.execute("DELETE FROM Game")
-        self.cursor.execute("DELETE FROM User")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1 OR Game_ID = 2")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 OR Tel_ID = 2 OR Tel_ID = 3")
         self.connection.commit()
 
     def test_query_pc_json(self):
@@ -198,8 +198,42 @@ class TestDBReader(TestCase):
 
         self.assertEqual({1: "{'Character': 'JSON'}", 2: "{'Character': 'JSON'}"}, query_pc_json(1))
 
-        self.cursor.execute("DELETE FROM Game")
-        self.cursor.execute("DELETE FROM User")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = 1 OR Tel_ID = 2")
+        self.connection.commit()
+
+    def test_query_games_info(self):
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                VALUES (-1, "Game1", 1)""")
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                VALUES (-2, "Game2", 2)""")
+        self.connection.commit()
+
+        self.assertEqual([{"identifier": -2, "title": "Game2", "chat_id": 2},
+                          {"identifier": -1, "title": "Game1", "chat_id": 1}], query_games_info())
+
+        self.assertEqual([{"identifier": -1, "title": "Game1", "chat_id": 1}], query_games_info(game_id=-1))
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
+        self.connection.commit()
+
+    def test_query_game_ids(self):
+        self.cursor.execute("""
+                       INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                       VALUES (-1, "Game1", 1)""")
+        self.cursor.execute("""
+                       INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
+                       VALUES (-2, "Game2", 2)""")
+        self.connection.commit()
+
+        self.assertEqual([-1], query_game_ids(title="Game1"))
+        self.assertEqual([-1], query_game_ids(tel_chat_id=1))
+        self.assertEqual([-2], query_game_ids(2, "Game2"))
+        self.assertEqual([-2, -1], query_game_ids())
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1 OR Game_ID = -2")
         self.connection.commit()
 
     def test_query_lang(self):

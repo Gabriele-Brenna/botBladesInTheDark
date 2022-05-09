@@ -13,16 +13,22 @@
 
     "help_msg": {
       "default": {
-        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E)",
-        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction\n\n/login - register your telegram account by choosing a username"
+        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E) type /help followed by the name of the command",
+        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction\n\n/login - register your telegram account by choosing a username.\n",
+        "2": "<i>-CREATION-</i>\n/createPC - start the creation of a PC. \uD83D\uDD0E\n"
       },
       "commands": {
-
+        "error": "The command <u>{}</u> does not exist.",
+        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him."
       }
     },
 
     "start_login": {
       "0": "You are approaching Doskvol, to register: <a href=\"{}\">[\uD83D\uDD10  CLICK HERE  \uD83D\uDD10]</a> "
+    },
+
+    "user_is_registered": {
+      "0": "You cannot use this command. Please /login"
     },
 
     "login": {
@@ -35,12 +41,78 @@
       "1": "Something went wrong..."
     },
 
-    "cancel": {
-      "0": "Command canceled"
+    "end_conv": {
+      "0": "Conversation end."
+    },
+
+    "create_pc": {
+      "0": "{} is starting the creation of a PC in <a href=\"{}\">private chat</a>",
+      "1": "Complete the description of your PC by selecting the buttons below.\n /done when you are satisfied of your brand new scoundrel.\n /cancel if you have changed your mind.",
+      "keyboard" : ["Name", "Alias", "Look", "Heritage", "Background", "Notes",  "Class", "Vice"]
+    },
+
+    "create_pc_class": {
+      "0": "This class doesn't exist yet...",
+      "1": "Select an existing class.\n/data for more info."
+    },
+
+    "create_pc_name": {
+      "0": "⚠ You already have a PC named <u>{}</u>, if you don't change name, it will be overwritten. ⚠"
+    },
+
+    "create_pc_state_switcher": {
+      "0": "What's your name?",
+      "1": "What would you like to be called?",
+      "2": "Describe briefly your appearance",
+      "3": "What can you tell about your heritage?",
+      "4": "Let's talk more about yourself. What is your background?",
+      "5": "Describe the unique features of yours.",
+      "6": "Select your class.",
+      "7": "The life of a criminal is stressful... you must have a vice to relief yourself.",
+
+
+      "keyboard_0": [],
+      "keyboard_1": [],
+      "keyboard_2": [],
+      "keyboard_3": ["Akoros","The Dagger Isles", "Iruvia", "Severos", "Skovlan","Tycheros"],
+      "keyboard_4": ["Academic", "Labour", "Law Trade", "Military", "Noble", "Underworld"],
+      "keyboard_5": [],
+      "keyboard_6": ["Cutter", "Hound", "Leech", "Lurk", "Slide", "Spider", "Whisper"],
+      "keyboard_7": ["Faith", "Gambling", "Luxury", "Obligation", "Pleasure", "Stupor", "Weird"]
+    },
+
+    "create_pc_vice_name": {
+      "0": "Describe briefly your vice"
+    },
+
+    "create_pc_vice_description": {
+      "0": "How do you manage to obtain what you seek? Tell who your purveyor is or where you go to satisfy your needs."
+    },
+
+    "create_pc_vice_purveyor": {
+      "0": "Describe briefly your vice"
+    },
+
+    "create_pc_end": {
+      "0": "⚠ Cannot save a partially described PC. Please fill all the fields."
+    },
+
+    "create_game": {
+      "0": "Insert the name of the game"
+    },
+
+    "create_game_title": {
+      "0": "Game <u>{}</u> created successfully with id: {}"
+    },
+
+    "join": {
+      "0": "Write the name of the game you want to join"
+    },
+
+    "join_game_name": {
+      "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame",
+      "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game."
     }
-
-
-
 
 
   },
