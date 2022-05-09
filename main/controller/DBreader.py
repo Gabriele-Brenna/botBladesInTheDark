@@ -377,6 +377,24 @@ def query_pc_json(game_id: int) -> dict:
     return dict_json
 
 
+def query_lang(game_id: int) -> str:
+    """
+    Retrieve the language preferred in a specific Game.
+
+    :param game_id: int representing the specific Game
+    :return: str representing the language
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT Language
+    FROM Game
+    WHERE Game_ID = {}""".format(game_id))
+
+    return cursor.fetchone()[0]
+
+
 def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
     """
     Retrieves the Game_ID, Title and Tel_Chat_ID of all the games stored in the Data Base

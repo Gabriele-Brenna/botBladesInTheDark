@@ -260,7 +260,7 @@ def insert_state(game_id: int, state: int) -> bool:
 
     :param game_id: int representing the identifier of the game
     :param state: int representing the current state
-    :return: True if the journal has been added, False otherwise
+    :return: True if the state has been added, False otherwise
     """
     if isinstance(game_id, int) and isinstance(state, int):
 
@@ -276,6 +276,39 @@ def insert_state(game_id: int, state: int) -> bool:
             UPDATE Game
             SET State = {}
             WHERE Game_ID = {}""".format(state, game_id))
+
+            connection.commit()
+
+        except DatabaseError:
+            traceback.print_exc()
+            return False
+        return True
+    return False
+
+
+def insert_lang(game_id: int, lang: str = "ENG") -> bool:
+    """
+    Insert the preferred language for the game.
+
+    :param game_id: int representing the identifier of the game
+    :param lang: str representing the language
+    :return: True if the language has been added, False otherwise
+    """
+    if isinstance(game_id, int) and isinstance(lang, str):
+
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        try:
+
+            if not exists_game(game_id):
+                raise DatabaseError("Wrong game selected")
+
+            cursor.execute("""
+            UPDATE Game
+            SET Language = '{}'
+            WHERE Game_ID = {}
+            """.format(lang, game_id))
 
             connection.commit()
 
