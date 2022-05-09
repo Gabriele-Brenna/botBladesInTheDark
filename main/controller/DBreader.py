@@ -352,3 +352,21 @@ def query_pc_json(game_id: int) -> dict:
     for t in rows:
         dict_json[t[0]] = t[1]
     return dict_json
+
+
+def query_lang(game_id: int) -> str:
+    """
+    Retrieve the language preferred in a specific Game.
+
+    :param game_id: int representing the specific Game
+    :return: str representing the language
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT Language
+    FROM Game
+    WHERE Game_ID = {}""".format(game_id))
+
+    return cursor.fetchone()[0]

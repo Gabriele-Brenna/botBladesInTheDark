@@ -116,7 +116,8 @@ class TestDBReader(TestCase):
 
     def test_query_game_json(self):
         self.cursor.execute("""
-        INSERT INTO Game
+        INSERT INTO Game (Game_ID, Title, Tel_Chat_ID, Crew_JSON, Crafted_Item_JSON, NPC_JSON, Faction_JSON, Score_JSON, 
+        Clock_JSON, Journal, State)
         VALUES (1, "Game1", 1, '{"Assassins": "Hit man"}', '{"Aerondight": "Magical silver sword"}', 
         '{"Dandelion": "An humble bard"}', '{"The Unseen": "One you see them you can not unsee them"}', 
         '{"Jenny o the Woods": "Love can make you become a nightwraith"}', '{"Healing": "How long will it take?"}',
@@ -199,4 +200,15 @@ class TestDBReader(TestCase):
 
         self.cursor.execute("DELETE FROM Game")
         self.cursor.execute("DELETE FROM User")
+        self.connection.commit()
+
+    def test_query_lang(self):
+        self.cursor.execute("""
+        INSERT INTO Game (Game_ID, Title, Tel_Chat_ID, Language)
+        VALUES (1, "Game1", 1, "ENG")""")
+        self.connection.commit()
+
+        self.assertEqual("ENG", query_lang(1))
+
+        self.cursor.execute("DELETE FROM Game")
         self.connection.commit()

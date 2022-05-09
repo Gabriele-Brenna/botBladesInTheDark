@@ -111,6 +111,16 @@ class TestDBwriter(TestCase):
         self.cursor.execute("DELETE FROM Game WHERE Game_ID = 1")
         self.connection.commit()
 
+    def test_insert_lang(self):
+        insert_game(-1, "Game1", -1)
+        self.assertTrue(insert_lang(-1, "ENG"))
+
+        # Game_ID not present
+        self.assertFalse(insert_lang(-2, "ENG"))
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
+        self.connection.commit()
+
     def test_insert_user(self):
         self.assertTrue(insert_user(1, "Aldo"))
 
