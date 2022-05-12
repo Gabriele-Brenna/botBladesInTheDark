@@ -364,24 +364,18 @@ def pc_from_json(data: dict) -> dict:
     :return: dictionary where each item has key = name of class attribute, value = object
     """
 
-    items = []
     dictionary = {}
 
     if "items" in data:
         dictionary["items"] = list(map(Item.from_json, data["items"]))
-        items.append("items")
     if "healing" in data:
         dictionary["healing"] = Clock.from_json(data["healing"])
-        items.append("healing")
     if "abilities" in data:
         dictionary["abilities"] = list(map(SpecialAbility.from_json, data["abilities"]))
-        items.append("abilities")
     if "playbook" in data:
         dictionary["playbook"] = Playbook.from_json(data["playbook"])
-        items.append("playbook")
     if "attributes" in data:
         dictionary["attributes"] = list(map(Attribute.from_json, data["attributes"]))
-        items.append("attributes")
 
-    pop_dict_items(data, items)
+    pop_dict_items(data, list(dictionary.keys()))
     return dictionary

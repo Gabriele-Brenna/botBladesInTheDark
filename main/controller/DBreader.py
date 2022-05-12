@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Optional
 
 from character.Action import Action
 from character.Attribute import Attribute
@@ -6,6 +6,31 @@ from character.NPC import NPC
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 from controller.DBmanager import *
+
+
+def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
+    """
+    Gets the game_id given the chat_id and the user_id.
+
+    :param tel_chat_id: id of the telegram chat
+    :param user_id: telegram id of the user
+    :return: the game_id (None if there are no correspondences in the DB)
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+        SELECT G.Game_ID
+        FROM Game G JOIN User_Game UG ON G.Game_ID = UG.Game_ID
+        WHERE G.Tel_Chat_ID = {} AND UG.User_ID = {}""".format(tel_chat_id, user_id)
+
+    cursor.execute(query)
+
+    result = cursor.fetchone()
+    if result is None:
+        return result
+    else:
+        return result[0]
 
 
 def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None,
@@ -30,7 +55,8 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
     q_where = "\n"
 
     if special_ability is not None:
-        q_where += "WHERE Name = '{}'".format(special_ability)
+        q_where += "WHERE Name = ?"
+        cursor.execute(q_select + q_from + q_where, (special_ability,))
 
     else:
         if sheet is not None:
@@ -49,7 +75,7 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
                      "Char_SA CHAR ON S.Name = CHAR.SpecialAbility "
             q_where += "WHERE CREW.peculiar is {} OR CHAR.peculiar is {}".format(peculiar, peculiar)
 
-    cursor.execute(q_select + q_from + q_where)
+        cursor.execute(q_select + q_from + q_where)
 
     rows = cursor.fetchall()
 
@@ -216,6 +242,35 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
 
     elif spirit is not None:
         q_where += "WHERE spirit IS {}".format(spirit)
+
+    cursor.execute(q_select + q_from + q_where)
+
+    rows = cursor.fetchall()
+
+    sheets = []
+    for elem in rows:
+        sheets.append(elem[0])
+
+    return sheets
+
+
+def query_crew_sheets(canon: bool = None) -> List[str]:
+    """
+    Retrieves the list of crew sheets of the specified type.
+    If default values are used (None) all the sheets are retrieved
+
+    :param canon: if True the targets are all the canon sheets; if False the targets are all the non-canon sheets
+    :return: list of the required sheets
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    q_select = "SELECT Type"
+    q_from = "\nFROM CrewSheet"
+    q_where = "\n"
+
+    if canon is not None:
+        q_where += "WHERE canon IS {}".format(canon)
 
     cursor.execute(q_select + q_from + q_where)
 
@@ -401,7 +456,8 @@ def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
 
     :param chat_id: if this parameter is passed, only the info about the game of the specified chat are retrieved.
     :param game_id: if this parameter is passed, only the info of the specified game are retrieved.
-    :return:
+    :return: a list of dictionaries with the keys: "identifier", "title", "chat_id".
+        An empty list if no results are found
     """
     connection = establish_connection()
     cursor = connection.cursor()
@@ -490,6 +546,14 @@ def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
 
 def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
                                as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
+    """
+
+
+    :param pc_class: the target pc class.
+    :param strange_friend: the target NPC.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of NPCs or a list of their dictionary
+    """
     connection = establish_connection()
     cursor = connection.cursor()
 
@@ -498,26 +562,67 @@ def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
     FROM Char_Friend JOIN NPC ON NPC = NpcID"""
 
     if pc_class is not None and strange_friend is not None:
-        query += "\nWHERE Character = '{}' AND Name = '{}'".format(pc_class.lower().capitalize(),
-                                                                   strange_friend.lower().capitalize())
+        query += "\nWHERE Character = '{}' AND Name = '{}'".format(pc_class, strange_friend)
     elif pc_class is not None:
-        query += "\nWHERE Character = '{}'".format(pc_class.lower().capitalize())
+        query += "\nWHERE Character = '{}'".format(pc_class)
     elif strange_friend is not None:
-        query += "\nWHERE Name = '{}'".format(strange_friend.lower().capitalize())
+        query += "\nWHERE Name = '{}'".format(strange_friend)
 
     cursor.execute(query)
 
     rows = cursor.fetchall()
 
-    strange_friends = []
+    return result_npcs(rows, as_dict)
+
+
+def query_crew_contacts(crew_type: str = None, contact: str = None,
+                        as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
+    """
+    Retrieves the list of contacts of the specified crew.
+
+    :param crew_type: the target crew.
+    :param contact: the target NPC.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of NPCs or a list of their dictionary
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+    SELECT Name, Role
+    FROM Crew_Contact JOIN NPC ON NPC = NpcID"""
+
+    if crew_type is not None and contact is not None:
+        query += "\nWHERE Crew = '{}' AND Name = '{}'".format(crew_type, contact)
+    elif crew_type is not None:
+        query += "\nWHERE Crew = '{}'".format(crew_type)
+    elif contact is not None:
+        query += "\nWHERE Name = '{}'".format(contact)
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    return result_npcs(rows, as_dict)
+
+
+def result_npcs(rows: List[Tuple[str, str]], as_dict: bool) -> Union[List[NPC], List[Dict[str, str]]]:
+    """
+    Utility method used to return the list of NPCs (or their dict).
+
+    :param rows: the result of the query.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of NPCs or a list of their dictionary.
+    """
+    npcs = []
     for elem in rows:
-        strange_friends.append({"name": elem[0], "role": elem[1]})
+        npcs.append({"name": elem[0], "role": elem[1]})
 
     if not as_dict:
-        for i in range(len(strange_friends)):
-            strange_friends[i] = NPC(**strange_friends[i])
+        for i in range(len(npcs)):
+            npcs[i] = NPC(**npcs[i])
 
-    return strange_friends
+    return npcs
 
 
 def query_actions(action: str = None, attribute: str = None) -> List[Tuple[str, str, str]]:
@@ -545,3 +650,121 @@ def query_actions(action: str = None, attribute: str = None) -> List[Tuple[str, 
     cursor.execute(query)
 
     return cursor.fetchall()
+
+
+def query_upgrade_groups() -> List[str]:
+    """
+    Retrieves all the distinct "group" from the Upgrade table.
+
+    :return: a list of the groups.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT "group"
+        FROM Upgrade 
+        ORDER BY "group"
+        """)
+
+    rows = cursor.fetchall()
+
+    groups = []
+    for elem in rows:
+        groups.append(elem[0])
+
+    return groups
+
+
+def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = None,
+                   common: bool = False, canon: bool = None) -> List[Dict[str, str, int]]:
+    """
+    Retrieves the specified upgrade from the database.
+
+    :param upgrade: the target upgrade. If specified the other parameters are ignored
+    :param crew_sheet: the target crew. If specified only the specific upgrades of that crew are retrieved
+    :param group: the target group of upgrades.
+    :param common: if the wanted upgrades are not in the "specific" group.
+    :param canon: if the upgrades are canon or not.
+    :return: a list of dictionaries containing the keys: "name", "description" and "tot_quality"
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    q_select = "SELECT Name, Description, TotQuality"
+    q_from = "\nFROM Upgrade"
+    q_where = "\n "
+
+    if upgrade is not None:
+        q_where += "WHERE name LIKE ?"
+
+        cursor.execute(q_select + q_from + q_where, (upgrade + "%",))
+
+    else:
+        if crew_sheet is not None:
+            q_from += " JOIN Crew_Upgrade ON name=upgrade"
+            q_where += "WHERE crew = ?"
+
+            cursor.execute(q_select + q_from + q_where, (crew_sheet,))
+
+        else:
+            if common:
+                q_where += """WHERE "group" != "Specific" """
+                cursor.execute(q_select + q_from + q_where)
+            else:
+                if canon is not None and group is not None:
+                    q_where += """WHERE "group" = ? AND canon = ? """
+                    cursor.execute(q_select + q_from + q_where, (group, canon))
+
+                elif canon is not None:
+                    q_where += """WHERE canon = ? """
+                    cursor.execute(q_select + q_from + q_where, (canon,))
+
+                elif group is not None:
+                    q_where += """WHERE "group" = ? """
+                    cursor.execute(q_select + q_from + q_where, (group,))
+
+                else:
+                    cursor.execute(q_select + q_from)
+
+    rows = cursor.fetchall()
+
+    upgrades = []
+    for elem in rows:
+        upgrades.append({"name": elem[0], "description": elem[1], "tot_quality": int(elem[2])})
+
+    return upgrades
+
+
+def query_starting_upgrades_and_cohorts(crew_sheet: str) -> Tuple[List[Dict[str, int]], List[Dict[str, bool]]]:
+    """
+    Retrieves the starting upgrades and cohorts of the specified crew.
+
+    :param crew_sheet: the target crew.
+    :return: a tuple of two lists: the first one containing dictionaries representing the upgrades ("name", "quality"),
+    the second one containing dictionaries representing the upgrades ("type", "expert").
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT Name, Quality
+    FROM Upgrade JOIN Crew_StartingUpgrade ON Name = Upgrade
+    WHERE Crew = ? 
+    """, (crew_sheet, ))
+
+    upgrades = []
+    for elem in cursor.fetchall():
+        upgrades.append({"name": elem[0], "quality": int(elem[1])})
+
+    cursor.execute("""
+        SELECT Type, Expert
+        FROM Starting_Cohort
+        WHERE Crew = ? 
+        """, (crew_sheet,))
+
+    cohorts = []
+    for elem in cursor.fetchall():
+        cohorts.append({"type": elem[0], "expert": bool(elem[1])})
+
+    return upgrades, cohorts

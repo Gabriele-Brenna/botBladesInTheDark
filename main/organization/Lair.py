@@ -23,9 +23,11 @@ class Lair:
         :param data: dictionary of the object
         :return: Lair
         """
-        claims = list(map(Claim.from_json, data["claims"]))
-        data.pop("claims")
-        return cls(**data, claims=claims)
+        dictionary = {}
+        if "claims" in data:
+            dictionary["claims"] = list(map(Claim.from_json, data["claims"]))
+            data.pop("claims")
+        return cls(**data, **dictionary)
 
     def __repr__(self) -> str:
         return """Location: {}

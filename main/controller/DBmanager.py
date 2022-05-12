@@ -4,6 +4,7 @@ import sqlite3
 import traceback
 from pathlib import Path
 from sqlite3 import Connection
+from typing import Optional
 
 
 def establish_connection(foreign_key: bool = True) -> Connection:
@@ -122,3 +123,50 @@ def is_json(myjson) -> bool:
         traceback.print_exc()
         return False
     return True
+
+
+def exists_user_in_game(user_tel_id: int, game_id: int) -> bool:
+    """
+    Checks if the specified user is in the required game in the User_Game table of the database
+
+    :param user_tel_id: is the user to check
+    :param game_id: is the game to check
+    :return: True if the user exists, False otherwise
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                   SELECT *
+                   FROM User_Game
+                   WHERE User_ID = {} AND Game_ID = {}
+                   """.format(user_tel_id, game_id))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return False
+    return True
+
+
+def exists_upgrade(upgrade: str) -> Optional[str]:
+    """
+    Checks if the specified upgrade is in the Upgrade table of the database.
+
+    :param upgrade: the name of the upgrade
+    :return: the complete name of the upgrade found. None if the upgrade is not in the database
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                       SELECT Name
+                       FROM Upgrade
+                       WHERE name LIKE ? OR name = ?
+                       """, (upgrade + " (%", upgrade))
+
+    rows = cursor.fetchone()
+
+    if rows is not None:
+        rows = rows[0]
+    return rows

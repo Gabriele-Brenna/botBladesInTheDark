@@ -239,14 +239,13 @@ class TestDBReader(TestCase):
     def test_query_lang(self):
         self.cursor.execute("""
         INSERT INTO Game (Game_ID, Title, Tel_Chat_ID, Language)
-        VALUES (1, "Game1", 1, "ENG")""")
+        VALUES (-1, "Game1", -1, "ENG")""")
         self.connection.commit()
 
-        self.assertEqual("ENG", query_lang(1))
+        self.assertEqual("ENG", query_lang(-1))
 
-        self.cursor.execute("DELETE FROM Game")
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
         self.connection.commit()
-
 
     def test_query_char_strange_friends(self):
         cutter_friends = [{'name': 'Marlane', 'description': '', 'role': 'A pugilist', 'faction': None},
@@ -260,6 +259,20 @@ class TestDBReader(TestCase):
             friends.append(NPC(**cutter_friends[i]))
 
         self.assertEqual(friends, query_char_strange_friends("cutter"))
+
+    def test_query_crew_contacts(self):
+        smugglers_contacts = [{'name': 'Elynn', 'description': '', 'role': 'A dock worker', 'faction': None},
+                              {'name': 'Rolan', 'description': '', 'role': 'A drug dealer', 'faction': None},
+                              {'name': 'Sera', 'description': '', 'role': 'An arms dealer', 'faction': None},
+                              {'name': 'Nyelle', 'description': '', 'role': 'A spirit trafficker', 'faction': None},
+                              {'name': 'Decker', 'description': '', 'role': 'An anarchist', 'faction': None},
+                              {'name': 'Esme', 'description': '', 'role': 'A tavern owner', 'faction': None}]
+
+        contacts = []
+        for i in range(len(smugglers_contacts)):
+            contacts.append(NPC(**smugglers_contacts[i]))
+
+        self.assertEqual(contacts, query_crew_contacts("smugglers"))
 
     def test_query_actions(self):
         self.assertEqual([('Tinker',
@@ -275,3 +288,59 @@ class TestDBReader(TestCase):
         for result in query_actions(attribute="Insight"):
             names.append(result[0])
         self.assertEqual(["Hunt", "Study", "Survey", "Tinker"], names)
+
+    def test_query_game_of_user(self):
+        self.assertIsNone(query_game_of_user(-1, -1))
+
+        self.cursor.execute("""
+                INSERT INTO Game (Game_ID, Title, Tel_Chat_ID, Language)
+                VALUES (-25, "Game1", -1, "ENG")""")
+        self.cursor.execute("""
+                        INSERT INTO User (Tel_ID, Name)
+                        VALUES (-1, "Pino")""")
+        self.cursor.execute("""
+                        INSERT INTO User_Game (User_ID, Game_ID)
+                        VALUES (-1, -25)""")
+
+        self.connection.commit()
+
+        self.assertEqual(-25, query_game_of_user(-1, -1))
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -25")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = -1")
+        self.connection.commit()
+
+    def test_query_crew_sheets(self):
+        self.assertEqual(['Assassins', 'Bravos', 'Cult', 'Hawkers', 'Shadows', 'Smugglers'], query_crew_sheets(True))
+
+    def test_query_upgrade_groups(self):
+        self.assertEqual(["Lair", "Quality", "Specific", "Training"], query_upgrade_groups())
+
+    def test_query_upgrades(self):
+        secure_up = {"name": "Secure",
+                     "description": "Your lair has locks, alarms, and traps to thwart "
+                                    "intruders. A second upgrade improves the defenses to "
+                                    "include arcane measures that work against spirits. You "
+                                    "might roll your crew’s Tier if these measures are ever "
+                                    "put to the test, to see how well they thwart an "
+                                    "intruder.",
+                     "tot_quality": 2}
+
+        self.assertEqual([secure_up], query_upgrades(upgrade="secure"))
+
+        self.assertEqual(5, len(query_upgrades(crew_sheet="bravos")))
+
+        self.assertEqual(18, len(query_upgrades(common=True)))
+
+        self.assertEqual(38, len(query_upgrades(canon=True)))
+
+        self.assertEqual(6, len(query_upgrades(group="quality")))
+
+        self.assertEqual(20, len(query_upgrades(canon=True, group="specific")))
+
+    def test_query_starting_upgrades_and_cohorts(self):
+        self.assertEqual([{"name": "Carriage(Vehicle)", "quality": 1}, {"name": "Prowess", "quality": 1}],
+                         query_starting_upgrades_and_cohorts("smugglers")[0])
+
+        self.assertEqual(([{"name": "Prowess", "quality": 1}], [{"type": "Thugs", "expert": False}]),
+                         query_starting_upgrades_and_cohorts("bravos"))

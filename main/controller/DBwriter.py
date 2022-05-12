@@ -20,8 +20,8 @@ def insert_game(game_id: int, game_title: str, tel_chat_id: int) -> bool:
         try:
             cursor.execute("""
             INSERT INTO Game (Game_ID, Title, Tel_Chat_ID)
-            VALUES ({}, '{}', {})
-            """.format(game_id, game_title, tel_chat_id))
+            VALUES (?, ?, ?)
+            """, (game_id, game_title, tel_chat_id))
 
             connection.commit()
         except DatabaseError:
@@ -51,9 +51,9 @@ def insert_crew_json(game_id: int, crew_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Crew_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(crew_json, game_id))
+            SET Crew_JSON = ?
+            WHERE Game_ID = ?
+            """, (crew_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -83,9 +83,9 @@ def insert_crafted_item_json(game_id: int, crafted_item_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Crafted_Item_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(crafted_item_json, game_id))
+            SET Crafted_Item_JSON = ?
+            WHERE Game_ID = ?
+            """, (crafted_item_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -115,9 +115,9 @@ def insert_npc_json(game_id: int, npc_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET NPC_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(npc_json, game_id))
+            SET NPC_JSON = ?
+            WHERE Game_ID = ?
+            """, (npc_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -147,9 +147,9 @@ def insert_faction_json(game_id: int, faction_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Faction_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(faction_json, game_id))
+            SET Faction_JSON = ?
+            WHERE Game_ID = ?
+            """, (faction_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -178,9 +178,9 @@ def insert_score_json(game_id: int, score_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Score_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(score_json, game_id))
+            SET Score_JSON = ?
+            WHERE Game_ID = ?
+            """, (score_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -210,9 +210,9 @@ def insert_clock_json(game_id: int, clock_json: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Clock_JSON = '{}'
-            WHERE Game_ID = {}
-            """.format(clock_json, game_id))
+            SET Clock_JSON = ?
+            WHERE Game_ID = ?
+            """, (clock_json, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -242,9 +242,9 @@ def insert_journal(game_id: int, journal: str) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Journal = '{}'
-            WHERE Game_ID = {}
-            """.format(journal, game_id))
+            SET Journal = ?
+            WHERE Game_ID = ?
+            """, (journal, game_id))
 
             connection.commit()
         except DatabaseError:
@@ -274,8 +274,8 @@ def insert_state(game_id: int, state: int) -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET State = {}
-            WHERE Game_ID = {}""".format(state, game_id))
+            SET State = ?
+            WHERE Game_ID = ?""", (state, game_id))
 
             connection.commit()
 
@@ -306,9 +306,9 @@ def insert_lang(game_id: int, lang: str = "ENG") -> bool:
 
             cursor.execute("""
             UPDATE Game
-            SET Language = '{}'
-            WHERE Game_ID = {}
-            """.format(lang, game_id))
+            SET Language = ?
+            WHERE Game_ID = ?
+            """, (lang, game_id))
 
             connection.commit()
 
@@ -336,8 +336,8 @@ def insert_user(user_id: int, name: str) -> bool:
             INSERT INTO User
             VALUES (?, ?)
             ON CONFLICT (Tel_ID)
-            DO UPDATE SET name = '{}'
-            """.format(name), (user_id, name))
+            DO UPDATE SET name = ?
+            """, (user_id, name, name))
 
             connection.commit()
         except DatabaseError:
@@ -367,7 +367,8 @@ def insert_user_game(user_id: int, game_id: int, char_json: str = None, master: 
                         INSERT INTO User_Game
                         VALUES (?, ?, ?, ?)
                         ON CONFLICT (User_ID, Game_ID) DO 
-                        UPDATE SET (Char_JSON, Master) = (?, ?)""", (user_id, game_id, char_json, master, char_json, master))
+                        UPDATE SET (Char_JSON, Master) = (?, ?)""",
+                           (user_id, game_id, char_json, master, char_json, master))
 
             connection.commit()
         except DatabaseError:
@@ -392,7 +393,7 @@ def insert_character_sheet(char_class: str, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO CharacterSheet (Class, Description)
-            VALUES ('{}', '{}')""".format(char_class, description))
+            VALUES (?, ?)""", (char_class, description))
 
             connection.commit()
         except DatabaseError:
@@ -419,7 +420,7 @@ def insert_claim(name: str, description: str, prison: bool) -> bool:
         try:
             cursor.execute("""
             INSERT INTO Claim (Name, Description, Prison)
-            VALUES ('{}', '{}', {})""".format(name, description, prison))
+            VALUES (?, ?, ?)""", (name, description, prison))
 
             connection.commit()
 
@@ -445,7 +446,7 @@ def insert_crew_sheet(crew_type: str, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO CrewSheet (Type, Description)
-            VALUES ('{}', '{}')""".format(crew_type, description))
+            VALUES (?, ?)""", (crew_type, description))
 
             connection.commit()
 
@@ -471,7 +472,7 @@ def insert_hunting_ground(name: str, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO HuntingGround (Name, Description)
-            VALUES ('{}', '{}')""".format(name, description))
+            VALUES (?, ?)""", (name, description))
 
             connection.commit()
 
@@ -499,7 +500,7 @@ def insert_item(name: str, description: str, weight: int, usages: int):
         try:
             cursor.execute("""
             INSERT INTO Item (Name, Description, Weight, Usages)
-            VALUES ('{}', '{}', {}, {})""".format(name, description, weight, usages))
+            VALUES (?, ?, ?, ?)""", (name, description, weight, usages))
 
             connection.commit()
 
@@ -527,7 +528,7 @@ def insert_npc(name: str, role: str, faction: str, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO NPC (Name, Role, Faction, Description)
-            VALUES ('{}', '{}', '{}', '{}')""".format(name, role, faction, description))
+            VALUES (?, ?, ?, ?)""", (name, role, faction, description))
 
             connection.commit()
 
@@ -553,7 +554,7 @@ def insert_special_ability(name: str, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO SpecialAbility (Name, Description)
-            VALUES ('{}', '{}')""".format(name, description))
+            VALUES (?, ?)""", (name, description))
 
             connection.commit()
         except DatabaseError:
@@ -579,7 +580,7 @@ def insert_upgrade(name: str, quality: int, description: str) -> bool:
         try:
             cursor.execute("""
             INSERT INTO Upgrade (Name, TotQuality, Description)
-            VALUES ('{}', {}, '{}')""".format(name, quality, description))
+            VALUES (?, ?, ?)""", (name, quality, description))
 
             connection.commit()
         except DatabaseError:
@@ -604,7 +605,7 @@ def insert_xp_trigger(description: str, crew_char: bool) -> bool:
         try:
             cursor.execute("""
             INSERT INTO XpTrigger (Description, Crew_Char)
-            VALUES ('{}', {})""".format(description, crew_char))
+            VALUES (?, ?)""", (description, crew_char))
 
             connection.commit()
         except DatabaseError:
@@ -843,8 +844,8 @@ def delete_user_game(user_id: int, game_id: int) -> bool:
 
         try:
             cursor.execute("""
-            DELETE FROM User_Game WHERE (User_ID, Game_ID) = ({}, {})
-            """.format(user_id, game_id))
+            DELETE FROM User_Game WHERE (User_ID, Game_ID) = (?, ?)
+            """, (user_id, game_id))
 
             connection.commit()
         except DatabaseError:

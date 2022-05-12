@@ -19,8 +19,8 @@ class Crew(Organization, ISavable):
     def __init__(self, name: str = "", type: str = "", reputation: str = "", lair: Lair = Lair(),
                  upgrades: List[Upgrade] = None, contact: NPC = NPC(), description: str = "",
                  abilities: List[SpecialAbility] = None, rep: int = 0, tier: int = 0, hold: bool = True,
-                 heat: int = 0, wanted_level: int = 0, crew_exp: Playbook = Playbook(10, 0, 0), cohorts: List[Cohort] = None,
-                 coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
+                 heat: int = 0, wanted_level: int = 0, crew_exp: Playbook = Playbook(10, 0, 0),
+                 cohorts: List[Cohort] = None, coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
                  prison_claims: List[Claim] = None) -> None:
         super().__init__(name, tier, hold)
         self.type = type
@@ -234,16 +234,30 @@ class Crew(Organization, ISavable):
         :param data: dictionary of the object
         :return: Crew
         """
+        dictionary = {}
+
         lair = Lair.from_json(data["lair"])
-        upgrades = list(map(Upgrade.from_json, data["upgrades"]))
+
+        if "upgrades" in data:
+            dictionary["upgrades"] = list(map(Upgrade.from_json, data["upgrades"]))
+
         contact = NPC.from_json(data["contact"])
+
         abilities = list(map(SpecialAbility.from_json, data["abilities"]))
-        cohorts = list(map(Cohort.from_json, data["cohorts"]))
-        crew_exp = Playbook.from_json(data["crew_exp"])
-        prison_claims = list(map(Claim.from_json, data["prison_claims"]))
-        pop_dict_items(data, ["lair", "upgrades", "contact", "abilities", "cohorts", "crew_exp", "prison_claims"])
-        return cls(**data, lair=lair, upgrades=upgrades, contact=contact, abilities=abilities,
-                   cohorts=cohorts, crew_exp=crew_exp, prison_claims=prison_claims)
+
+        if "cohorts" in data:
+            dictionary["cohorts"] = list(map(Cohort.from_json, data["cohorts"]))
+
+        if "crew_exp" in data:
+            dictionary["crew_exp"] = Playbook.from_json(data["crew_exp"])
+
+        if "prison_claims" in data:
+            dictionary["prison_claims"] = list(map(Claim.from_json, data["prison_claims"]))
+
+        items = list(dictionary.keys())
+        items.extend(["lair", "contact", "abilities"])
+        pop_dict_items(data, items)
+        return cls(**data, lair=lair, contact=contact, abilities=abilities, **dictionary)
 
     def save_to_dict(self) -> dict:
         """
@@ -255,6 +269,9 @@ class Crew(Organization, ISavable):
         temp = super().save_to_dict()
         temp["contact"] = self.contact.save_to_dict()
         return temp
+
+    def __repr__(self) -> str:
+        return str(self.__dict__)
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

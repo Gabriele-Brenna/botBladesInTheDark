@@ -29,3 +29,11 @@ class TestDBmanager(TestCase):
     def test_is_json(self):
         self.assertTrue(is_json('{"Assassins": "Hit man"}'))
         self.assertFalse(is_json('Assassins: Hit man'))
+
+    def test_exists_user_in_game(self):
+        pass
+
+    def test_exists_upgrade(self):
+        self.assertEqual("Assassin's Rigging (2 free load of weapons or gear)", exists_upgrade("assassin's rigging"))
+
+        self.assertIsNone(exists_upgrade("Car"))
