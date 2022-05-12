@@ -94,7 +94,8 @@
     },
 
     "create_game_title": {
-      "0": "Game <u>{}</u> created successfully with id: {}"
+      "0": "Game <u>{}</u> created successfully with id: {}",
+      "1": "A Game named <u>{}</u> already exists in this chat, please enter a different title"
     },
 
     "join": {
@@ -104,7 +105,8 @@
 
     "join_game_name": {
       "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame ",
-      "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game."
+      "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game.",
+      "2": "You already joined the game <u>{}</u> in this chat. You can join only a game per chat"
     },
 
     "join_add_player": {
@@ -145,9 +147,56 @@
     },
 
     "join_end": {
-      "0": "<i>{}</i> is joining the game <i>{}</i> with <i>{}</i>."
-    }
+      "0": "<i>{}</i> is joining the game <i>{}</i> with <i>{}</i>.",
+      "1": "You must complete all the fields in order to complete your pc and join the game"
+    },
 
+    "create_crew": {
+      "0": "Choose which Type of crew you'd like to be",
+      "1": "You can't create a crew without being in a game... /join to take part in a game"
+    },
+
+    "create_crew_type": {
+      "0": "This crew doesn't exist yet... Enter another one",
+      "1": "Complete the description of your Crew by selecting the buttons below.\n /done when you all are satisfied.\n /cancel if you have changed your mind.",
+      "keyboard" : ["Name", "Reputation", "Notes", "Lair", "Upgrades", "Special ability", "Contact"]
+    },
+
+    "create_crew_state_switcher": {
+      "0": "Choose the name of your crew",
+      "1": "Decide a reputation for your crew",
+      "2": "Write the description of your crew, don't forget to specify your favourite hunting grounds",
+      "3": "Choose the location of your Lair",
+      "4": "Select a pair of upgrades for your crew",
+      "5": "Pick a special ability for your crew",
+      "6": "Select a contact for your crew",
+
+      "keyboards": [[], ["Ambitious","Brutal","Daring","Honorable","Professional","Savvy","Subtle","Strange"], [], ["Six Towers", "Brightstone", "Charterhall", "Nightmarket", "Coalridge", "Dunslough", "Charhollow", "Barrowcleft", "Silkshore", "The Docks", "Crow's Foot", "Whitecrown"]]
+    },
+
+    "create_crew_lair_location": {
+      "0": "Write a description of your Lair"
+    },
+
+    "create_crew_ability": {
+      "0": "This special ability doesn't exist yet...",
+      "1": "Select an existing ability.\n/data for more info."
+    },
+
+    "create_crew_contact" : {
+      "0": "This NPC doesn't belong to your crew contacts pool...",
+      "1": "Select another NPC.\n/data for more info."
+    },
+
+    "create_crew_upgrades": {
+      "0": "Add or remove the upgrades of your choice.\n{} points left.",
+      "1": "You have {} upgrades left "
+    },
+
+    "create_crew_end": {
+      "0": "The crew <u>{}</u> added to the game.",
+      "1": "You must complete all the fields in order to complete your crew"
+    }
   },
 
   "Journal": {

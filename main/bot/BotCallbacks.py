@@ -122,7 +122,7 @@ def create_pc(update: Update, context: CallbackContext) -> int:
 
     query_menu = update.message.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
                                                 reply_markup=custom_kb(placeholders["keyboard"],
-                                                                       inline=True))
+                                                                       inline=True, split_row=3))
 
     context.user_data.setdefault("create_pc", {})["keyboard"] = copy.deepcopy(placeholders["keyboard"])
     context.user_data["create_pc"]["pc"] = {}
@@ -382,12 +382,12 @@ def create_game(update: Update, context: CallbackContext) -> int:
         return ConversationHandler.END
 
     placeholders = get_lang(context, create_game.__name__)
-    update.message.reply_text(placeholders["0"])
+    context.user_data.setdefault("create_game", {})["message"] = update.message.reply_text(placeholders["0"])
 
     return 0
 
 
-def create_game_title(update: Update, context: CallbackContext) -> None:
+def create_game_title(update: Update, context: CallbackContext) -> int:
     """
     Handles the choice of the Game's title and adds it to the Controller's games list
 
@@ -397,11 +397,19 @@ def create_game_title(update: Update, context: CallbackContext) -> None:
     """
     placeholders = get_lang(context, create_game_title.__name__)
 
+    for d in query_games_info(update.message.chat_id):
+        if update.message.text.lower() == d["title"].lower():
+            context.user_data.setdefault("create_game", {})["message"] = update.message.reply_text(
+                placeholders["1"].format(update.message.text), parse_mode=ParseMode.HTML)
+            return 0
+
     game_id = controller.add_game(update.message.chat_id, update.message.text)
 
-    update.message.reply_text(placeholders["0"].format(update.message.text, game_id), parse_mode=ParseMode.HTML)
+    update.message.reply_text(placeholders["0"].format(update.message.text, game_id), parse_mode=ParseMode.HTML,
+                              quote=False)
 
-    return ConversationHandler.END
+    delete_conv_from_user_data(context, "create_game")
+    return end_conv(update, context)
 
 
 # ------------------------------------------conv_createGame-------------------------------------------------------------
@@ -434,6 +442,7 @@ def join(update: Update, context: CallbackContext) -> int:
 
     context.user_data.setdefault("join", {})["message"] = update.message.reply_text(placeholders["0"],
                                                                                     reply_markup=custom_kb(titles))
+    context.user_data["join"]["invocation_message"] = update.message
 
     return 0
 
@@ -461,13 +470,23 @@ def join_game_name(update: Update, context: CallbackContext) -> int:
         update.message.delete()
         return ConversationHandler.END
 
+    game_of_user = query_game_of_user(update.message.chat_id, get_user_id(update))
+    if game_of_user is not None and game_of_user != query_game_ids(update.message.chat_id, update.message.text)[0]:
+        auto_delete_message(update.message.reply_text(placeholders["2"].format(
+            query_games_info(game_id=game_of_user)[0]["title"]),
+            parse_mode=ParseMode.HTML, quote=False), 10)
+
+        update.message.delete()
+        return ConversationHandler.END
+
     context.user_data["join"]["game_name"] = update.message.text
 
     buttons = get_user_pc(context)
     buttons.append("as Master")
-    context.user_data["join"]["message"] = update.message.reply_text(placeholders["1"], reply_markup=custom_kb(buttons))
+    context.user_data["join"]["message"] = context.user_data["join"]["invocation_message"].reply_text(
+        placeholders["1"], reply_markup=custom_kb(buttons))
 
-    auto_delete_message(update.message, 4)
+    update.message.delete()
     return 1
 
 
@@ -487,7 +506,8 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
 
     if update.message.text not in get_user_pc(context) and update.message.text.lower() != "as master":
         auto_delete_message(update.message.reply_text(placeholders[""]), 10)
-        return ConversationHandler.END
+        delete_conv_from_user_data(context, "join")
+        return end_conv(update, context)
 
     if update.message.text.lower() == "as master":
         controller.update_user_in_game(get_user_id(update), update.message.chat_id,
@@ -497,6 +517,7 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
                                                            context.user_data["join"]["game_name"]),
                                   parse_mode=ParseMode.HTML,
                                   quote=False)
+        delete_conv_from_user_data(context, "join")
         return end_conv(update, context)
     else:
 
@@ -529,7 +550,7 @@ def join_complete_pc(update: Update, context: CallbackContext):
 
     query_menu = update.message.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
                                                 reply_markup=custom_kb(placeholders["keyboard"],
-                                                                       inline=True))
+                                                                       inline=True, split_row=2))
 
     context.user_data.setdefault("join", {})["keyboard"] = copy.deepcopy(placeholders["keyboard"])
     context.user_data["join"]["query_menu"] = query_menu
@@ -584,7 +605,7 @@ def join_complete_pc_ability(update: Update, context: CallbackContext) -> int:
     if ability:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["join", "pc", "abilities"], value=ability,
-                                  btn_label="ability", lang_source="join_complete_pc")
+                                  btn_label="ability", lang_source="join_complete_pc", split_row=2)
 
         return 2
     else:
@@ -594,8 +615,7 @@ def join_complete_pc_ability(update: Update, context: CallbackContext) -> int:
 
 def join_complete_pc_dots(update: Update, context: CallbackContext) -> int:
     """
-    If the user chooses a valid option, sends the information associated with this state ("Action dots")
-    to store_value_and_update_kb method.
+    Builds the keyboard of the selected attribute.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
@@ -619,11 +639,8 @@ def join_complete_pc_dots(update: Update, context: CallbackContext) -> int:
 
     buttons = create_central_buttons_action_dots(action_dots, choice)
 
-    context.user_data["join"]["message"].delete()
-    context.user_data["join"]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
-                                                                   text=placeholders["0"].format(
-                                                                       7 - calc_total_dots(action_dots)),
-                                                                   reply_markup=build_plus_minus_keyboard(buttons))
+    context.user_data["join"]["message"].edit_text(text=placeholders["0"].format(7 - calc_total_dots(action_dots)),
+                                                   reply_markup=build_plus_minus_keyboard(buttons))
     return 7
 
 
@@ -691,7 +708,7 @@ def join_complete_pc_action_selection(update: Update, context: CallbackContext) 
 
         if calc_total_dots(action_dots) == 7:
             store_value_and_update_kb(update, context, tags=["join", "pc", "action_dots"], value=action_dots,
-                                      btn_label="Action Dots", lang_source="join_complete_pc")
+                                      btn_label="Action Dots", lang_source="join_complete_pc", split_row=2)
             return 2
 
         context.user_data["join"]["message"].delete()
@@ -763,7 +780,7 @@ def join_complete_pc_enemy(update: Update, context: CallbackContext) -> int:
     if enemy:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["join", "pc", "enemy"], value=enemy[0],
-                                  lang_source="join_complete_pc")
+                                  lang_source="join_complete_pc", split_row=2)
 
         return 2
     else:
@@ -775,7 +792,7 @@ def join_end(update: Update, context: CallbackContext) -> int:
     """
     Ends the conversation when /done or /cancel is received.
     If /done it check if all the necessary fields of the conversation have been filled and, if so,
-    it stores the completed PC in the user_data.
+    it updates the player list pf characters with the completed PC in the controller and database.
     If /cancel it deletes the information collected so far.
     In any case, it exits the conversation.
 
@@ -787,21 +804,22 @@ def join_end(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, join_end.__name__)
 
     if "done".casefold() in command:
-        if {"name", "alias", "look", "heritage", "background", "pc_class", "vice",
-            "abilities", "action_dots", "friend", "enemy"}.issubset(
-            context.user_data["join"]["pc"].keys()):
+        complete_dict = {"name", "alias", "look", "heritage", "background", "pc_class", "vice",
+                         "abilities", "action_dots", "friend", "enemy"}
+
+        if complete_dict.issubset(context.user_data["join"]["pc"].keys()):
 
             controller.update_user_in_game(get_user_id(update), context.user_data["join"]["chat_id"],
                                            context.user_data["join"]["game_name"], pc=context.user_data["join"]["pc"])
 
             context.bot.sendMessage(chat_id=context.user_data["join"]["chat_id"],
-                                    text=get_lang(context, join_end.__name__)["0"].format(
+                                    text=placeholders["0"].format(
                                         query_users_names(get_user_id(update))[0],
                                         context.user_data["join"]["game_name"],
                                         context.user_data["join"]["pc"]["name"]),
                                     parse_mode=ParseMode.HTML)
         else:
-            auto_delete_message(update.message.reply_text(placeholders["0"]))
+            auto_delete_message(update.message.reply_text(placeholders["1"]))
             update.message.delete()
             return 0
 
@@ -810,28 +828,443 @@ def join_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-def delete_conv_from_user_data(context: CallbackContext, command: str):
-    """
-    Deletes the stored info in the user_data about the received command's conversation.
-
-    :param context: instance of CallbackContext linked to the user.
-    :param command: represents the the key of the conversaton in the user_data dict.
-    """
-    dict_command = context.user_data[command]
-    try:
-        dict_command["query_menu"].delete()
-    except:
-        pass
-
-    try:
-        dict_command["message"].delete()
-    except:
-        pass
-
-    context.user_data.pop(command)
-
-
 # ------------------------------------------conv_join-------------------------------------------------------------------
+
+
+# ------------------------------------------conv_create_crew------------------------------------------------------------
+
+
+def create_crew(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the creation of a crew checking if the user has already joined a game.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_crew.__name__)
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(placeholders["1"])
+        return end_conv(update, context)
+
+    context.user_data.setdefault("create_crew", {})["message"] = update.message.reply_text(
+        text=placeholders["0"], reply_markup=custom_kb(query_crew_sheets(True)))
+
+    context.user_data["create_crew"]["invocation_message"] = update.message
+
+    return 0
+
+
+def create_crew_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen crew type in the user_data
+    It builds the inline keyboard that will be used during conv_createPC.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_crew_type.__name__)
+    context.user_data["create_crew"]["message"].delete()
+
+    if not exists_crew(update.message.text):
+        context.user_data["create_crew"]["message"] = context.user_data["create_crew"]["invocation_message"].reply_text(
+            placeholders["0"],
+            reply_markup=custom_kb(
+                query_crew_sheets(True)))
+
+        update.message.delete()
+        return 0
+
+    query_menu = context.user_data["create_crew"]["invocation_message"].reply_text(text=placeholders["1"],
+                                                                                   reply_markup=custom_kb(
+                                                                                       placeholders["keyboard"],
+                                                                                       inline=True, split_row=3))
+
+    context.user_data["create_crew"]["keyboard"] = copy.deepcopy(placeholders["keyboard"])
+    context.user_data["create_crew"]["crew"] = {"type": update.message.text}
+    context.user_data["create_crew"]["query_menu"] = query_menu
+
+    starting_upgrade, starting_cohort = query_starting_upgrades_and_cohorts(
+        context.user_data["create_crew"]["crew"]["type"])
+
+    context.user_data["create_crew"]["crew"].setdefault("upgrades", starting_upgrade)
+    context.user_data["create_crew"]["crew"].setdefault("cohorts", starting_cohort)
+
+    update.message.delete()
+
+    return 1
+
+
+def create_crew_state_switcher(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the callback query from the Inline keyboard by redirecting the user in the correct state of the creation
+    and sending him the associated message.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_crew_state_switcher.__name__)
+    keyboards = copy.deepcopy(placeholders["keyboards"])
+
+    crew_type = context.user_data["create_crew"]["crew"]["type"]
+
+    keyboards.append(query_upgrade_groups())
+
+    abilities = []
+    for ability in query_special_abilities(crew_type, as_dict=True):
+        if isinstance(ability, dict):
+            abilities.append(ability["name"])
+
+    keyboards.append(abilities)
+
+    contacts = []
+    for npc in query_crew_contacts(crew_type, as_dict=True):
+        if isinstance(npc, dict):
+            contacts.append(npc["name"] + ", " + npc["role"])
+    keyboards.append(contacts)
+
+    return query_state_switcher(update, context, "create_crew", placeholders, keyboards, reply_in_group=True,
+                                starting_state=2, index_inlines=[4], split_inline_row=2)
+
+
+def create_crew_name(update: Update, context: CallbackContext) -> int:
+    """
+    Sends the btn_label associated with this state ("name") to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    store_value_and_update_kb(update, context, tags=["create_crew", "crew", "name"],
+                              lang_source="create_crew_type",
+                              value=update.message.text, split_row=3, reply_in_group=True)
+    update.message.delete()
+
+    return 1
+
+
+def create_crew_reputation(update: Update, context: CallbackContext) -> int:
+    """
+    Sends the btn_label associated with this state ("reputation") to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    store_value_and_update_kb(update, context, tags=["create_crew", "crew", "reputation"],
+                              lang_source="create_crew_type",
+                              value=update.message.text, split_row=3, reply_in_group=True)
+    update.message.delete()
+
+    return 1
+
+
+def create_crew_description(update: Update, context: CallbackContext) -> int:
+    """
+    Sends the btn_label associated with this state ("reputation") to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    store_value_and_update_kb(update, context, tags=["create_crew", "crew", "description"],
+                              lang_source="create_crew_type",
+                              btn_label="notes",
+                              value=update.message.text, split_row=3, reply_in_group=True)
+    update.message.delete()
+
+    return 1
+
+
+def create_crew_lair_location(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the lair location in the user_data and advances the conversation to
+    the next state that regards the description of the lair.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the next state of the conversation.
+    """
+    context.user_data["create_crew"]["message"].delete()
+
+    add_tag_in_user_data(context, ["create_crew", "crew", "lair", "location"], update.message.text)
+
+    placeholders = get_lang(context, create_crew_lair_location.__name__)
+
+    context.user_data["create_crew"]["message"] = update.message.reply_text(placeholders["0"])
+    update.message.delete()
+
+    return 9
+
+
+def create_crew_lair_description(update: Update, context: CallbackContext) -> int:
+    """
+    Sends the tags associated with this state ("lair" and "description") to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    store_value_and_update_kb(update, context, tags=["create_crew", "crew", "lair", "description"],
+                              lang_source="create_crew_type",
+                              btn_label="lair",
+                              value=update.message.text, split_row=3, reply_in_group=True)
+    update.message.delete()
+
+    return 1
+
+
+def create_crew_upgrades(update: Update, context: CallbackContext) -> int:
+    """
+    Builds the keyboard of the selected group of upgrades.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, create_crew_upgrades.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    context.user_data["create_crew"]["selected_group"] = choice
+
+    upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
+
+    if calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"]) == 4:
+        upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
+        context.user_data["create_crew"]["crew"]["upgrades"] = upgrades
+
+    if choice.lower() == "specific":
+        buttons = create_central_buttons_upgrades(upgrades, choice, context.user_data["create_crew"]["crew"]["type"])
+    else:
+        buttons = create_central_buttons_upgrades(upgrades, choice)
+
+    context.user_data["create_crew"]["message"].edit_text(
+        text=placeholders["0"].format(
+            4 - calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
+        reply_markup=build_plus_minus_keyboard(buttons))
+
+    return 10
+
+
+def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the addition or removal of a specific upgrade by the player
+    or the information request about a specific upgrade.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, create_crew_upgrades.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        choice = choice.split(" ")
+
+        upgrade = None
+        for upg in upgrades:
+            if upg["name"] == choice[0]:
+                upg["quality"] += int(choice[1])
+                if upg["quality"] == 0:
+                    upgrades.remove(upg)
+                else:
+                    upgrade = upg
+                break
+
+        if upgrade is None and "+" in choice[1]:
+            upgrades.append({"name": choice[0], "quality": 1})
+            upgrade = upgrades[-1]
+
+        if upgrade is not None:
+            if upgrade["quality"] < 0:
+                upgrade["quality"] = 0
+
+            tot_quality = query_upgrades(upgrade["name"])[0]["tot_quality"]
+            if upgrade["quality"] > tot_quality:
+                upgrade["quality"] = tot_quality
+
+        group = context.user_data["create_crew"]["selected_group"]
+        if group.lower() == "specific":
+            buttons = create_central_buttons_upgrades(upgrades, group, context.user_data["create_crew"]["crew"]["type"])
+        else:
+            buttons = create_central_buttons_upgrades(upgrades, group)
+
+        if calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"]) == 4:
+            store_value_and_update_kb(update, context, tags=["create_crew", "crew", "upgrades"], value=upgrades,
+                                      btn_label="Upgrades", lang_source="create_crew_type",
+                                      split_row=3, reply_in_group=True)
+            return 1
+
+        context.user_data["create_crew"]["message"].delete()
+        context.user_data["create_crew"]["message"] = context.user_data["create_crew"]["invocation_message"].reply_text(
+            text=placeholders["0"].format(
+                4 - calc_total_upgrade_points(
+                    upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
+            reply_markup=build_plus_minus_keyboard(
+                buttons))
+        return 10
+
+    elif choice == "BACK":
+        context.user_data["create_crew"]["message"].delete()
+        context.user_data["create_crew"]["message"] = context.user_data["create_crew"]["invocation_message"].reply_text(
+            text=placeholders["1"].format(
+                4 - calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
+            reply_markup=custom_kb(
+                query_upgrade_groups(),
+                inline=True))
+        return 6
+
+    else:
+
+        description = query_upgrades(upgrade=choice)[0]["description"]
+        auto_delete_message(context.user_data["create_crew"]["invocation_message"].reply_text(
+            text=description,
+        ), description)
+        return 10
+
+
+def create_central_buttons_upgrades(upgrades: List[dict], group_selected: str, crew_sheet: str = None):
+    """
+    Utility method used to create the buttons with the name of the upgrades and their quality, associated with the
+    selected group.
+
+    :param upgrades: is the dict that contains the upgrades and their quality.
+    :param group_selected: is the user's chosen group.
+    :param crew_sheet: the type of the crew.
+    """
+    upgrades_names = []
+    upgrades_quality = []
+    for elem in upgrades:
+        if "type" not in elem:
+            upgrades_names.append(elem["name"].lower())
+            upgrades_quality.append(elem["quality"])
+
+    buttons = []
+    for upgrade in query_upgrades(group=group_selected, crew_sheet=crew_sheet):
+
+        if upgrade["name"].split("(")[0].lower() in upgrades_names:
+            buttons.append("{}: {}/{}".format(upgrade["name"].split("(")[0],
+                                              upgrades_quality[
+                                                  upgrades_names.index(upgrade["name"].split("(")[0].lower())],
+                                              upgrade["tot_quality"]))
+        else:
+            buttons.append("{}: 0/{}".format(upgrade["name"].split("(")[0], upgrade["tot_quality"]))
+    return buttons
+
+
+def calc_total_upgrade_points(upgrades: List[dict]) -> int:
+    """
+    Utility method used to calculate the amount of upgrades selected by the user so far.
+
+    :param upgrades: is the dictionary of the upgrades.
+    :return: the amount of the selected upgrades.
+    """
+    total = 0
+    for upgrade in upgrades:
+        if "quality" in upgrade:
+            total += upgrade["quality"]
+        else:
+            total += 1
+    return total
+
+
+def create_crew_ability(update: Update, context: CallbackContext) -> int:
+    """
+    If the user chooses a valid option, sends the information associated with this state ("ability")
+    to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, create_crew_ability.__name__)
+
+    ability = query_special_abilities(special_ability=update.message.text, as_dict=True)
+
+    if ability:
+        update.message.delete()
+        store_value_and_update_kb(update, context, tags=["create_crew", "crew", "abilities"], value=ability,
+                                  btn_label="Special ability", lang_source="create_crew_type",
+                                  split_row=3, reply_in_group=True)
+
+        return 1
+    else:
+        invalid_state_choice(update, context, "create_crew", placeholders)
+        return 7
+
+
+def create_crew_contact(update: Update, context: CallbackContext) -> int:
+    """
+    Sends the btn_label associated with this state ("contact") to store_value_and_update_kb method.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the state of the conversation switcher.
+    """
+    placeholders = get_lang(context, create_crew_contact.__name__)
+
+    contact: List[dict] = query_crew_contacts(context.user_data["create_crew"]["crew"]["type"],
+                                              update.message.text.split(",")[0], as_dict=True)
+
+    if contact:
+        update.message.delete()
+        store_value_and_update_kb(update, context, tags=["create_crew", "crew", "contact"], value=contact[0],
+                                  lang_source="create_crew_type", split_row=3, reply_in_group=True)
+
+        return 1
+    else:
+        invalid_state_choice(update, context, "create_crew", placeholders)
+        return 8
+
+
+def create_crew_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /done or /cancel is received.
+    If /done it check if all the necessary fields of the conversation have been filled and, if so,
+    it updates the game's crew in the controller and stores it in the database.
+    If /cancel it deletes the information collected so far.
+    In any case, it exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    command = update.message.text
+    placeholders = get_lang(context, create_crew_end.__name__)
+
+    if "done".casefold() in command:
+        complete_dict = {"type", "name", "reputation", "lair", "abilities", "contact"}
+
+        if complete_dict.issubset(context.user_data["create_crew"]["crew"].keys()):
+
+            controller.update_crew_in_game(get_user_id(update), update.effective_message.chat_id,
+                                           context.user_data["create_crew"]["crew"])
+
+            context.bot.sendMessage(chat_id=update.effective_message.chat_id,
+                                    text=placeholders["0"].format(context.user_data["create_crew"]["crew"]["name"]),
+                                    parse_mode=ParseMode.HTML)
+        else:
+            auto_delete_message(update.message.reply_text(placeholders["1"]))
+            update.message.delete()
+            return 0
+
+    delete_conv_from_user_data(context, "create_crew")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_create_crew------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

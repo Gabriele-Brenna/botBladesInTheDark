@@ -12,7 +12,6 @@ from controller.Controller import Controller
 # instantiates the Controller.
 controller = Controller()
 
-
 # loading of default language dict.
 with open(path_finder('ENG.json'), 'r', encoding="utf8") as lang_f:
     default_lang = json.load(lang_f)["Bot"]
@@ -242,11 +241,13 @@ def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = Tr
 
 
 def store_value_and_update_kb(update: Update, context: CallbackContext, tags: List[str], value: Union[str, dict, list],
-                              lang_source: str = None, btn_label: str = None, split_row: int = None):
+                              lang_source: str = None, btn_label: str = None, split_row: int = None,
+                              reply_in_group: bool = False):
     """
     Update the Inline keyboard of the conversation, according to the last section chosen and filled by the user.
     It also stores the last information received during the conversation.
     It calls add_tag_in_user_data and update_inline_keyboard.
+
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -257,6 +258,8 @@ def store_value_and_update_kb(update: Update, context: CallbackContext, tags: Li
     :param btn_label: the text of the selected button.
             If None the last element of tags' list is used.
     :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
+    :param reply_in_group: the id of the chat where the messages need to be sent.
+        If None the message is sent to the user's private chat
     """
     if btn_label is None:
         btn_label = tags[-1]
@@ -264,7 +267,7 @@ def store_value_and_update_kb(update: Update, context: CallbackContext, tags: Li
         lang_source = tags[0]
 
     add_tag_in_user_data(context, tags, value)
-    update_inline_keyboard(update, context, tags[0], btn_label, lang_source, split_row)
+    update_inline_keyboard(update, context, tags[0], btn_label, lang_source, split_row, reply_in_group)
 
 
 def add_tag_in_user_data(context: CallbackContext, tags: List[str], value: Union[str, dict]):
@@ -283,7 +286,7 @@ def add_tag_in_user_data(context: CallbackContext, tags: List[str], value: Union
 
 
 def update_inline_keyboard(update: Update, context: CallbackContext, command: str, btn_label: str,
-                           lang_source: str, split_row: int = None):
+                           lang_source: str, split_row: int = None, reply_in_group: bool = False):
     """
     Update the Inline keyboard of the conversation, according to the last section chosen and filled by the user.
 
@@ -295,25 +298,35 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     :param lang_source: the tag representing the target dict in the language dictionary.
             If None the first element of tags' list is used.
     :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
+    :param reply_in_group: the id of the chat where the messages need to be sent.
+        If None the message is sent to the user's private chat
     """
     context.user_data[command]["message"].delete()
     placeholders = get_lang(context, lang_source)
 
-    user_id = get_user_id(update)
     updated_kb = context.user_data[command]["keyboard"]
 
     for i in range(len(updated_kb)):
         if btn_label.lower() in updated_kb[i].lower():
             updated_kb[i] = btn_label.capitalize() + " ✅"
 
-    query_menu = context.bot.sendMessage(text=placeholders["1"], chat_id=user_id,
-                                         reply_markup=custom_kb(updated_kb, split_row=split_row, inline=True))
+    if not reply_in_group:
+        query_menu = context.bot.sendMessage(text=placeholders["1"], chat_id=get_user_id(update),
+                                             reply_markup=custom_kb(updated_kb, split_row=split_row, inline=True))
+    else:
+        query_menu = context.user_data[command]["invocation_message"].reply_text(text=placeholders["1"],
+                                                                                 reply_markup=custom_kb(
+                                                                                     updated_kb,
+                                                                                     split_row=split_row,
+                                                                                     inline=True))
 
     context.user_data[command]["query_menu"] = query_menu
 
 
 def query_state_switcher(update: Update, context: CallbackContext, conversation: str, placeholders: dict,
-                         keyboards: List[List[str]], index_inlines: List[int] = None, starting_state: int = 1) -> int:
+                         keyboards: List[List[str]], index_inlines: List[int] = None, starting_state: int = 1,
+                         split_inline_row: int = None,
+                         reply_in_group: bool = False) -> int:
     """
     Handles the callback query from an Inline keyboard by redirecting the user in the correct state of the conversation
     and sending him the associated message.
@@ -325,6 +338,10 @@ def query_state_switcher(update: Update, context: CallbackContext, conversation:
     :param keyboards: the list of the keyboards to send as reply_markup for each state.
     :param index_inlines: list of the indexes of the keyboards that must be inline.
     :param starting_state: the first state among the possible switches.
+    :param split_inline_row: specifies the number of buttons per row for the inline keyboards only.
+        If not specified it is automatically calculated.
+    :param reply_in_group: the id of the chat where the messages need to be sent.
+        If None the message is sent to the user's private chat
     :return: the next state of the specified conversation.
     """
     if index_inlines is None:
@@ -338,15 +355,26 @@ def query_state_switcher(update: Update, context: CallbackContext, conversation:
     keyboard = context.user_data[conversation]["keyboard"]
 
     for i in range(len(keyboard)):
+        split_row = None
         inline = False
         if choice == keyboard[i]:
             if i in index_inlines:
                 inline = True
+                split_row = split_inline_row
             query.delete_message()
-            context.user_data[conversation]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
-                                                                                 text=placeholders[str(i)],
-                                                                                 reply_markup=custom_kb(
-                                                                                     keyboards[i], inline=inline))
+            if not reply_in_group:
+                context.user_data[conversation]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
+                                                                                     text=placeholders[str(i)],
+                                                                                     reply_markup=custom_kb(
+                                                                                         keyboards[i], inline=inline,
+                                                                                         split_row=split_row))
+            else:
+                context.user_data[conversation]["message"] = \
+                    context.user_data[conversation]["invocation_message"].reply_text(text=placeholders[str(i)],
+                                                                                     reply_markup=custom_kb(
+                                                                                         keyboards[i], inline=inline,
+                                                                                     split_row=split_row))
+
             return i + starting_state
     return 0
 
@@ -381,6 +409,27 @@ def end_conv(update: Update, context: CallbackContext) -> int:
 
     auto_delete_message(message, 3.0)
     return ConversationHandler.END
+
+
+def delete_conv_from_user_data(context: CallbackContext, command: str):
+    """
+    Deletes the stored info in the user_data about the received command's conversation.
+
+    :param context: instance of CallbackContext linked to the user.
+    :param command: represents the the key of the conversaton in the user_data dict.
+    """
+    dict_command = context.user_data[command]
+    try:
+        dict_command["query_menu"].delete()
+    except:
+        pass
+
+    try:
+        dict_command["message"].delete()
+    except:
+        pass
+
+    context.user_data.pop(command)
 
 
 def auto_delete_message(message: Message, timer: Union[float, str] = 5.0) -> None:

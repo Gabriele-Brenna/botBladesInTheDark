@@ -99,6 +99,29 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("createCrew".casefold(), create_crew)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_crew_type)],
+                1: [CallbackQueryHandler(create_crew_state_switcher)],
+                2: [MessageHandler(Filters.text & ~Filters.command, create_crew_name)],
+                3: [MessageHandler(Filters.text & ~Filters.command, create_crew_reputation)],
+                4: [MessageHandler(Filters.text & ~Filters.command, create_crew_description)],
+                5: [MessageHandler(Filters.text & ~Filters.command, create_crew_lair_location)],
+                6: [CallbackQueryHandler(create_crew_upgrades)],
+                7: [MessageHandler(Filters.text & ~Filters.command, create_crew_ability)],
+                8: [MessageHandler(Filters.text & ~Filters.command, create_crew_contact)],
+                9: [MessageHandler(Filters.text & ~Filters.command, create_crew_lair_description)],
+                10: [CallbackQueryHandler(create_crew_upgrade_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_crew_end),
+                       CommandHandler("done".casefold(), create_crew_end)],
+            name="conv_createCrew",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
