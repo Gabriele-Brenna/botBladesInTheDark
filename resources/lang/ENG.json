@@ -200,5 +200,159 @@
   },
 
   "Journal": {
+	"write_title": {
+	  "0": "BLADES IN THE DARK - {}"
+	},
+	"write_free_play": {
+	  "0": "FREE PLAY"
+	},
+	"write_score_phase": {
+	  "0": "SCORE PHASE"
+	},
+	"write_downtime_phase": {
+	  "0": "DOWNTIME PHASE"
+	},
+	"write_fortune_roll": {
+	  "0": "FORTUNE ROLL",
+	  "1": "MOTIVATION",
+	  "2": "{} rolls {}",
+	  "3": "The goal is: {}",
+	  "4": "OUTCOME",
+	  "5": "The result of the roll is {}"
+	},
+	"write_score": {
+	  "0": "SCORE: {}",
+	  "1": "TYPE OF PLAN:",
+	  "2": "DETAILS:",
+	  "3": "PARTICIPANTS",
+	  "4": "PC",
+	  "5": "Load",
+	  "6": "ENGAGEMENT",
+	  "7": "The engagement roll determines that you are in a {} position."
+	},
+	"write_action_roll": {
+	  "0": "ACTION ROLL",
+	  "1": "SITUATION",
+	  "2": "<b>{}</b>'s goal is: {}<br>{} is the action used.",
+	  "3": "The position for this action is {}.<br>The action will have a {} effect if successful.",
+	  "4": "({} receives assistance from {})",
+	  "5": "({} decides to push themselves.)",
+	  "6": "({} accepts a <b>Devil's Bargain</b>: <span class=\"user\">{}</span>)",
+	  "7": "OUTCOME",
+	  "8": "The result of the roll is {}.",
+	  "9": "DESCRIPTION OF RESULT FROM THE BOOK (pag 33 pdf)"
+	},
+	"write_end_score": {
+	  "0": "SCORE OUTCOME: <span class=\"user\">{}</span> "
+	},
+	"write_payoff": {
+	  "0": "PAYOFF",
+	  "1": "LOOT",
+	  "2": "The crew earned {} coins {}",
+	  "3": "stored in lair's vault",
+	  "4": "redistributed among members"
+	},
+	"write_heat": {
+	  "0": "HEAT",
+	  "1": "Your recent operation was <b><i>{}</i></b>, causing <b><i>{}</i></b>",
+	  "2": "The target was high-profiled or well-connected.",
+	  "3": "The situation happened on hostile turf.",
+	  "4": "The crew is currently at war with another faction.",
+	  "5": "Dead bodies do not go unnoticed...",
+	  "6": "Your crew now has {} levels of heat",
+	  "7": "Your crew now has {} wanted levels"
+	},
+	"write_entanglement": {
+	  "0": "ENTANGLEMENT",
+	  "1": "COMPLICATIONS"
+	},
+	"write_secret_entanglement": {
+	  "0": "ENTANGLEMENT",
+	  "1": "<b>COMPLICATIONS</b>"
+	},
+	"write_activity": {
+	  "default": {
+		"0": "ACTIVITY",
+		"1": "<b><i>{}</i></b> decided to <b><i>{}</i></b> {}",
+		"2": "They roll a {} and {}"
+	  },
+	  "acquire_assets": {
+		"0": "acquire an asset",
+		"1": "obtain the asset with {} quality"
+	  },
+	  "crafting": {
+		"0": "craft an item",
+		"1": "crafted the new item with {} quality"
+	  },
+	  "long_term_project": {
+		"0": "make a long term project",
+		"1": "tick {} segments of the project clock"
+	  },
+	  "recover": {
+		"0": "heal themselves by",
+		"1": "tick {} segments of the healing clock"
+	  },
+	  "reduce_heat": {
+		"0": "reduce the heat on themselves",
+		"1": "reduced the heat by {} levels"
+	  },
+	  "train": {
+		"0": "train",
+		"1": "earned {} points"
+	  },
+	  "indulge_vice": {
+		"0": "indulge their vice",
+		"1": "cleared their stress by {} segment",
+		"2": "Oh no! They overindulged!",
+		"3": "Brag: {}",
+		"4": "Lost: {}",
+		"5": "Tapped: {}",
+		"6": "Attracted trouble: {}"
+	  },
+	  "help_cohort": {
+		"0": "help a cohort",
+		"1": "now the harm of the cohort is {}"
+	  },
+	  "replace_cohort": {
+		"0": "replace a cohort",
+		"1": "a new cohort has appeared {}"
+	  }
+	},
+	"write_add_claim": {
+	  "0": "NEW CLAIM",
+	  "1": "The crew has a new {} claim: <b>{}</b>",
+	  "2": "prison",
+	  "3": "lair"
+	},
+	"write_incarceration": {
+	  "0": "INCARCERATION",
+	  "1": "<b><i>{}</i></b> is going to jail!",
+	  "2": "They roll a {}",
+	  "3": "<b><i>{}</i></b> got a new trauma: {}"
+	},
+	"write_flashback": {
+	  "0": "FLASHBACK",
+	  "1": "<b>{}</b> had the following {}flashback:",
+	  "2": "<b>{}</b> rolls {} obtaining {}",
+	  "3": "downtime "
+	},
+	"write_resistance_roll": {
+	  "0": "RESISTANCE ROLL",
+	  "1": "{} is trying to deal with the following situation: {}",
+	  "2": "<b>{}</b> used {} and rolled {}.{}",
+	  "3": " Their stress is increased by {}",
+	  "4": " Their stress is lessen by {}"
+	},
+	"write_group_action": {
+	  "0": "GROUP ACTION",
+	  "1": "<b>{}</b> decided to start a group action with the following goal: {}",
+	  "2": "The players participating are:<i>{}</i>",
+	  "3": "<b>{}</b> asked the help of a cohort: {}",
+	  "4": "The position of the group action is {} and will have this effect: {}",
+	  "5": "<i>{}</i> helped with the group action",
+	  "6": "They decided to push themselves",
+	  "7": "They accept a Devil's Bargain: {}",
+	  "8": "They rolled {} and got {}"
+	}
   }
 }

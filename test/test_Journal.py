@@ -1,69 +1,60 @@
-import os
 import unittest
-from pathlib import Path
 from unittest import TestCase
 
+import game.Journal
 from game.Journal import Journal
 
 
 class TestJournal(TestCase):
-    def setUp(self) -> None:
-        root_dir = Path(__file__).parent.resolve()
-        root_dir = os.path.join(root_dir, "resources_test")
-        name = os.path.join(root_dir, "test.txt")
-        self.file = Journal(name, ["Hello", "everybody"])
-
-    def test_delete_note(self):
-        self.file.delete_note(2)
-        self.file.delete_note()
-        self.assertEqual([], self.file.notes)
-        self.file.delete_note()
-        self.assertEqual([], self.file.notes)
-
-    def test_edit_note(self):
-        self.file.edit_note("world", 1)
-        self.file.edit_note("Bye", 2)
-        self.assertEqual(["Bye", "world"], self.file.notes)
-
-    def test_append(self):
-        self.file.append("and")
-        self.file.append("welcome")
-        self.file.append("to")
-        self.assertEqual(["Hello", "everybody", "and", "welcome", "to"], self.file.notes)
-        self.file.append("Blades in the Dark")
-        self.assertEqual(["everybody", "and", "welcome", "to", "Blades in the Dark"], self.file.notes)
-        with open(self.file.name, 'r') as f:
-            self.assertEqual("Hello.\n", f.read())
-        self.file.append("the best")
-        self.assertEqual(["and", "welcome", "to", "Blades in the Dark", "the best"], self.file.notes)
-        with open(self.file.name, 'r') as f:
-            self.assertEqual("Hello.\neverybody.\n", f.read())
-        self.assertEqual(5, len(self.file.notes))
-
     def test_read_journal(self):
-        self.file.append("and")
-        self.file.append("welcome")
-        self.file.append("to")
-        self.assertEqual("Hello.\neverybody.\nand.\nwelcome.\nto.\n", self.file.read_journal())
-        self.file.append("Blades in the Dark")
-        self.assertEqual("Hello.\neverybody.\nand.\nwelcome.\nto.\nBlades in the Dark.\n", self.file.read_journal())
-
-    def test_save_notes(self):
-        self.file.append("and welcome to Blades in the dark")
-        self.assertEqual(["Hello", "everybody", "and welcome to Blades in the dark"], self.file.notes)
-        self.file.save_notes()
-        with open(self.file.name, 'r') as f:
-            self.assertEqual("Hello.\neverybody.\nand welcome to Blades in the dark.\n", f.read())
-        self.assertEqual([], self.file.notes)
-        self.file.save_notes()
-        with open(self.file.name, 'r') as f:
-            self.assertEqual("Hello.\neverybody.\nand welcome to Blades in the dark.\n", f.read())
-
-    def test_rewrite_file(self):
-        self.file.save_notes()
-        self.file.rewrite_file("Welcome to Blades in the dark.\n")
-        with open(self.file.name, 'r') as f:
-            self.assertEqual("Welcome to Blades in the dark.\n", f.read())
+        game.Journal.index = 1
+        temp = Journal()
+        temp.write_heading()
+        temp.write_title("The Knives of Doskvol")
+        temp.write_free_play()
+        temp.write_score_phase()
+        temp.write_downtime_phase()
+        temp.write_general_notes("General note title", "This is a general note")
+        temp.write_fortune_roll("User", "quality of the Item: Sword", "Will it kill the monster", 6, "Extra notes")
+        temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", "User2", True, "notes")
+        temp.write_score("scoring", "plan type", "detail", [("user1", 5), ("user2", 2)], "controlled", "extra notes")
+        temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", "Tizio2", True, "notes")
+        temp.write_score("scoring", "plan type", "detail", [("user1", 5), ("user2", 2)], "controlled", "extra notes")
+        temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", "User2", True, "notes")
+        temp.write_end_score("best outcome", "extra notes")
+        temp.write_payoff(10, True, "extra notes")
+        temp.write_end_score("best outcome", "extra notes")
+        temp.write_payoff(10, True, "extra notes")
+        temp.write_heat("heat type", "dead meat", True, True, True, True, 4, 5)
+        temp.write_entanglement("reprisal of the dead", "very very long description")
+        temp.write_secret_entanglement("reprisal of the dead", "super long description")
+        temp.write_activity("temp", "crafting", "Bow and arrow", 6, 6)
+        temp.write_activity("temp", "acquire_assets", "Huge apartment", 6, 6)
+        temp.write_activity("temp", "long_term_project", "Long project", 5, 5, notes="extra notes")
+        temp.write_activity("temp", "recover", "Stomachache", 5, 5)
+        temp.write_activity("temp", "reduce_heat", "Wanted", 5, 5)
+        temp.write_activity("temp", "train", "Tinker", 5, 5)
+        temp.write_activity("temp", "help_cohort", "Thugs", 5, 5)
+        temp.write_activity("temp", "replace_cohort", "Thugs", 6, "New cohort")
+        temp.write_activity("temp", "indulge_vice", "Vice", 6, 3, "Brag", "Joker")
+        temp.write_activity("temp", "indulge_vice", "Vice", 6, 3, "Lost", "Joker")
+        temp.write_activity("temp", "indulge_vice", "Vice", 6, 3, "Tapped", "Joker")
+        temp.write_activity("temp", "indulge_vice", "Vice", 6, 3, "Attracted trouble", "Joker", "extra information")
+        temp.write_add_claim(True, "LAIR CLAIM")
+        temp.write_add_claim(False, "PRISON CLAIM")
+        temp.write_incarceration("User1", 2, "Extra information", "Extra notes")
+        temp.write_incarceration("User1", 10, "Extra information", "Extra notes")
+        temp.write_flashback("User1", "what happened during the flashback", 6, "stretching", True)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 10, 0)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 1, 10)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 1, -3)
+        temp.write_group_action("User1", "Goal of the group action", "Tinker", 5,
+                                position="Unstable", effect="What will be the effect", notes="Extra notes",
+                                players=["User2", "User3"], helper="User4", push=True,
+                                devils="Devil's bargain conditions")
+        temp.write_group_action("User1", "Goal of group action", "Tinker", 5, notes="extra notes", position="Secure",
+                                effect="particular effect", cohort="Type of the cohort that will help")
+        temp.read_journal()
 
     @unittest.skip("default")
     def test_default(self):
