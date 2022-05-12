@@ -755,7 +755,7 @@ def join_complete_pc_friend(update: Update, context: CallbackContext) -> int:
     if friend:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["join", "pc", "friend"], value=friend[0],
-                                  lang_source="join_complete_pc")
+                                  lang_source="join_complete_pc", split_row=2)
 
         return 2
     else:
@@ -1071,19 +1071,22 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
     choice = query.data
     if "+" in choice or "-" in choice:
         choice = choice.split(" ")
+        name = choice[0]
+        for i in range(1, len(choice)-1):
+            name += " {}".format(choice[i])
 
         upgrade = None
         for upg in upgrades:
-            if upg["name"] == choice[0]:
-                upg["quality"] += int(choice[1])
+            if upg["name"] == name:
+                upg["quality"] += int(choice[-1])
                 if upg["quality"] == 0:
                     upgrades.remove(upg)
                 else:
                     upgrade = upg
                 break
 
-        if upgrade is None and "+" in choice[1]:
-            upgrades.append({"name": choice[0], "quality": 1})
+        if upgrade is None and "+" in choice[-1]:
+            upgrades.append({"name": name, "quality": 1})
             upgrade = upgrades[-1]
 
         if upgrade is not None:

@@ -450,7 +450,7 @@ def query_lang(game_id: int) -> str:
     return cursor.fetchone()[0]
 
 
-def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict]:
+def query_games_info(chat_id: int = None, game_id: int = None) -> List[Dict[str, Union[str, int]]]:
     """
     Retrieves the Game_ID, Title and Tel_Chat_ID of all the games stored in the Data Base
 
@@ -677,7 +677,7 @@ def query_upgrade_groups() -> List[str]:
 
 
 def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = None,
-                   common: bool = False, canon: bool = None) -> List[Dict[str, str, int]]:
+                   common: bool = False, canon: bool = None) -> List[Dict[str, Union[str, int]]]:
     """
     Retrieves the specified upgrade from the database.
 
@@ -736,7 +736,8 @@ def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = Non
     return upgrades
 
 
-def query_starting_upgrades_and_cohorts(crew_sheet: str) -> Tuple[List[Dict[str, int]], List[Dict[str, bool]]]:
+def query_starting_upgrades_and_cohorts(crew_sheet: str) -> \
+        Tuple[List[Dict[str, Union[str, int]]], List[Dict[str, Union[str, bool]]]]:
     """
     Retrieves the starting upgrades and cohorts of the specified crew.
 
