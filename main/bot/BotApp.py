@@ -122,7 +122,32 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changeState".casefold(), "setState".casefold(), "state".casefold()],
+                                         change_state)],
+            states={
+                0: [CallbackQueryHandler(change_state_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_state_end)],
+            name="conv_changeState",
+            persistent=True
+        )
+    )
+
     dispatcher.add_handler(CommandHandler("roll".casefold(), roll_dice))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("actionRoll".casefold(), action_roll)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, end_conv)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_conv)],
+            name="conv_actionRoll",
+            persistent=True
+        )
+    )
 
     # -----------------------------------------START--------------------------------------------------------------------
 

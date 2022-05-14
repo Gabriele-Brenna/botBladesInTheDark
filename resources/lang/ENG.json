@@ -211,6 +211,23 @@
     "create_crew_end": {
       "0": "The crew <u>{}</u> added to the game.",
       "1": "You must complete all the fields in order to complete your crew"
+    },
+
+    "change_state": {
+      "0": "We are ready to start the session. Select the initial state of your game",
+      "1": "You are now in <i>Free Play</i>, if you change phase all your score will be considered finished as well as your downtime activities...\n If you want to do something more this is the right time to do it",
+      "2": "You are in the <i>Score Phase</i>, if you change phase all your score will be considered finished.",
+      "3": "You are in the <i>Downtime Phase</i>, if you change phase all your downtime activities will be considered finished.",
+
+      "err1": "You can't change state without being in a game... /join to take part in a game",
+      "err2": "You mut have a crew, a GM and at least a PC in the game in order to start playing.",
+
+      "keyboard": ["FREE PLAY", "SCORE PHASE", "DOWNTIME"],
+      "callback": ["Free Play$1", "Score Phase$2", "Downtime phase$3"]
+    },
+
+    "change_state_choice": {
+      "0": "State changed to : <i>{}</i>"
     }
 
   },
