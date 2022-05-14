@@ -16,6 +16,10 @@ controller = Controller()
 with open(path_finder('ENG.json'), 'r', encoding="utf8") as lang_f:
     default_lang = json.load(lang_f)["Bot"]
 
+# loading the dice stickers dict.
+with open(path_finder('stickers/dice.json'), 'r', encoding="utf8") as dice_f:
+    dice_stickers = json.load(dice_f)
+
 
 def extract_status_change(chat_member_update: ChatMemberUpdated) -> Optional[Tuple[bool, bool]]:
     """

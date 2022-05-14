@@ -13,13 +13,17 @@
 
     "help_msg": {
       "default": {
-        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E) type /help followed by the name of the command",
-        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction\n\n/login - register your telegram account by choosing a username.\n",
-        "2": "<i>-CREATION-</i>\n/createPC - start the creation of a PC. \uD83D\uDD0E\n"
+        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E), type \n/help followed by the name of the command",
+        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction.\n/login - register your telegram account by choosing an username.\n/join - joins in a game of this chat. \uD83D\uDD0E\n",
+        "2": "<i>-CREATION-</i>\n/createGame - create a new game in this chat.\n/createPC - starts the creation of a PC. \uD83D\uDD0E\n/createCrew - starts the creation of the crew. \uD83D\uDD0E\n",
+        "3": "<i>-DICE-</i>\n/roll [N] - rolls N dice and returns the result. \uD83D\uDD0E \n"
       },
       "commands": {
         "error": "The command <u>{}</u> does not exist.",
-        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him."
+        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him.",
+        "createcrew": "Starts the creation of the crew. The information required during this conversation are the crew's <i>type, name, reputation, lair location and description, special ability, a contact and optionally 2 starting upgrades and a more detailed description</i>.\nYou can use this command only if you joined a game in this chat.\nThe new created crew will become the crew of the game you joined in this chat. If a crew was already present, it is replaced by the new one.",
+        "join": "When you join a game you can decide to join with a PC of yours or as the Game Master. If you decide to join with a PC, you'll be redirected in your private chat to complete the PC creation. You can join several times the same game with different PCs. Keep in mind that you can join only a game per chat at time.\nIf you join as Master you'll become the new GM; if a GM was already present he will be substituted (If he had no PCs he is removed from the Game).\n",
+        "roll": "You can roll a specified pool of dice (for instance: /roll 6 will roll 6d6). You will see all your dice rolling in the form of stickers, then the final result according to Blades in the Dark rules (The highest result, CRIT or the lowest result if you rolled a pool of '0' dice)."
       }
     },
 
@@ -193,10 +197,22 @@
       "1": "You have {} upgrades left "
     },
 
+    "roll_dice": {
+      "nan": "What is <i>{}</i>? It should be a number...",
+      "1": "You rolled \u0031\u20E3",
+      "2": "You rolled \u0032\u20E3",
+      "3": "You rolled \u0033\u20E3",
+      "4": "You rolled \u0034\u20E3",
+      "5": "You rolled \u0035\u20E3",
+      "6": "You rolled \u0036\u20E3",
+      "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
+    },
+
     "create_crew_end": {
       "0": "The crew <u>{}</u> added to the game.",
       "1": "You must complete all the fields in order to complete your crew"
     }
+
   },
 
   "Journal": {

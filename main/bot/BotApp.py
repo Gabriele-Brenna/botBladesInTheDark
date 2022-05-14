@@ -122,6 +122,8 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler("roll".casefold(), roll_dice))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

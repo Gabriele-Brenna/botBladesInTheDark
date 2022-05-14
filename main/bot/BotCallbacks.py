@@ -2,6 +2,7 @@ import copy
 
 from telegram.utils import helpers
 from bot.BotUtils import *
+from utility import DiceRoller
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -28,8 +29,9 @@ def help_msg(update: Update, context: CallbackContext) -> None:
     placeholders = get_lang(context, help_msg.__name__)
 
     if not context.args:
-        for i in range(len(placeholders["default"])):
-            update.message.reply_text(placeholders["default"][str(i)], parse_mode=ParseMode.HTML)
+        update.message.reply_text(placeholders["default"]["0"], parse_mode=ParseMode.HTML)
+        for i in range(1, len(placeholders["default"])):
+            update.message.reply_text(placeholders["default"][str(i)], parse_mode=ParseMode.HTML, quote=False)
     else:
         try:
             update.message.reply_text(placeholders["commands"][context.args[0].lower()], parse_mode=ParseMode.HTML)
@@ -1072,7 +1074,7 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
     if "+" in choice or "-" in choice:
         choice = choice.split(" ")
         name = choice[0]
-        for i in range(1, len(choice)-1):
+        for i in range(1, len(choice) - 1):
             name += " {}".format(choice[i])
 
         upgrade = None
@@ -1268,6 +1270,42 @@ def create_crew_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_create_crew------------------------------------------------------------
+
+
+def roll_dice(update: Update, context: CallbackContext) -> None:
+    """
+    Rolls the specified amount of dice and interprets the result, according to BitD rules.
+    If no parameters are passed after "/roll", only one die is rolled.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    dice = 1
+    if context.args:
+        try:
+            dice = int(context.args[0])
+        except ValueError:
+            update.message.reply_text(get_lang(context, roll_dice.__name__)["nan"].format(context.args[0]),
+                                      parse_mode=ParseMode.HTML)
+            return
+
+    result, rolls = DiceRoller.roll_dice(dice)
+
+    def execute(r: List[int]) -> None:
+        for i in range(len(r)):
+            auto_delete_message(update.effective_message.reply_sticker(sticker=dice_stickers[str(r[i])],
+                                                                       quote=False), (len(r)-i)*3 + 3)
+            time.sleep(3)
+        time.sleep(3)
+
+    if dice != 1:
+        t = Thread(target=execute, kwargs={"r": rolls})
+        t.start()
+        t.join()
+
+    update.effective_message.reply_text(get_lang(context, roll_dice.__name__)[str(result)], parse_mode=ParseMode.HTML,
+                                        quote=False)
+    update.effective_message.reply_sticker(sticker=dice_stickers[str(result)], quote=False)
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
