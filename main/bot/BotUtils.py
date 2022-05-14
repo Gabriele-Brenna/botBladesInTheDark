@@ -404,8 +404,8 @@ def end_conv(update: Update, context: CallbackContext) -> int:
     """
     placeholders = get_lang(context, end_conv.__name__)
 
-    message = update.message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
-    auto_delete_message(update.message, 3.0)
+    message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
+    auto_delete_message(update.effective_message, 3.0)
 
     auto_delete_message(message, 3.0)
     return ConversationHandler.END

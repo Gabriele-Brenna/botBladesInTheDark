@@ -18,6 +18,12 @@ class Controller:
         self.lock_add_game = threading.Lock()
 
     def get_game_by_id(self, game_id: int) -> Game:
+        """
+        Gets the instance of the game with the specified id.
+
+        :param game_id: the game's id.
+        :return: the selected Game.
+        """
         for game in self.games:
             if game.identifier == game_id:
                 return game
@@ -133,6 +139,47 @@ class Controller:
             game.crew.cohorts.append(Cohort(**cohort))
 
         insert_crew_json(game_id, save_to_json(game.crew))
+
+    def get_game_state(self, game_id: int) -> int:
+        """
+        Gets the state of the selected game.
+
+        :param game_id: the game's id.
+        :return: the state of the selected Game.
+        """
+        return self.get_game_by_id(game_id).state
+
+    def can_start_game(self, game_id: int) -> bool:
+        """
+        Checks if the selected Game can start.
+        The Game needs to fulfill the INIT phase requirements: must have a master, a crew and at least one PC
+
+        :param game_id: the game's id.
+        :return: True if the selected Game can start, False otherwise.
+        """
+        game = self.get_game_by_id(game_id)
+        if game.get_master() is not None and game.crew is not None and game.get_pcs_list():
+            return True
+        return False
+
+    def change_state(self, game_id: int, new_state: int):
+        """
+        Changes the current state of the game to the selected one.
+
+        :param game_id: the game's id.
+        :param new_state: the destination state.
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.scores.clear()
+        game.journal.indentation = 0
+
+        for player in game.users:
+            for pc in player.characters:
+                pc.clear_consumable()
+
+        game.state = new_state
+        insert_state(game_id, new_state)
 
     def __repr__(self) -> str:
         return str(self.games)
