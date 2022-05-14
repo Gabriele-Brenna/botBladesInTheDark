@@ -1,6 +1,7 @@
 from typing import List
 
 from character.Item import Item
+from character.PC import PC
 from component.Clock import Clock
 from controller.DBreader import query_last_game_id
 from game.Journal import Journal
@@ -18,7 +19,7 @@ class Game:
     Represents an instance of a game and keeps track of the participants and their roles
     """
     def __init__(self, identifier: int = None, title: str = None,
-                 users: List[Player] = None, NPCs: List[NPC] = None, crew: Crew = Crew(),
+                 users: List[Player] = None, NPCs: List[NPC] = None, crew: Crew = None,
                  factions: List[Faction] = None, clocks: List[Clock] = None, scores: List[Score] = None,
                  crafted_items: List[Item] = None, journal: Journal = Journal(), state: int = INIT,
                  chat_id: int = None) -> None:
@@ -146,6 +147,17 @@ class Game:
         for p in self.users:
             if p.is_master:
                 return p
+
+    def get_pcs_list(self) -> List[PC]:
+        """
+        Gets the list of all the PCs of all users that participate in this game.
+
+        :return: a list of PCs. (Empty list if no PCs are in the game)
+        """
+        pcs = []
+        for player in self.users:
+            pcs += player.characters
+        return pcs
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
