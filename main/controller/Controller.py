@@ -181,5 +181,71 @@ class Controller:
         game.state = new_state
         insert_state(game_id, new_state)
 
+    def get_user_characters_names(self, user_id: int, chat_id: int) -> List[str]:
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        pcs = game.get_pcs_list(user_id)
+        pcs_names = []
+        for pc in pcs:
+            pcs_names.append(pc.name)
+
+        return pcs_names
+
+    def get_pc_actions_ratings(self, user_id: int, chat_id: int, pc_name: str) -> List[Tuple[str, int]]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        ratings = []
+        pcs = game.get_pcs_list(user_id)
+        for pc in pcs:
+            if pc.name.lower() == pc_name.lower():
+                for attribute in pc.attributes:
+                    for action in attribute.actions:
+                        ratings.append((action.name, action.rating))
+
+                return ratings
+
+    def is_master(self, user_id: int, chat_id: int) -> bool:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        master = game.get_master()
+
+        if master.player_id == user_id:
+            return True
+        return False
+
+    def commit_action_roll(self, chat_id: int, user_id: int, action_roll: dict) -> List[Tuple[str, int]]:
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        trauma_victims = []
+
+        # work on assistants: split id and name
+        # assistants gets +1 stress
+        if "assistants" in action_roll:
+            assistants = action_roll.pop("assistants")
+
+            pcs_names = []
+            for assistant in assistants:
+                traumas = game.get_player_by_id(assistant[0]).get_character_by_name(assistant[1]).add_stress(1)
+                pcs_names.append(assistant[1])
+                if traumas > 0:
+                    trauma_victims.append((assistant[1], traumas))
+
+            action_roll["assistants"] = pcs_names
+
+        # if Push +2 stress
+        if action_roll["push"]:
+            traumas = game.get_player_by_id(user_id).get_character_by_name(action_roll["pc"]).add_stress(2)
+            if traumas > 0:
+                trauma_victims.append((action_roll["pc"], traumas))
+
+        # journal
+
+        # TODO:
+        #   insert_pc and insert_journal
+        #  game.journal.write_action_roll(**action_roll)
+
+        return trauma_victims
+
     def __repr__(self) -> str:
         return str(self.games)

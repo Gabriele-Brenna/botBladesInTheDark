@@ -197,17 +197,6 @@
       "1": "You have {} upgrades left "
     },
 
-    "roll_dice": {
-      "nan": "What is <i>{}</i>? It should be a number...",
-      "1": "You rolled \u0031\u20E3",
-      "2": "You rolled \u0032\u20E3",
-      "3": "You rolled \u0033\u20E3",
-      "4": "You rolled \u0034\u20E3",
-      "5": "You rolled \u0035\u20E3",
-      "6": "You rolled \u0036\u20E3",
-      "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
-    },
-
     "create_crew_end": {
       "0": "The crew <u>{}</u> added to the game.",
       "1": "You must complete all the fields in order to complete your crew"
@@ -228,6 +217,75 @@
 
     "change_state_choice": {
       "0": "State changed to : <i>{}</i>"
+    },
+
+    "pc_selection": {
+      "0": "Select the PC",
+      "1": "You can't change your active PC without being in a game in this chat... /join to take part in a game."
+    },
+
+    "pc_selection_choice": {
+      "0": "Your active PC in game {} is now {}."
+    },
+
+    "roll_dice": {
+      "nan": "What is <i>{}</i>? It should be a number...",
+      "1": "You rolled \u0031\u20E3",
+      "2": "You rolled \u0032\u20E3",
+      "3": "You rolled \u0033\u20E3",
+      "4": "You rolled \u0034\u20E3",
+      "5": "You rolled \u0035\u20E3",
+      "6": "You rolled \u0036\u20E3",
+      "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
+    },
+
+    "bonus_dice": {
+      "message": "Add or remove your bonus dice.",
+      "button": "Bonus \uD83C\uDFB2: {}",
+      "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get."
+    },
+
+    "action_roll": {
+      "0": "Write the <i>goal</i> of your action.\nWhat's the concrete outcome you want to achieve?",
+      "1": "You can't perform an action roll without being in a game... /join to take part in a game."
+    },
+
+    "action_roll_goal": {
+      "0": "Select the action you want to roll."
+    },
+
+    "action_roll_rating": {
+      "0": "The <b>GM</b> has to set some information \n/reply_action_roll",
+      "1": "What's the position for this roll?",
+      "keyboard": ["Controlled", "Risky", "Desperate"]
+    },
+
+    "action_roll_position": {
+      "0": "Select the effect level.",
+      "keyboard": ["Limited", "Standard", "Great"]
+    },
+
+    "action_roll_effect": {
+      "0": "\u26A0\uFE0F <i><b>{}</b></i> is trying to <i>{}</i>. If anyone wants to help\n/assist",
+      "1": "Every action can have consequences, if you feel yourself in trouble you can always...",
+      "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
+      "callbacks": [0, 1, 2]
+    },
+
+    "action_roll_assistance": {
+      "0": "<i>{}</i> is ready to help!"
+    },
+
+    "action_roll_bargains": {
+      "0": "Describe your Devil's Bargain:"
+    },
+
+    "action_roll_bonus_dice": {
+      "0": "Describe the final outcome of your roll."
+    },
+
+    "action_roll_notes": {
+      "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
     }
 
   },
@@ -266,7 +324,7 @@
 	"write_action_roll": {
 	  "0": "ACTION ROLL",
 	  "1": "SITUATION",
-	  "2": "<b>{}</b>'s goal is: {}<br>{} is the action used.",
+	  "2": "<b>{}</b>'s goal is: {}<br>The action rolled is {}",
 	  "3": "The position for this action is {}.<br>The action will have a {} effect if successful.",
 	  "4": "({} receives assistance from {})",
 	  "5": "({} decides to push themselves.)",

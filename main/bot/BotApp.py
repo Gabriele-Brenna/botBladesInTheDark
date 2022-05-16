@@ -135,16 +135,71 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["pcSelection".casefold(), "switchPC".casefold(), "changePC".casefold()],
+                                         pc_selection)],
+            states={
+                0: [CallbackQueryHandler(pc_selection_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), pc_selection_end)],
+            name="conv_pcSelection",
+            persistent=True
+        )
+    )
+
     dispatcher.add_handler(CommandHandler("roll".casefold(), roll_dice))
 
     dispatcher.add_handler(
         ConversationHandler(
-            entry_points=[CommandHandler("actionRoll".casefold(), action_roll)],
+            entry_points=[CommandHandler(["actionRoll".casefold(), "ar".casefold()], action_roll)],
             states={
-                0: [MessageHandler(Filters.text & ~Filters.command, end_conv)],
+                0: [ConversationHandler(
+                    entry_points=[MessageHandler(Filters.text & ~Filters.command, action_roll_goal)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, action_roll_rating)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), action_roll_end)],
+                    name="player_conv_actionRoll1",
+                    persistent=True,
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END,
+                        1: 1
+                    }
+                    )],
+                1: [ConversationHandler(
+                    entry_points=[CommandHandler("reply_action_roll".casefold(), master_reply)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, action_roll_position)],
+                        1: [MessageHandler(Filters.text & ~Filters.command, action_roll_effect)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), action_roll_end)],
+                    name="master_conv_actionRoll",
+                    persistent=True,
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END,
+                        2: 2
+                    }
+                    )],
+                2: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(action_roll_bargains)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, action_roll_devil_bargains)],
+                        1: [CallbackQueryHandler(action_roll_bonus_dice)],
+                        2: [MessageHandler(Filters.text & ~Filters.command, action_roll_notes)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), action_roll_end)],
+                    name="player_conv_actionRoll2",
+                    persistent=True,
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                    )]
             },
-            fallbacks=[CommandHandler("cancel".casefold(), end_conv)],
+            fallbacks=[CommandHandler("cancel".casefold(), action_roll_end),
+                       CommandHandler("assist".casefold(), action_roll_assistance)],
             name="conv_actionRoll",
+            per_user=False,
             persistent=True
         )
     )
