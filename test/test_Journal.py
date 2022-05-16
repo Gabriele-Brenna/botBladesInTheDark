@@ -16,7 +16,7 @@ class TestJournal(TestCase):
         temp.write_downtime_phase()
         temp.write_general_notes("General note title", "This is a general note")
         temp.write_fortune_roll("User", "quality of the Item: Sword", "Will it kill the monster", 6, "Extra notes")
-        temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", "User2", True, "notes")
+        temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", ["user2", "User3"], True, "notes")
         temp.write_score("scoring", "plan type", "detail", [("user1", 5), ("user2", 2)], "controlled", "extra notes")
         temp.write_action_roll("user", "goal", "action", "position", "effect", 5, "notes", "Tizio2", True, "notes")
         temp.write_score("scoring", "plan type", "detail", [("user1", 5), ("user2", 2)], "controlled", "extra notes")
