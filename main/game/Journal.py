@@ -7,7 +7,7 @@ from bs4.element import Doctype
 from bs4 import *
 
 from utility.FilesManager import path_finder, get_resources_folder
-from utility.HtmlParser import MyHTMLParser
+from utility.htmlFactory.HtmlParser import MyHTMLParser
 
 index = 1
 
@@ -223,14 +223,14 @@ class Journal:
 
         return div_tag
 
-    def create_fortune_roll_tag(self, who: str, what: str, goal: str, result: int, notes: str):
+    def create_fortune_roll_tag(self, who: str, what: str, goal: str, outcome: int, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "fortuneRoll".
 
         :param who: who does the fortune roll
         :param what: what do they roll
         :param goal: what is their goal
-        :param result: what is the exposure of the roll
+        :param outcome: what is the outcome of the roll
         :param notes: extra notes
         :return: the div Tag
         """
@@ -247,7 +247,7 @@ class Journal:
 
         div_tag.append(self.create_h4_tag(self.get_lang(self.write_fortune_roll.__name__)["4"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["5"].format(result)))
+        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["5"].format(outcome)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -312,8 +312,8 @@ class Journal:
 
         return div_tag
 
-    def create_action_roll_tag(self, user: str, goal: str, action: str, position: str, effect: str, roll: int,
-                               notes: str, assistance: str = None, push: bool = False, devils: str = None):
+    def create_action_roll_tag(self, user: str, goal: str, action: str, position: str, effect: str, outcome: int,
+                               notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "actionRoll".
 
@@ -321,10 +321,10 @@ class Journal:
         :param goal: goal of the action roll
         :param action: what will the character do
         :param position: starting position of the action
-        :param effect: effect of the action of successful
-        :param roll: exposure of the dice roll
+        :param effect: effect of the action if successful
+        :param outcome: outcome of the dice roll
         :param notes: extra notes
-        :param assistance: from whom the user got help
+        :param assistants: from whom the user got help
         :param push: if the user push themselves
         :param devils: what deal the user made
         :return: the div Tag
@@ -341,9 +341,12 @@ class Journal:
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["3"].format(position, effect)))
 
-        if assistance:
+        if assistants:
+            temp = assistants[0]
+            for i in range(1, len(assistants)):
+                temp += ", " + assistants[i]
             div_tag.append(
-                self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["4"].format(user, assistance)))
+                self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["4"].format(user, temp)))
         if push:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["5"].format(user)))
         if devils:
@@ -351,7 +354,7 @@ class Journal:
 
         div_tag.append(self.create_h4_tag(self.get_lang(self.write_action_roll.__name__)["7"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["8"].format(roll)))
+        div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["8"].format(outcome)))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["9"]))
 
@@ -821,17 +824,17 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_fortune_roll(self, who: str, what: str, goal: str, result: int, notes: str):
+    def write_fortune_roll(self, who: str, what: str, goal: str, outcome: int, notes: str):
         """
         Method used to write a fortune roll in the attribute journal representing the html file of the journal.
 
         :param who: who does the fortune roll
         :param what: what do they roll
         :param goal: what is their goal
-        :param result: what is the exposure of the roll
+        :param outcome: what is the exposure of the roll
         :param notes: extra notes
         """
-        tag = self.create_fortune_roll_tag(who, what, goal, result, notes)
+        tag = self.create_fortune_roll_tag(who, what, goal, outcome, notes)
 
         self.write_general(tag)
 
@@ -851,24 +854,24 @@ class Journal:
 
         self.score_tags.append(tag)
 
-    def write_action_roll(self, user: str, goal: str, action: str, position: str, effect: str, roll: int,
-                          notes: str, assistance: str = None, push: bool = False, devils: str = None):
+    def write_action_roll(self, user: str, goal: str, action: str, position: str, effect: str, outcome: int,
+                          notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
         """
-        Method used to write an action roll in the attribute journal representing the html file of the journal.
+        Method used to write an action outcome in the attribute journal representing the html file of the journal.
 
         :param user: who does the action roll
         :param goal: goal of the action roll
         :param action: what will the character do
         :param position: starting position of the action
         :param effect: effect of the action of successful
-        :param roll: exposure of the dice roll
+        :param outcome: result of the dice roll
         :param notes: extra notes
-        :param assistance: from whom the user got help
+        :param assistants: from whom the user got help
         :param push: if the user push themselves
         :param devils: what deal the user made
         """
-        tag = self.create_action_roll_tag(user, goal, action, position, effect, roll,
-                                          notes, assistance, push, devils)
+        tag = self.create_action_roll_tag(user, goal, action, position, effect, outcome,
+                                          notes, assistants, push, devils)
 
         self.write_general(tag)
 
