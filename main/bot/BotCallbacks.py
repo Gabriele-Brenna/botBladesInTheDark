@@ -890,6 +890,8 @@ def create_crew_type(update: Update, context: CallbackContext) -> int:
         context.user_data["create_crew"]["crew"]["type"])
 
     context.user_data["create_crew"]["crew"].setdefault("upgrades", starting_upgrade)
+    context.user_data["create_crew"].setdefault("upgrades", starting_upgrade)
+
     context.user_data["create_crew"]["crew"].setdefault("cohorts", starting_cohort)
 
     update.message.delete()
@@ -1033,11 +1035,14 @@ def create_crew_upgrades(update: Update, context: CallbackContext) -> int:
     choice = query.data
     context.user_data["create_crew"]["selected_group"] = choice
 
-    upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
+    upgrades = context.user_data["create_crew"]["upgrades"]
 
     if calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"]) == 4:
-        upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
-        context.user_data["create_crew"]["crew"]["upgrades"] = upgrades
+        starting_upgrade, starting_cohort = query_starting_upgrades_and_cohorts(
+            context.user_data["create_crew"]["crew"]["type"])
+
+        context.user_data["create_crew"]["upgrades"] = starting_upgrade
+        upgrades = context.user_data["create_crew"]["upgrades"]
 
     if choice.lower() == "specific":
         buttons = create_central_buttons_upgrades(upgrades, choice, context.user_data["create_crew"]["crew"]["type"])
@@ -1066,7 +1071,7 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
     query = update.callback_query
     query.answer()
 
-    upgrades = context.user_data["create_crew"]["crew"]["upgrades"]
+    upgrades = context.user_data["create_crew"]["upgrades"]
 
     choice = query.data
     if "+" in choice or "-" in choice:
@@ -1125,7 +1130,7 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
                 4 - calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
             reply_markup=custom_kb(
                 query_upgrade_groups(),
-                inline=True))
+                inline=True, split_row=2))
         return 6
 
     else:
@@ -1267,7 +1272,103 @@ def create_crew_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_create_crew------------------------------------------------------------
+# ------------------------------------------conv_createCrew-------------------------------------------------------------
+
+
+# ------------------------------------------conv_actionRoll-------------------------------------------------------------
+
+
+def action_roll(update: Update, context: CallbackContext) -> int:
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_actionRoll-------------------------------------------------------------
+
+
+# ------------------------------------------conv_changeState-------------------------------------------------------------
+
+
+def change_state(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the change of game state.
+    Sends the user an inline keyboard with the possible states.
+    If the user hasn't joined a game, or if the chat group hasn't finished the INIT phase, the conversation is canceled.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation
+    """
+    placeholders = get_lang(context, change_state.__name__)
+
+    context.user_data.setdefault("change_state", {})["invocation_message"] = update.message
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(text=placeholders["err1"])
+        return end_conv(update, context)
+
+    game_id = query_game_of_user(update.message.chat_id, get_user_id(update))
+    curr_state = controller.get_game_state(game_id)
+
+    if curr_state == 0:
+        if not controller.can_start_game(game_id):
+            update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+            return end_conv(update, context)
+
+    update.message.reply_text(placeholders[str(curr_state)], parse_mode=ParseMode.HTML,
+                              reply_markup=custom_kb(buttons=placeholders["keyboard"], inline=True, split_row=1,
+                                                     callback_data=placeholders["callback"]))
+
+    return 0
+
+
+def change_state_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Switches the game phase accordingly with the user choice, calling Controller.change_state.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: change_state_end().
+    """
+    placeholders = get_lang(context, change_state_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data.split("$")
+
+    controller.change_state(query_game_of_user(update.effective_message.chat_id, get_user_id(update)), choice[1])
+    context.user_data["change_state"]["invocation_message"].reply_text(placeholders["0"].format(
+        choice[0]), parse_mode=ParseMode.HTML)
+
+    return change_state_end(update, context)
+
+
+def change_state_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    dict_change_state = context.user_data["change_state"]
+
+    try:
+        dict_change_state["query_menu"].delete()
+    except:
+        pass
+
+    try:
+        dict_change_state["message"].delete()
+    except:
+        pass
+
+    context.user_data.pop("change_state")
+
+    return end_conv(update, context)
+
+# ------------------------------------------conv_changeState-------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
