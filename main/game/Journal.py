@@ -223,11 +223,11 @@ class Journal:
 
         return div_tag
 
-    def create_fortune_roll_tag(self, who: str, what: str, goal: str, outcome: int, notes: str):
+    def create_fortune_roll_tag(self, pc: str, what: str, goal: str, outcome: int, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "fortuneRoll".
 
-        :param who: who does the fortune roll
+        :param pc: who does the fortune roll
         :param what: what do they roll
         :param goal: what is their goal
         :param outcome: what is the outcome of the roll
@@ -241,7 +241,7 @@ class Journal:
 
         div_tag.append(self.create_h4_tag(self.get_lang(self.write_fortune_roll.__name__)["1"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["2"].format(who, what)))
+        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["2"].format(pc, what)))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["3"].format(goal)))
 
@@ -312,12 +312,12 @@ class Journal:
 
         return div_tag
 
-    def create_action_roll_tag(self, user: str, goal: str, action: str, position: str, effect: str, outcome: int,
+    def create_action_roll_tag(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
                                notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "actionRoll".
 
-        :param user: who does the action roll
+        :param pc: who does the action roll
         :param goal: goal of the action roll
         :param action: what will the character do
         :param position: starting position of the action
@@ -337,7 +337,7 @@ class Journal:
         div_tag.append(self.create_h4_tag(self.get_lang(self.write_action_roll.__name__)["1"]))
 
         div_tag.append(
-            self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["2"].format(user, goal, action)))
+            self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["2"].format(pc, goal, action)))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["3"].format(position, effect)))
 
@@ -346,11 +346,11 @@ class Journal:
             for i in range(1, len(assistants)):
                 temp += ", " + assistants[i]
             div_tag.append(
-                self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["4"].format(user, temp)))
+                self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["4"].format(pc, temp)))
         if push:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["5"].format(user)))
+            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["5"].format(pc)))
         if devils:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["6"].format(user, devils)))
+            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["6"].format(pc, devils)))
 
         div_tag.append(self.create_h4_tag(self.get_lang(self.write_action_roll.__name__)["7"]))
 
@@ -492,7 +492,7 @@ class Journal:
 
         return div_tag
 
-    def create_activity_tag(self, user: str,
+    def create_activity_tag(self, pc: str,
                             activity: Literal['acquire_assets', 'crafting', 'long_term_project', 'recover',
                                               'reduce_heat', 'train', 'indulge_vice', 'help_cohort',
                                               'replace_cohort'],
@@ -502,7 +502,7 @@ class Journal:
         """
         Method used to create and insert a div tag with class attribute set to "activity".
 
-        :param user: who does the downtime activity
+        :param pc: who does the downtime activity
         :param activity: type of activity. Choose from: 'acquire_assets', 'crafting', 'long_term_project', 'recover',
         'reduce_heat', 'train', 'indulge_vice', 'help_cohort', 'replace_cohort'
         :param extra_info: extra information about the activity
@@ -521,7 +521,7 @@ class Journal:
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_activity.__name__)["default"]["0"]))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_activity.__name__)["default"]["1"].format(
-            user, self.get_lang(self.write_activity.__name__)[activity]["0"],
+            pc, self.get_lang(self.write_activity.__name__)[activity]["0"],
             "({})".format(extra_info) if extra_info else "")))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_activity.__name__)["default"]["2"].format(
@@ -566,11 +566,11 @@ class Journal:
 
         return div_tag
 
-    def create_incarceration_tag(self, user: str, roll: Union[str, int], extra_info: str, notes: str):
+    def create_incarceration_tag(self, pc: str, roll: Union[str, int], extra_info: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "incarceration".
 
-        :param user: who is going to jail
+        :param pc: who is going to jail
         :param roll: what he rolls
         :param extra_info: if the roll is equal or higher than 6 (CRITICAL) it's the name of the new prison claim,
         otherwise is the name of the trauma
@@ -581,7 +581,7 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_incarceration.__name__)["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["1"].format(user)))
+        div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["1"].format(pc)))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["2"].format(roll)))
 
@@ -596,16 +596,16 @@ class Journal:
 
         elif isinstance(roll, int) and 1 <= roll < 3:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["3"].format(
-                user, extra_info)))
+                pc, extra_info)))
 
         return div_tag
 
-    def create_flashback_tag(self, user: str, notes: str, roll: Union[str, int], roll_info: str,
+    def create_flashback_tag(self, pc: str, notes: str, roll: Union[str, int], roll_info: str,
                              downtime_flashback: bool):
         """
         Method used to create and insert a div tag with class attribute set to "flashback".
 
-        :param user: who has the flashback
+        :param pc: who has the flashback
         :param notes: description of the flashback
         :param roll: roll of the dice
         :param roll_info: type of roll made by the user
@@ -617,21 +617,21 @@ class Journal:
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_flashback.__name__)["0"]))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_flashback.__name__)["1"].format(
-            user, self.get_lang(self.write_flashback.__name__)["3"] if downtime_flashback else "")))
+            pc, self.get_lang(self.write_flashback.__name__)["3"] if downtime_flashback else "")))
 
         div_tag.append(self.create_p_tag('"{}"'.format(notes), {"class": "user"}))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_flashback.__name__)["2"].format(
-            user, roll_info, roll)))
+            pc, roll_info, roll)))
 
         return div_tag
 
-    def create_resistance_roll_tag(self, user: str, description: str, attribute: str, roll: Union[str, int],
+    def create_resistance_roll_tag(self, pc: str, description: str, attribute: str, roll: Union[str, int],
                                    stress: int = 0):
         """
         Method used to create and insert a div tag with class attribute set to "resistanceRoll".
 
-        :param user: who is doing the resistance roll
+        :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
         :param roll: roll of the dice
@@ -643,30 +643,30 @@ class Journal:
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_resistance_roll.__name__)["0"]))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["1"].format(
-            user, description)))
+            pc, description)))
 
         if stress > 0:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                user, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["3"].format(stress)
+                pc, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["3"].format(stress)
             )))
         elif stress < 0:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                user, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["4"].format(-stress)
+                pc, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["4"].format(-stress)
             )))
         else:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                user, attribute, roll, "")))
+                pc, attribute, roll, "")))
 
         return div_tag
 
-    def create_group_action_tag(self, user: str, goal: str, action: str, roll: int, notes: str, position: str,
+    def create_group_action_tag(self, pc: str, goal: str, action: str, roll: int, notes: str, position: str,
                                 effect: str,
                                 players: List[str] = None, cohort: str = None, helper: str = None, push: bool = False,
                                 devils: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "groupAction".
 
-        :param user: who starts the group action
+        :param pc: who starts the group action
         :param goal: goal of the group action
         :param action: action used to roll the group action
         :param roll: result of the dice roll
@@ -684,14 +684,14 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_group_action.__name__)["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["1"].format(user, goal)))
+        div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["1"].format(pc, goal)))
 
         if players:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["2"].
                                              format(" ".join(players))))
         elif cohort:
             div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["3"].format(
-                user, cohort)))
+                pc, cohort)))
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["4"].format(position, effect)))
 
@@ -824,17 +824,17 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_fortune_roll(self, who: str, what: str, goal: str, outcome: int, notes: str):
+    def write_fortune_roll(self, pc: str, what: str, goal: str, outcome: int, notes: str):
         """
         Method used to write a fortune roll in the attribute journal representing the html file of the journal.
 
-        :param who: who does the fortune roll
+        :param pc: who does the fortune roll
         :param what: what do they roll
         :param goal: what is their goal
         :param outcome: what is the exposure of the roll
         :param notes: extra notes
         """
-        tag = self.create_fortune_roll_tag(who, what, goal, outcome, notes)
+        tag = self.create_fortune_roll_tag(pc, what, goal, outcome, notes)
 
         self.write_general(tag)
 
@@ -854,12 +854,12 @@ class Journal:
 
         self.score_tags.append(tag)
 
-    def write_action_roll(self, user: str, goal: str, action: str, position: str, effect: str, outcome: int,
+    def write_action_roll(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
                           notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
         """
         Method used to write an action outcome in the attribute journal representing the html file of the journal.
 
-        :param user: who does the action roll
+        :param pc: who does the action roll
         :param goal: goal of the action roll
         :param action: what will the character do
         :param position: starting position of the action
@@ -870,7 +870,7 @@ class Journal:
         :param push: if the user push themselves
         :param devils: what deal the user made
         """
-        tag = self.create_action_roll_tag(user, goal, action, position, effect, outcome,
+        tag = self.create_action_roll_tag(pc, goal, action, position, effect, outcome,
                                           notes, assistants, push, devils)
 
         self.write_general(tag)
@@ -941,7 +941,7 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_activity(self, user: str,
+    def write_activity(self, pc: str,
                        activity: Literal['acquire_assets', 'crafting', 'long_term_project', 'recover',
                                          'reduce_heat', 'train', 'indulge_vice', 'help_cohort',
                                          'replace_cohort'],
@@ -950,7 +950,7 @@ class Journal:
         """
         Method used to write a downtime activity in the attribute journal representing the html file of the journal.
 
-        :param user: who does the downtime activity
+        :param pc: who does the downtime activity
         :param activity: type of activity. Choose from: 'acquire_assets', 'crafting', 'long_term_project', 'recover',
         'reduce_heat', 'train', 'indulge_vice', 'help_cohort', 'replace_cohort'
         :param extra_info: extra information about the activity
@@ -962,7 +962,7 @@ class Journal:
         :param extra_overindulge: extra information about how they overindulged
         :param notes: extra notes
         """
-        tag = self.create_activity_tag(user, activity, extra_info, rolls,
+        tag = self.create_activity_tag(pc, activity, extra_info, rolls,
                                        extra_roll, overindulge, extra_overindulge, notes)
 
         self.write_general(tag)
@@ -978,54 +978,54 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_incarceration(self, user: str, roll: Union[str, int], extra_info: str, notes: str):
+    def write_incarceration(self, pc: str, roll: Union[str, int], extra_info: str, notes: str):
         """
         Method used to write the incarceration in the attribute journal representing the html file of the journal.
 
-        :param user: who is going to jail
+        :param pc: who is going to jail
         :param roll: what he rolls
         :param extra_info: if the roll is equal or higher than 6 (CRITICAL) it's the name of the new prison claim,
         otherwise is the name of the trauma
         :param notes: extra notes
         """
-        tag = self.create_incarceration_tag(user, roll, extra_info, notes)
+        tag = self.create_incarceration_tag(pc, roll, extra_info, notes)
 
         self.write_general(tag)
 
-    def write_flashback(self, user: str, notes: str, roll: Union[str, int], roll_info: str,
+    def write_flashback(self, pc: str, notes: str, roll: Union[str, int], roll_info: str,
                         downtime_flashback: bool):
         """
         Method used to write a flashback in the attribute journal representing the html file of the journal.
 
-        :param user: who has the flashback
+        :param pc: who has the flashback
         :param notes: description of the flashback
         :param roll: roll of the dice
         :param roll_info: type of roll made by the user
         :param downtime_flashback: True if it is a downtime flashback, False otherwise
         """
-        tag = self.create_flashback_tag(user, notes, roll, roll_info, downtime_flashback)
+        tag = self.create_flashback_tag(pc, notes, roll, roll_info, downtime_flashback)
 
         self.write_general(tag)
 
-    def write_resistance_roll(self, user: str, description: str, attribute: str, roll: Union[str, int],
+    def write_resistance_roll(self, pc: str, description: str, attribute: str, roll: Union[str, int],
                               stress: int = 0):
         """
         Method used to write a resistance roll in the attribute journal representing the html file of the journal.
 
-        :param user: who is doing the resistance roll
+        :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
         :param roll: roll of the dice
         :param stress: amount of stress gained
         """
-        tag = self.create_resistance_roll_tag(user, description, attribute, roll, stress)
+        tag = self.create_resistance_roll_tag(pc, description, attribute, roll, stress)
 
         self.write_general(tag)
 
-    def write_group_action(self, user: str, goal: str, action: str, roll: int, notes: str, position: str,
+    def write_group_action(self, pc: str, goal: str, action: str, roll: int, notes: str, position: str,
                            effect: str, players: List[str] = None, cohort: str = None, helper: str = None,
                            push: bool = None, devils: str = None):
-        tag = self.create_group_action_tag(user, goal, action, roll, notes, position,
+        tag = self.create_group_action_tag(pc, goal, action, roll, notes, position,
                                            effect, players, cohort, helper, push, devils)
         """
         Method used to write a group action in the attribute journal representing the html file of the journal.
