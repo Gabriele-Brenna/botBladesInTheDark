@@ -256,7 +256,7 @@
     },
 
     "action_roll_rating": {
-      "0": "The <b>GM</b> has to set some information \n/reply_action_roll",
+      "0": "The <b>GM</b> has to set some information: <i><b>{}</b></i> is trying to <i>{}</i> using <i>{}</i>\n/reply_action_roll",
       "1": "What's the position for this roll?",
       "keyboard": ["Controlled", "Risky", "Desperate"]
     },

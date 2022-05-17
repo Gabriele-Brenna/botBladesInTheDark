@@ -1365,10 +1365,11 @@ def action_roll(update: Update, context: CallbackContext) -> int:
             return end_conv(update, context)
 
         message = update.message.reply_text(text=placeholders["0"], parse_mode=ParseMode.HTML)
-
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "message"], value=message)
+
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "invocation_message"],
                                  value=update.message)
+
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "invoker"], value=get_user_id(update))
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "pc"],
                                  value=context.user_data["active_PCs"][update.effective_message.chat_id])
@@ -1385,6 +1386,8 @@ def action_roll_goal(update: Update, context: CallbackContext):
     :return: the next state of the conversation.
     """
     if get_user_id(update) == context.chat_data["action_roll"]["invoker"]:
+        context.chat_data["action_roll"]["message"].delete()
+
         placeholders = get_lang(context, action_roll_goal.__name__)
 
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "goal"],
@@ -1393,9 +1396,14 @@ def action_roll_goal(update: Update, context: CallbackContext):
         chat_id = update.message.chat_id
         action_ratings = controller.get_pc_actions_ratings(get_user_id(update),
                                                            chat_id, context.user_data["active_PCs"][chat_id])
+
         buttons = ["{}: {}".format(action[0], action[1]) for action in action_ratings]
-        update.message.reply_text(placeholders["0"],
-                                  parse_mode=ParseMode.HTML, reply_markup=custom_kb(buttons))
+        context.chat_data["action_roll"]["message"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=custom_kb(buttons))
+
+        update.message.delete()
 
         return 0
 
@@ -1409,17 +1417,21 @@ def action_roll_rating(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation.
     """
+    context.chat_data["action_roll"]["message"].delete()
     placeholders = get_lang(context, action_roll_rating.__name__)
 
     add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "action"],
                              value=update.message.text)
 
-    update.message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+    context.chat_data["action_roll"]["message"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.chat_data["action_roll"]["roll"]["pc"],
+                                 context.chat_data["action_roll"]["roll"]["goal"],
+                                 context.chat_data["action_roll"]["roll"]["action"]), parse_mode=ParseMode.HTML)
 
     add_tag_in_telegram_data(context, tags=["action_roll", "GM_question"],
                              value={"text": placeholders["1"], "reply_markup": custom_kb(placeholders["keyboard"])},
                              location="chat")
-
+    update.message.delete()
     return 1
 
 
@@ -1435,7 +1447,13 @@ def master_reply(update: Update, context: CallbackContext) -> int:
         command = update.message.text
         command = command.split("/reply_")[1].split("@")[0]
 
-        update.effective_message.reply_text(**context.chat_data[command]["GM_question"])
+        context.chat_data[command]["message"].delete()
+
+        context.chat_data[command]["message"] = update.message.reply_text(
+            **context.chat_data[command]["GM_question"])
+
+        add_tag_in_telegram_data(context, location="chat", tags=[command, "master_message"],
+                                 value=update.message)
 
         return 0
 
@@ -1448,13 +1466,17 @@ def action_roll_position(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation.
     """
+    context.chat_data["action_roll"]["message"].delete()
+
     placeholders = get_lang(context, action_roll_position.__name__)
 
     add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "position"],
                              value=update.message.text)
 
-    update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
+    context.chat_data["action_roll"]["message"] = context.chat_data["action_roll"]["master_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
 
+    update.message.delete()
     return 1
 
 
@@ -1467,19 +1489,24 @@ def action_roll_effect(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation.
     """
+    context.chat_data["action_roll"]["message"].delete()
+
     placeholders = get_lang(context, action_roll_effect.__name__)
 
     add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "effect"],
                              value=update.message.text)
 
-    update.message.reply_text(placeholders["0"].format(context.chat_data["action_roll"]["roll"]["pc"],
-                                                       context.chat_data["action_roll"]["roll"]["goal"]),
-                              quote=False, parse_mode=ParseMode.HTML)
-    context.chat_data["action_roll"]["invocation_message"].reply_text(
+    auto_delete_message(
+        update.message.reply_text(placeholders["0"].format(context.chat_data["action_roll"]["roll"]["pc"],
+                                                           context.chat_data["action_roll"]["roll"]["goal"]),
+                                  quote=False, parse_mode=ParseMode.HTML), 20)
+
+    context.chat_data["action_roll"]["query_menu"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
         placeholders["1"], reply_markup=custom_kb(buttons=placeholders["keyboard"],
                                                   callback_data=placeholders["callbacks"],
-                                                  inline=True))
+                                                  inline=True, split_row=1))
 
+    update.message.delete()
     return 2
 
 
@@ -1506,8 +1533,9 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
                 if "query_menu" in context.chat_data["action_roll"]:
                     update_bonus_dice_kb(context, "action_roll")
 
-                update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
-                                          parse_mode=ParseMode.HTML)
+                auto_delete_message(
+                    update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
+                                              parse_mode=ParseMode.HTML), 18)
 
 
 def action_roll_bargains(update: Update, context: CallbackContext) -> int:
@@ -1523,7 +1551,10 @@ def action_roll_bargains(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, action_roll_bargains.__name__)
     user_id = get_user_id(update)
     invoker_id = context.chat_data["action_roll"]["invoker"]
+
     if user_id == invoker_id:
+        context.chat_data["action_roll"]["master_message"].delete()
+        context.chat_data["action_roll"]["query_menu"].delete()
         query = update.callback_query
         query.answer()
 
@@ -1538,20 +1569,24 @@ def action_roll_bargains(update: Update, context: CallbackContext) -> int:
                                      tags=["action_roll", "roll", "push"], value=False)
         # Devil's Bargain
         if choice == 2:
-            update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+            context.chat_data["action_roll"]["message"] = \
+                context.chat_data["action_roll"]["invocation_message"].reply_text(
+                    placeholders["0"], parse_mode=ParseMode.HTML)
             return 0
 
         bonus_dice_lang = get_lang(context, "bonus_dice")
+
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "bonus_dice"], value=0)
-        query_menu = update.effective_message.reply_text(bonus_dice_lang["message"].format(
-                        action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
-                                                         reply_markup=build_plus_minus_keyboard(
-                                                             [bonus_dice_lang["button"].format(
-                                                                 context.chat_data["action_roll"]["roll"][
-                                                                     "bonus_dice"])],
-                                                             done_button=True,
-                                                             back_button=False),
-                                                         parse_mode=ParseMode.HTML)
+
+        query_menu = context.chat_data["action_roll"]["invocation_message"].reply_text(
+            bonus_dice_lang["message"].format(
+                action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
+            reply_markup=build_plus_minus_keyboard(
+                [bonus_dice_lang["button"].format(
+                    context.chat_data["action_roll"]["roll"]["bonus_dice"])],
+                done_button=True,
+                back_button=False),
+            parse_mode=ParseMode.HTML)
 
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "query_menu"], value=query_menu)
 
@@ -1566,21 +1601,25 @@ def action_roll_devil_bargains(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation.
     """
+    context.chat_data["action_roll"]["message"].delete()
+
     add_tag_in_telegram_data(context, location="chat",
                              tags=["action_roll", "roll", "devil_bargain"], value=update.message.text)
 
     bonus_dice_lang = get_lang(context, "bonus_dice")
     add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "bonus_dice"], value=0)
-    query_menu = update.effective_message.reply_text(bonus_dice_lang["message"].format(
-            action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
-                                                     reply_markup=build_plus_minus_keyboard(
-                                                         [bonus_dice_lang["button"].format(
-                                                             context.chat_data["action_roll"]["roll"]["bonus_dice"])],
-                                                         done_button=True,
-                                                         back_button=False),
-                                                     parse_mode=ParseMode.HTML)
+    query_menu = context.chat_data["action_roll"]["invocation_message"].reply_text(bonus_dice_lang["message"].format(
+        action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
+        reply_markup=build_plus_minus_keyboard(
+            [bonus_dice_lang["button"].format(
+                context.chat_data["action_roll"]["roll"]["bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
 
     add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "query_menu"], value=query_menu)
+
+    update.message.delete()
 
     return 1
 
@@ -1616,8 +1655,13 @@ def action_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
         context.args.append(dice_to_roll)
         context.args.append(["action_roll", "roll", "outcome"])
 
+        context.chat_data["action_roll"]["query_menu"].delete()
+
         roll_dice(update, context)
-        update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+
+        context.chat_data["action_roll"]["message"] = \
+            context.chat_data["action_roll"]["invocation_message"].reply_text(
+                placeholders["0"], parse_mode=ParseMode.HTML)
         return 2
 
     else:
@@ -1638,6 +1682,8 @@ def action_roll_notes(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: call to action_roll_end
     """
+    context.chat_data["action_roll"]["message"].delete()
+
     placeholders = get_lang(context, action_roll_notes.__name__)
     description = update.message.text
 
@@ -1662,7 +1708,6 @@ def action_roll_end(update: Update, context: CallbackContext) -> int:
     :return: ConversationHandler.END
     """
     if get_user_id(update) == context.chat_data["action_roll"]["invoker"]:
-
         delete_conv_from_telegram_data(context, "action_roll", "chat")
 
         return end_conv(update, context)
