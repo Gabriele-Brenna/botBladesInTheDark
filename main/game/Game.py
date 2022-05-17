@@ -148,16 +148,25 @@ class Game:
             if p.is_master:
                 return p
 
-    def get_pcs_list(self) -> List[PC]:
+    def get_pcs_list(self, user_id: int = None) -> List[PC]:
         """
-        Gets the list of all the PCs of all users that participate in this game.
+        Gets the list of all the PCs of all users that participate in this game or only the specified user's list.
 
+        :param user_id: represents the id of the target user.
         :return: a list of PCs. (Empty list if no PCs are in the game)
         """
         pcs = []
         for player in self.users:
-            pcs += player.characters
+            if user_id is not None and player.player_id == user_id:
+                pcs += player.characters
+            elif user_id is None:
+                pcs += player.characters
         return pcs
+
+    def get_player_by_id(self, user_id: int) -> Player:
+        for player in self.users:
+            if player.player_id == user_id:
+                return player
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__

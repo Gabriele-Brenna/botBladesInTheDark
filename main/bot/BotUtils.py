@@ -16,6 +16,10 @@ controller = Controller()
 with open(path_finder('ENG.json'), 'r', encoding="utf8") as lang_f:
     default_lang = json.load(lang_f)["Bot"]
 
+# loading the dice stickers dict.
+with open(path_finder('stickers/dice.json'), 'r', encoding="utf8") as dice_f:
+    dice_stickers = json.load(dice_f)
+
 
 def extract_status_change(chat_member_update: ChatMemberUpdated) -> Optional[Tuple[bool, bool]]:
     """
@@ -161,7 +165,7 @@ def print_controller(update: Update, context: CallbackContext):
 
 
 def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, callback_data: List[str] = None,
-              input_field_placeholder: str = None) -> ReplyMarkup:
+              selective: bool = True, input_field_placeholder: str = None) -> ReplyMarkup:
     """
     Builds a parametric customized keyboard.
 
@@ -171,6 +175,7 @@ def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, c
     :param callback_data: list of callback_data associated to each button.
     If the length of this list differs from the length of the buttons list,
     the button list is used also for callback_data.
+    :param selective: True if the KB should be sent only to the user in conversation, False otherwise.
     :param input_field_placeholder: the placeholder shown in the input field when the reply is active.
     :return: a ReplyMarkup object.
     """
@@ -206,17 +211,18 @@ def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, c
 
     if inline:
         return InlineKeyboardMarkup(keyboard)
-    return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, selective=True,
+    return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, selective=selective,
                                input_field_placeholder=input_field_placeholder)
 
 
-def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = True,
+def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = True, done_button: bool = False,
                               inline: bool = True, split_row: int = 3) -> ReplyMarkup:
     """
     Builds a custom keyboard with buttons surrounded with others buttons with + and - symbols.
 
     :param central_buttons: list of the central buttons.
     :param back_button: True if the BACK button must be added at the end of the keyboard, False otherwise.
+    :param done_button: True if the DONE button must be added at the end of the keyboard, False otherwise.
     :param inline: False if the custom keyboard should be a ReplyKeyboardMarkup, True if an InlineKeyboard.
     :param split_row: specifies the number of buttons per row. If not specified it is automatically calculated.
     :return: a ReplyMarkup object.
@@ -237,6 +243,10 @@ def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = Tr
         buttons.append("🔙 BACK")
         callbacks.append("BACK")
 
+    if done_button:
+        buttons.append("\u2611\uFE0F DONE")
+        callbacks.append("DONE")
+
     return custom_kb(buttons, inline, split_row, callbacks)
 
 
@@ -246,7 +256,7 @@ def store_value_and_update_kb(update: Update, context: CallbackContext, tags: Li
     """
     Update the Inline keyboard of the conversation, according to the last section chosen and filled by the user.
     It also stores the last information received during the conversation.
-    It calls add_tag_in_user_data and update_inline_keyboard.
+    It calls add_tag_in_telegram_data and update_inline_keyboard.
 
 
     :param update: instance of Update sent by the user.
@@ -266,19 +276,28 @@ def store_value_and_update_kb(update: Update, context: CallbackContext, tags: Li
     if lang_source is None:
         lang_source = tags[0]
 
-    add_tag_in_user_data(context, tags, value)
+    add_tag_in_telegram_data(context, tags, value)
     update_inline_keyboard(update, context, tags[0], btn_label, lang_source, split_row, reply_in_group)
 
 
-def add_tag_in_user_data(context: CallbackContext, tags: List[str], value: Union[str, dict]):
+def add_tag_in_telegram_data(context: CallbackContext, tags: List[str], value: Any,
+                             location: str = "user"):
     """
     Stores the passed value in the target dict.
 
     :param context: instance of CallbackContext linked to the user.
     :param tags: the list of tags representing the target key dict in user_data.
     :param value: the value to store in the target dict.
+    :param location: specifies the dict in the telegram data ("user", "chat" or "bot"). By default it's user_data.
     """
-    pointer = context.user_data
+
+    if location.casefold() == "chat":
+        pointer = context.chat_data
+    elif location.casefold() == "bot":
+        pointer = context.bot_data
+    else:
+        pointer = context.user_data
+
     for i in range(len(tags) - 1):
         pointer.setdefault(tags[i], {})
         pointer = pointer[tags[i]]
@@ -321,6 +340,50 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
                                                                                      inline=True))
 
     context.user_data[command]["query_menu"] = query_menu
+
+
+def update_bonus_dice_kb(context: CallbackContext, command: str):
+    """
+    Utility method to update the InlineKeyboard of a bonus dice request.
+    Edit the message with the current total number of dice and the kb button with the number of bonus dice selected.
+
+    :param context: instance of CallbackContext linked to the user.
+    :param command: is the command related to the bonus dice request.
+    """
+    bonus_dice_lang = get_lang(context, "bonus_dice")
+    context.chat_data[command]["query_menu"].edit_text(bonus_dice_lang["message"].format(
+        action_roll_calc_total_dice(context.chat_data[command]["roll"])),
+        reply_markup=build_plus_minus_keyboard(
+            [bonus_dice_lang["button"].format(
+                context.chat_data[command]["roll"][
+                    "bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+
+def action_roll_calc_total_dice(ar_info: dict) -> int:
+    """
+    Utility method to calculate the amount of dice that will be rolled for the action roll.
+
+    :param ar_info: the dictionary containing all the necessary action roll's information.
+    :return: the actual amount of dice.
+    """
+    total = 0
+
+    total += int(ar_info["action"].split(": ")[1])
+
+    if ar_info["push"]:
+        total += 1
+    if "devil_bargain" in ar_info:
+        total += 1
+
+    if "assistants" in ar_info:
+        total += len(ar_info["assistants"])
+
+    total += ar_info["bonus_dice"]
+
+    return total
 
 
 def query_state_switcher(update: Update, context: CallbackContext, conversation: str, placeholders: dict,
@@ -373,7 +436,7 @@ def query_state_switcher(update: Update, context: CallbackContext, conversation:
                     context.user_data[conversation]["invocation_message"].reply_text(text=placeholders[str(i)],
                                                                                      reply_markup=custom_kb(
                                                                                          keyboards[i], inline=inline,
-                                                                                     split_row=split_row))
+                                                                                         split_row=split_row))
 
             return i + starting_state
     return 0
@@ -411,14 +474,22 @@ def end_conv(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-def delete_conv_from_user_data(context: CallbackContext, command: str):
+def delete_conv_from_telegram_data(context: CallbackContext, command: str, location: str = "user"):
     """
     Deletes the stored info in the user_data about the received command's conversation.
 
     :param context: instance of CallbackContext linked to the user.
     :param command: represents the the key of the conversaton in the user_data dict.
+    :param location: specifies the dict in the telegram data ("user", "chat" or "bot"). By default it's user_data.
     """
-    dict_command = context.user_data[command]
+    if location.casefold() == "chat":
+        pointer = context.chat_data
+    elif location.casefold() == "bot":
+        pointer = context.bot_data
+    else:
+        pointer = context.user_data
+
+    dict_command = pointer[command]
     try:
         dict_command["query_menu"].delete()
     except:
@@ -429,7 +500,7 @@ def delete_conv_from_user_data(context: CallbackContext, command: str):
     except:
         pass
 
-    context.user_data.pop(command)
+    pointer.pop(command)
 
 
 def auto_delete_message(message: Message, timer: Union[float, str] = 5.0) -> None:

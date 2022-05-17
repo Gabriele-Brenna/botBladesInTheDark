@@ -2,6 +2,7 @@ import copy
 
 from telegram.utils import helpers
 from bot.BotUtils import *
+from utility import DiceRoller
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -28,8 +29,9 @@ def help_msg(update: Update, context: CallbackContext) -> None:
     placeholders = get_lang(context, help_msg.__name__)
 
     if not context.args:
-        for i in range(len(placeholders["default"])):
-            update.message.reply_text(placeholders["default"][str(i)], parse_mode=ParseMode.HTML)
+        update.message.reply_text(placeholders["default"]["0"], parse_mode=ParseMode.HTML)
+        for i in range(1, len(placeholders["default"])):
+            update.message.reply_text(placeholders["default"][str(i)], parse_mode=ParseMode.HTML, quote=False)
     else:
         try:
             update.message.reply_text(placeholders["commands"][context.args[0].lower()], parse_mode=ParseMode.HTML)
@@ -242,7 +244,7 @@ def create_pc_vice_name(update: Update, context: CallbackContext) -> int:
     """
     context.user_data["create_pc"]["message"].delete()
 
-    add_tag_in_user_data(context, ["create_pc", "pc", "vice", "name"], update.message.text)
+    add_tag_in_telegram_data(context, ["create_pc", "pc", "vice", "name"], update.message.text)
 
     placeholders = get_lang(context, create_pc_vice_name.__name__)
 
@@ -261,7 +263,7 @@ def create_pc_vice_description(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.:
     :return: the next state of the conversation.
     """
-    add_tag_in_user_data(context, ["create_pc", "pc", "vice", "description"], update.message.text)
+    add_tag_in_telegram_data(context, ["create_pc", "pc", "vice", "description"], update.message.text)
 
     placeholders = get_lang(context, create_pc_vice_description.__name__)
 
@@ -343,24 +345,14 @@ def create_pc_end(update: Update, context: CallbackContext) -> int:
     if "done".casefold() in command:
         if {"name", "alias", "look", "heritage", "background", "pc_class", "vice"}.issubset(
                 dict_create_pc["pc"].keys()):
-            add_tag_in_user_data(context, tags=["myPCs", dict_create_pc["pc"]["name"].lower()],
-                                 value=dict_create_pc["pc"])
+            add_tag_in_telegram_data(context, tags=["myPCs", dict_create_pc["pc"]["name"].lower()],
+                                     value=dict_create_pc["pc"])
         else:
             auto_delete_message(update.message.reply_text(placeholders["0"]))
             update.message.delete()
             return 0
 
-    try:
-        dict_create_pc["query_menu"].delete()
-    except:
-        pass
-
-    try:
-        dict_create_pc["message"].delete()
-    except:
-        pass
-
-    context.user_data.pop("create_pc")
+    delete_conv_from_telegram_data(context, "create_pc")
 
     return end_conv(update, context)
 
@@ -408,7 +400,7 @@ def create_game_title(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(placeholders["0"].format(update.message.text, game_id), parse_mode=ParseMode.HTML,
                               quote=False)
 
-    delete_conv_from_user_data(context, "create_game")
+    delete_conv_from_telegram_data(context, "create_game")
     return end_conv(update, context)
 
 
@@ -505,9 +497,12 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
     context.user_data["join"]["message"].delete()
 
     if update.message.text not in get_user_pc(context) and update.message.text.lower() != "as master":
-        auto_delete_message(update.message.reply_text(placeholders[""]), 10)
-        delete_conv_from_user_data(context, "join")
-        return end_conv(update, context)
+        update.message.delete()
+        buttons = get_user_pc(context)
+        buttons.append("as Master")
+        context.user_data["join"]["message"] = context.user_data["join"]["invocation_message"].reply_text(
+            placeholders["err"], reply_markup=custom_kb(buttons))
+        return 1
 
     if update.message.text.lower() == "as master":
         controller.update_user_in_game(get_user_id(update), update.message.chat_id,
@@ -517,7 +512,7 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
                                                            context.user_data["join"]["game_name"]),
                                   parse_mode=ParseMode.HTML,
                                   quote=False)
-        delete_conv_from_user_data(context, "join")
+        delete_conv_from_telegram_data(context, "join")
         return end_conv(update, context)
     else:
 
@@ -818,12 +813,16 @@ def join_end(update: Update, context: CallbackContext) -> int:
                                         context.user_data["join"]["game_name"],
                                         context.user_data["join"]["pc"]["name"]),
                                     parse_mode=ParseMode.HTML)
+
+            context.user_data.setdefault(
+                "active_PCs", {})[context.user_data["join"]["chat_id"]] = context.user_data["join"]["pc"]["name"]
+
         else:
             auto_delete_message(update.message.reply_text(placeholders["1"]))
             update.message.delete()
             return 0
 
-    delete_conv_from_user_data(context, "join")
+    delete_conv_from_telegram_data(context, "join")
 
     return end_conv(update, context)
 
@@ -992,7 +991,7 @@ def create_crew_lair_location(update: Update, context: CallbackContext) -> int:
     """
     context.user_data["create_crew"]["message"].delete()
 
-    add_tag_in_user_data(context, ["create_crew", "crew", "lair", "location"], update.message.text)
+    add_tag_in_telegram_data(context, ["create_crew", "crew", "lair", "location"], update.message.text)
 
     placeholders = get_lang(context, create_crew_lair_location.__name__)
 
@@ -1077,7 +1076,7 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
     if "+" in choice or "-" in choice:
         choice = choice.split(" ")
         name = choice[0]
-        for i in range(1, len(choice)-1):
+        for i in range(1, len(choice) - 1):
             name += " {}".format(choice[i])
 
         upgrade = None
@@ -1267,19 +1266,406 @@ def create_crew_end(update: Update, context: CallbackContext) -> int:
             update.message.delete()
             return 0
 
-    delete_conv_from_user_data(context, "create_crew")
+    delete_conv_from_telegram_data(context, "create_crew")
 
     return end_conv(update, context)
 
 
 # ------------------------------------------conv_createCrew-------------------------------------------------------------
 
+# ------------------------------------------conv_pcSelection------------------------------------------------------------
+
+def pc_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game in this chat and if so, it builds the InlineKeyboard with all the player's PCs of
+    the game.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, pc_selection.__name__)
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(placeholders["1"])
+        return end_conv(update, context)
+
+    query_menu = update.effective_message.reply_text(placeholders["0"],
+                                                     reply_markup=custom_kb(
+                                                         controller.get_user_characters_names(get_user_id(update),
+                                                                                              update.message.chat_id),
+                                                         inline=True))
+
+    context.user_data.setdefault("pc_selection", {})["query_menu"] = query_menu
+    context.user_data["pc_selection"]["invocation_message"] = update.message
+
+    return 0
+
+
+def pc_selection_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the new PC of the user and stores it in the user_data
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to pc_selection_end method.
+    """
+    placeholders = get_lang(context, pc_selection_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    context.user_data.setdefault("active_PCs", {})[update.effective_message.chat_id] = choice
+
+    context.user_data["pc_selection"]["invocation_message"].reply_text(placeholders["0"].format(
+        query_games_info(game_id=query_game_of_user(update.effective_message.chat_id, get_user_id(update)))[0]["title"],
+        choice), parse_mode=ParseMode.HTML)
+
+    return pc_selection_end(update, context)
+
+
+def pc_selection_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received or when the finel state is reached,
+    then deletes the information collected so far from the command dict and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+
+    context.user_data.pop("pc_selection")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_pcSelection------------------------------------------------------------
 
 # ------------------------------------------conv_actionRoll-------------------------------------------------------------
 
 
 def action_roll(update: Update, context: CallbackContext) -> int:
-    return end_conv(update, context)
+    """
+    Checks if the user controls a PC in this chat and starts the conversation of the action roll.
+    Adds the dict "action_roll" in chat_data and stores the ID of the invoker and his active PC in it.
+    Finally sends the goal request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if "active_PCs" in context.user_data and update.effective_message.chat_id in context.user_data["active_PCs"]:
+
+        placeholders = get_lang(context, action_roll.__name__)
+
+        if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+            update.message.reply_text(placeholders["1"])
+            return end_conv(update, context)
+
+        message = update.message.reply_text(text=placeholders["0"], parse_mode=ParseMode.HTML)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "message"], value=message)
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "invocation_message"],
+                                 value=update.message)
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "invoker"], value=get_user_id(update))
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "pc"],
+                                 value=context.user_data["active_PCs"][update.effective_message.chat_id])
+
+        return 0
+
+
+def action_roll_goal(update: Update, context: CallbackContext):
+    """
+    Stores the goal's description in the chat_data and sends the keyboard with all the PC's action and their ratings.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if get_user_id(update) == context.chat_data["action_roll"]["invoker"]:
+        placeholders = get_lang(context, action_roll_goal.__name__)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "goal"],
+                                 value=update.message.text)
+
+        chat_id = update.message.chat_id
+        action_ratings = controller.get_pc_actions_ratings(get_user_id(update),
+                                                           chat_id, context.user_data["active_PCs"][chat_id])
+        buttons = ["{}: {}".format(action[0], action[1]) for action in action_ratings]
+        update.message.reply_text(placeholders["0"],
+                                  parse_mode=ParseMode.HTML, reply_markup=custom_kb(buttons))
+
+        return 0
+
+
+def action_roll_rating(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen action in the chat_data and transfers the conversation to the Master
+    with a request of reply for the GM in the chat.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, action_roll_rating.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "action"],
+                             value=update.message.text)
+
+    update.message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, tags=["action_roll", "GM_question"],
+                             value={"text": placeholders["1"], "reply_markup": custom_kb(placeholders["keyboard"])},
+                             location="chat")
+
+    return 1
+
+
+def master_reply(update: Update, context: CallbackContext) -> int:
+    """
+    Filters all the updates except for the master's. When the GM replies it sends in the chat the position request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if controller.is_master(get_user_id(update), update.effective_message.chat_id):
+        command = update.message.text
+        command = command.split("/reply_")[1].split("@")[0]
+
+        update.effective_message.reply_text(**context.chat_data[command]["GM_question"])
+
+        return 0
+
+
+def action_roll_position(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the position decided by the GM in the chat_data and sends the effect level request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, action_roll_position.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "position"],
+                             value=update.message.text)
+
+    update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
+
+    return 1
+
+
+def action_roll_effect(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the effect decided by the GM in the chat_data and brings back the conversation to the invoker of the command.
+    Sends the keyboard with the "Push Yourself", "Devil's Bargain" and "No Thanks" option.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, action_roll_effect.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "effect"],
+                             value=update.message.text)
+
+    update.message.reply_text(placeholders["0"].format(context.chat_data["action_roll"]["roll"]["pc"],
+                                                       context.chat_data["action_roll"]["roll"]["goal"]),
+                              quote=False, parse_mode=ParseMode.HTML)
+    context.chat_data["action_roll"]["invocation_message"].reply_text(
+        placeholders["1"], reply_markup=custom_kb(buttons=placeholders["keyboard"],
+                                                  callback_data=placeholders["callbacks"],
+                                                  inline=True))
+
+    return 2
+
+
+def action_roll_assistance(update: Update, context: CallbackContext) -> None:
+    """
+    Stores the PC of the user who decided to assist the invoker's PC in the chat_data if the sender of this command has
+    actually a PC and if he is not the invoker of the action roll.
+    This command can be executed in any time of the action roll's conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    user_id = get_user_id(update)
+    chat_id = update.effective_message.chat_id
+    invoker_id = context.chat_data["action_roll"]["invoker"]
+    if user_id != invoker_id:
+        if query_game_of_user(chat_id, user_id) == query_game_of_user(chat_id, invoker_id):
+            if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
+                placeholders = get_lang(context, action_roll_assistance.__name__)
+
+                context.chat_data["action_roll"]["roll"].setdefault(
+                    "assistants", []).append((user_id, context.user_data["active_PCs"][chat_id]))
+
+                if "query_menu" in context.chat_data["action_roll"]:
+                    update_bonus_dice_kb(context, "action_roll")
+
+                update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
+                                          parse_mode=ParseMode.HTML)
+
+
+def action_roll_bargains(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the choice of the user regarding the "Push Yourself" or "Devil's Bargain" option during the action roll
+    and stores all the information in the chat_data. If the user choose the "Devil's Bargain", the description request
+    is sent. Otherwise, the bonus dice InlineKeyboard is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, action_roll_bargains.__name__)
+    user_id = get_user_id(update)
+    invoker_id = context.chat_data["action_roll"]["invoker"]
+    if user_id == invoker_id:
+        query = update.callback_query
+        query.answer()
+
+        choice = query.data
+
+        # Push
+        if choice == 1:
+            add_tag_in_telegram_data(context, location="chat",
+                                     tags=["action_roll", "roll", "push"], value=True)
+        else:
+            add_tag_in_telegram_data(context, location="chat",
+                                     tags=["action_roll", "roll", "push"], value=False)
+        # Devil's Bargain
+        if choice == 2:
+            update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+            return 0
+
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "bonus_dice"], value=0)
+        query_menu = update.effective_message.reply_text(bonus_dice_lang["message"].format(
+                        action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
+                                                         reply_markup=build_plus_minus_keyboard(
+                                                             [bonus_dice_lang["button"].format(
+                                                                 context.chat_data["action_roll"]["roll"][
+                                                                     "bonus_dice"])],
+                                                             done_button=True,
+                                                             back_button=False),
+                                                         parse_mode=ParseMode.HTML)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "query_menu"], value=query_menu)
+
+        return 1
+
+
+def action_roll_devil_bargains(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the description of the Devil's Bargain in the chat_data and sends the bonus dice InlineKeyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    add_tag_in_telegram_data(context, location="chat",
+                             tags=["action_roll", "roll", "devil_bargain"], value=update.message.text)
+
+    bonus_dice_lang = get_lang(context, "bonus_dice")
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "bonus_dice"], value=0)
+    query_menu = update.effective_message.reply_text(bonus_dice_lang["message"].format(
+            action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])),
+                                                     reply_markup=build_plus_minus_keyboard(
+                                                         [bonus_dice_lang["button"].format(
+                                                             context.chat_data["action_roll"]["roll"]["bonus_dice"])],
+                                                         done_button=True,
+                                                         back_button=False),
+                                                     parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "query_menu"], value=query_menu)
+
+    return 1
+
+
+def action_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    placeholders = get_lang(context, action_roll_bonus_dice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    bonus_dice = context.chat_data["action_roll"]["roll"]["bonus_dice"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        bonus_dice += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, location="chat",
+                                 tags=["action_roll", "roll", "bonus_dice"], value=bonus_dice)
+
+        update_bonus_dice_kb(context, "action_roll")
+
+    elif choice == "DONE":
+        dice_to_roll = action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])
+        context.args = []
+        context.args.append(dice_to_roll)
+        context.args.append(["action_roll", "roll", "outcome"])
+
+        roll_dice(update, context)
+        update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+        return 2
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"], parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["extended"])
+
+    return 1
+
+
+def action_roll_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the final description of the action roll in the chat_data, calls the controller method to apply the roll's
+    effects and sends the notification for the PCs who suffered a new trauma after this action.
+    Finally, calls action_roll_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to action_roll_end
+    """
+    placeholders = get_lang(context, action_roll_notes.__name__)
+    description = update.message.text
+
+    add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "notes"], value=description)
+
+    trauma_victims = controller.commit_action_roll(update.effective_message.chat_id,
+                                                   get_user_id(update), context.chat_data["action_roll"]["roll"])
+
+    for victim in trauma_victims:
+        update.effective_message.reply_text(placeholders["0"].format(victim[0], victim[1]), parse_mode=ParseMode.HTML,
+                                            quote=False)
+
+    return action_roll_end(update, context)
+
+
+def action_roll_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the action_roll conversation and deletes all the saved information from the chat_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    if get_user_id(update) == context.chat_data["action_roll"]["invoker"]:
+
+        delete_conv_from_telegram_data(context, "action_roll", "chat")
+
+        return end_conv(update, context)
 
 
 # ------------------------------------------conv_actionRoll-------------------------------------------------------------
@@ -1336,7 +1722,7 @@ def change_state_choice(update: Update, context: CallbackContext) -> int:
 
     choice = query.data.split("$")
 
-    controller.change_state(query_game_of_user(update.effective_message.chat_id, get_user_id(update)), choice[1])
+    controller.change_state(query_game_of_user(update.effective_message.chat_id, get_user_id(update)), int(choice[1]))
     context.user_data["change_state"]["invocation_message"].reply_text(placeholders["0"].format(
         choice[0]), parse_mode=ParseMode.HTML)
 
@@ -1352,23 +1738,55 @@ def change_state_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END.
     """
-    dict_change_state = context.user_data["change_state"]
-
-    try:
-        dict_change_state["query_menu"].delete()
-    except:
-        pass
-
-    try:
-        dict_change_state["message"].delete()
-    except:
-        pass
-
-    context.user_data.pop("change_state")
+    delete_conv_from_telegram_data(context, "change_state")
 
     return end_conv(update, context)
 
+
 # ------------------------------------------conv_changeState-------------------------------------------------------------
+
+
+def roll_dice(update: Update, context: CallbackContext) -> None:
+    """
+    Rolls the specified amount of dice and interprets the result, according to BitD rules.
+    If no parameters are passed after "/roll", only one die is rolled.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    dice = 1
+    if context.args:
+        try:
+            dice = int(context.args[0])
+        except ValueError:
+            update.message.reply_text(get_lang(context, roll_dice.__name__)["nan"].format(context.args[0]),
+                                      parse_mode=ParseMode.HTML)
+            return
+
+    result, rolls = DiceRoller.roll_dice(dice)
+
+    def execute(r: List[int]) -> None:
+        for i in range(len(r)):
+            auto_delete_message(update.effective_message.reply_sticker(sticker=dice_stickers[str(r[i])],
+                                                                       quote=False), (len(r) - i) * 3 + 3)
+            time.sleep(3)
+        time.sleep(3)
+
+    if dice != 1:
+        t = Thread(target=execute, kwargs={"r": rolls})
+        t.start()
+        t.join()
+
+    update.effective_message.reply_text(get_lang(context, roll_dice.__name__)[str(result)], parse_mode=ParseMode.HTML,
+                                        quote=False)
+    update.effective_message.reply_sticker(sticker=dice_stickers[str(result)], quote=False)
+
+    try:
+        add_tag_in_telegram_data(context, tags=list(context.args[1]), location="chat", value=result)
+    except IndexError:
+        pass
+    except:
+        traceback.print_exc()
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

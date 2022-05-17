@@ -378,6 +378,33 @@ def insert_user_game(user_id: int, game_id: int, char_json: str = None, master: 
     return False
 
 
+def update_user_characters(user_id: int, game_id: int, char_json: str = None) -> bool:
+    """
+    Updates the Char_JSON of the specified user in the specified game in User_Game table in DB.
+
+    :param user_id: int representing the id of the player.
+    :param game_id: int representing the id of the game.
+    :param char_json: string containing the user's PCs.
+    :return: True if the update is successful, false otherwise.
+    """
+    if isinstance(user_id, int) and isinstance(game_id, int) and (char_json is None or is_json(char_json)):
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute("""
+            UPDATE User_Game
+            SET Char_JSON = ?
+            WHERE User_ID = ? AND Game_ID = ?""", (char_json, user_id, game_id))
+
+            connection.commit()
+        except DatabaseError:
+            traceback.print_exc()
+            return False
+        return True
+    return False
+
+
 def insert_character_sheet(char_class: str, description: str) -> bool:
     """
     Insert a new character class in CharacterSheet table in BladesInTheDark Database.
@@ -832,7 +859,7 @@ def insert_starting_cohort(crew: str, gang_exp: bool, cohort_type: str) -> bool:
 
 def delete_user_game(user_id: int, game_id: int) -> bool:
     """
-    Removes the specified occurrence in the User_Game table from the Data Baase
+    Removes the specified occurrence in the User_Game table from the Data Base
 
     :param user_id: telegram id of the user.
     :param game_id: identifier of the game.

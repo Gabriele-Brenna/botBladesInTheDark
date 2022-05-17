@@ -13,13 +13,17 @@
 
     "help_msg": {
       "default": {
-        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E) type /help followed by the name of the command",
-        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction\n\n/login - register your telegram account by choosing a username.\n",
-        "2": "<i>-CREATION-</i>\n/createPC - start the creation of a PC. \uD83D\uDD0E\n"
+        "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E), type \n/help followed by the name of the command",
+        "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction.\n/login - register your telegram account by choosing an username.\n/join - joins in a game of this chat. \uD83D\uDD0E\n",
+        "2": "<i>-CREATION-</i>\n/createGame - create a new game in this chat.\n/createPC - starts the creation of a PC. \uD83D\uDD0E\n/createCrew - starts the creation of the crew. \uD83D\uDD0E\n",
+        "3": "<i>-DICE-</i>\n/roll [N] - rolls N dice and returns the result. \uD83D\uDD0E \n"
       },
       "commands": {
         "error": "The command <u>{}</u> does not exist.",
-        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him."
+        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him.",
+        "createcrew": "Starts the creation of the crew. The information required during this conversation are the crew's <i>type, name, reputation, lair location and description, special ability, a contact and optionally 2 starting upgrades and a more detailed description</i>.\nYou can use this command only if you joined a game in this chat.\nThe new created crew will become the crew of the game you joined in this chat. If a crew was already present, it is replaced by the new one.",
+        "join": "When you join a game you can decide to join with a PC of yours or as the Game Master. If you decide to join with a PC, you'll be redirected in your private chat to complete the PC creation. You can join several times the same game with different PCs. Keep in mind that you can join only a game per chat at time.\nIf you join as Master you'll become the new GM; if a GM was already present he will be substituted (If he had no PCs he is removed from the Game).\n",
+        "roll": "You can roll a specified pool of dice (for instance: /roll 6 will roll 6d6). You will see all your dice rolling in the form of stickers, then the final result according to Blades in the Dark rules (The highest result, CRIT or the lowest result if you rolled a pool of '0' dice)."
       }
     },
 
@@ -110,7 +114,8 @@
     },
 
     "join_add_player": {
-      "0": "<i>{}</i> joined the game <i>{}</i> as Master."
+      "0": "<i>{}</i> joined the game <i>{}</i> as Master.",
+      "err": "You must join with a PC of yours or as Master!"
     },
 
     "join_complete_pc": {
@@ -213,21 +218,87 @@
 
     "change_state_choice": {
       "0": "State changed to : <i>{}</i>"
+    },
+
+    "pc_selection": {
+      "0": "Select the PC",
+      "1": "You can't change your active PC without being in a game in this chat... /join to take part in a game."
+    },
+
+    "pc_selection_choice": {
+      "0": "Your active PC in game {} is now {}."
+    },
+
+    "roll_dice": {
+      "nan": "What is <i>{}</i>? It should be a number...",
+      "1": "You rolled \u0031\u20E3",
+      "2": "You rolled \u0032\u20E3",
+      "3": "You rolled \u0033\u20E3",
+      "4": "You rolled \u0034\u20E3",
+      "5": "You rolled \u0035\u20E3",
+      "6": "You rolled \u0036\u20E3",
+      "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
+    },
+
+    "bonus_dice": {
+      "message": "Add or remove your bonus dice. By now you have {} \uD83C\uDFB2",
+      "button": "Bonus \uD83C\uDFB2: {}",
+      "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get."
+    },
+
+    "action_roll": {
+      "0": "Write the <i>goal</i> of your action.\nWhat's the concrete outcome you want to achieve?",
+      "1": "You can't perform an action roll without being in a game... /join to take part in a game."
+    },
+
+    "action_roll_goal": {
+      "0": "Select the action you want to roll."
+    },
+
+    "action_roll_rating": {
+      "0": "The <b>GM</b> has to set some information \n/reply_action_roll",
+      "1": "What's the position for this roll?",
+      "keyboard": ["Controlled", "Risky", "Desperate"]
+    },
+
+    "action_roll_position": {
+      "0": "Select the effect level.",
+      "keyboard": ["Limited", "Standard", "Great"]
+    },
+
+    "action_roll_effect": {
+      "0": "\u26A0\uFE0F <i><b>{}</b></i> is trying to <i>{}</i>. If anyone wants to help\n/assist",
+      "1": "Every action can have consequences, if you feel yourself in trouble you can always...",
+      "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
+      "callbacks": [1, 2, 3]
+    },
+
+    "action_roll_assistance": {
+      "0": "<i>{}</i> is ready to help!"
+    },
+
+    "action_roll_bargains": {
+      "0": "Describe your Devil's Bargain:"
+    },
+
+    "action_roll_bonus_dice": {
+      "0": "Describe the final outcome of your roll."
+    },
+
+    "action_roll_notes": {
+      "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
     }
+
   },
 
   "Journal": {
 	"write_title": {
 	  "0": "BLADES IN THE DARK - {}"
 	},
-	"write_free_play": {
-	  "0": "FREE PLAY"
-	},
-	"write_score_phase": {
-	  "0": "SCORE PHASE"
-	},
-	"write_downtime_phase": {
-	  "0": "DOWNTIME PHASE"
+	"write_phase": {
+	  "1": "FREE PLAY",
+	  "2": "SCORE PHASE",
+	  "3": "DOWNTIME PHASE"
 	},
 	"write_fortune_roll": {
 	  "0": "FORTUNE ROLL",
@@ -250,14 +321,13 @@
 	"write_action_roll": {
 	  "0": "ACTION ROLL",
 	  "1": "SITUATION",
-	  "2": "<b>{}</b>'s goal is: {}<br>{} is the action used.",
+	  "2": "<b>{}</b>'s goal is: {}<br>The action rolled is {}",
 	  "3": "The position for this action is {}.<br>The action will have a {} effect if successful.",
-	  "4": "({} receives assistance from {})",
-	  "5": "({} decides to push themselves.)",
-	  "6": "({} accepts a <b>Devil's Bargain</b>: <span class=\"user\">{}</span>)",
+	  "4": "{} receives assistance from {}",
+	  "5": "{} decides to push themselves.",
+	  "6": "{} accepts a <b>Devil's Bargain</b>: <span class=\"user\">{}</span>",
 	  "7": "OUTCOME",
-	  "8": "The result of the roll is {}.",
-	  "9": "DESCRIPTION OF RESULT FROM THE BOOK (pag 33 pdf)"
+	  "8": "The result of the roll is {}."
 	},
 	"write_end_score": {
 	  "0": "SCORE OUTCOME: <span class=\"user\">{}</span> "
@@ -370,6 +440,35 @@
 	  "6": "They decided to push themselves",
 	  "7": "They accept a Devil's Bargain: {}",
 	  "8": "They rolled {} and got {}"
-	}
+	},
+
+    "results": {
+      "action_roll": {
+        "controlled": {
+          "CRIT": "You do it with increased effect.",
+          "6": "You do it.",
+          "4,5": "You hesitate. Withdraw and try a different approach, or else do it with a minor consequence: a minor complication occurs, you have reduced effect, you suffer a lesser harm, you end up in a risky position.",
+          "1,2,3": "You falter. Press on by seizing a risky opportunity, or withdraw and try a different approach."
+        },
+        "risky": {
+          "CRIT": "You do it with increased effect.",
+          "6": "You do it.",
+          "4,5": " You do it, but there’s a consequence: you suffer harm, a complication occurs, you have reduced effect, you end up in a desperate position.",
+          "1,2,3": "Things go badly. You suffer harm, a complication occurs, you end up in a desperate position, you lose this opportunity."
+        },
+        "desperate": {
+          "CRIT": "You do it with increased effect.",
+          "6": "You do it.",
+          "4,5": "You do it, but there’s a consequence: you suffer severe harm, a serious complication occurs, you have reduced effect.",
+          "1,2,3": " It’s the worst outcome. You suffer severe harm, a serious complication occurs, you lose this opportunity  for action."
+        },
+        "others": {
+          "CRIT": "You do it with increased effect.",
+          "6": "You do it.",
+          "4,5": "You do it, but there’s a consequence.",
+          "1,2,3": "Things go badly."
+        }
+      }
+    }
   }
 }
