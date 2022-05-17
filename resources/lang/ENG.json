@@ -274,7 +274,9 @@
     },
 
     "action_roll_assistance": {
-      "0": "<i>{}</i> is ready to help!"
+      "0": "<i>{}</i> is ready to help!",
+      "1": "You cannot help again...",
+      "2": "You cannot help now...\nYou should /join the same game with at least one character"
     },
 
     "action_roll_bargains": {
@@ -287,6 +289,11 @@
 
     "action_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
+    },
+
+    "send_journal": {
+      "0": "You can't have a journal without being in a game... /join to take part in a game",
+      "1": "Enjoy the diary of your deeds in Doskvol so far !"
     }
 
   },

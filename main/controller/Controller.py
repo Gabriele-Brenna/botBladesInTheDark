@@ -287,5 +287,10 @@ class Controller:
 
         return trauma_victims
 
+    def get_journal_of_game(self, game_id: int) -> Tuple[bytes, str]:
+        game = self.get_game_by_id(game_id)
+
+        return game.journal.read_journal(), ("Journal - " + game.title + ".html")
+
     def __repr__(self) -> str:
         return str(self.games)

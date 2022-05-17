@@ -1501,7 +1501,7 @@ def action_roll_effect(update: Update, context: CallbackContext) -> int:
                                                            context.chat_data["action_roll"]["roll"]["goal"]),
                                   quote=False, parse_mode=ParseMode.HTML), 20)
 
-    context.chat_data["action_roll"]["query_menu"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
+    context.chat_data["action_roll"]["message"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
         placeholders["1"], reply_markup=custom_kb(buttons=placeholders["keyboard"],
                                                   callback_data=placeholders["callbacks"],
                                                   inline=True, split_row=1))
@@ -1519,16 +1519,27 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
     """
+    placeholders = get_lang(context, action_roll_assistance.__name__)
+
     user_id = get_user_id(update)
     chat_id = update.effective_message.chat_id
     invoker_id = context.chat_data["action_roll"]["invoker"]
     if user_id != invoker_id:
         if query_game_of_user(chat_id, user_id) == query_game_of_user(chat_id, invoker_id):
             if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
-                placeholders = get_lang(context, action_roll_assistance.__name__)
+
+                new_assistant = (user_id, context.user_data["active_PCs"][chat_id])
+
+                if "assistants" in context.chat_data["action_roll"]["roll"]:
+                    for elem in context.chat_data["action_roll"]["roll"]["assistants"]:
+                        if elem == new_assistant:
+                            auto_delete_message(update.message.reply_text(
+                                placeholders["1"], parse_mode=ParseMode.HTML), 10)
+
+                            return
 
                 context.chat_data["action_roll"]["roll"].setdefault(
-                    "assistants", []).append((user_id, context.user_data["active_PCs"][chat_id]))
+                    "assistants", []).append(new_assistant)
 
                 if "query_menu" in context.chat_data["action_roll"]:
                     update_bonus_dice_kb(context, "action_roll")
@@ -1536,6 +1547,10 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
                 auto_delete_message(
                     update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
                                               parse_mode=ParseMode.HTML), 18)
+                return
+
+    auto_delete_message(
+        update.message.reply_text(placeholders["2"], parse_mode=ParseMode.HTML), 18)
 
 
 def action_roll_bargains(update: Update, context: CallbackContext) -> int:
@@ -1554,7 +1569,7 @@ def action_roll_bargains(update: Update, context: CallbackContext) -> int:
 
     if user_id == invoker_id:
         context.chat_data["action_roll"]["master_message"].delete()
-        context.chat_data["action_roll"]["query_menu"].delete()
+        context.chat_data["action_roll"]["message"].delete()
         query = update.callback_query
         query.answer()
 
@@ -1832,6 +1847,17 @@ def roll_dice(update: Update, context: CallbackContext) -> None:
         pass
     except:
         traceback.print_exc()
+
+
+def send_journal(update: Update, context: CallbackContext) -> None:
+    placeholders = get_lang(context, send_journal.__name__)
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(placeholders["0"])
+        return
+
+    journal = controller.get_journal_of_game(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+    update.message.reply_document(document=journal[0], filename=journal[1], caption=placeholders["1"])
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

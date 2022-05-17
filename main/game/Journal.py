@@ -16,16 +16,8 @@ class Journal:
     """
     Keeps track of what happens in the game by writing it in a text file.
     """
-    def __init__(self, name: str = None, notes: List[str] = None, indentation: int = 0, lang: str = "ENG") -> None:
-        if name is None:
-            global index
-            file_name = "Journal{}.html".format(str(index))
-            index += 1
-            self.name = os.path.join(get_resources_folder(), file_name)
-        else:
-            self.name = name
-        file = open(self.name, 'w')
-        file.close()
+
+    def __init__(self, notes: List[str] = None, indentation: int = 0, lang: str = "ENG") -> None:
         if notes is None:
             notes = []
         self.notes = notes
@@ -46,26 +38,24 @@ class Journal:
         """
         # TODO:
 
-    def read_journal(self):
+    def read_journal(self) -> bytes:
         """
-        Method used to get the html file where the journal is written
+        Gives the binary encoding of the Journal.
+
+        :return: bytes used to create the html document of the Journal.
         """
         parser = MyHTMLParser()
-        parser.feed(str(self.log))
-        with open(self.name, 'w') as f:
-            f.write(parser.get_parsed_string())
-        # TODO
+        parser.feed(self.get_log_string())
+
+        return bytes(parser.get_parsed_string(), 'UTF-8')
 
     def get_log_string(self) -> str:
         """
-        Gets the string version of the log with the correct indentation.
+        Gets the string version of the log.
 
         :return: the str containing the journal's html source.
         """
-        parser = MyHTMLParser()
-        parser.feed(str(self.log))
-
-        return parser.get_parsed_string()
+        return str(self.log)
 
     def get_lang(self, method: str) -> dict:
         """

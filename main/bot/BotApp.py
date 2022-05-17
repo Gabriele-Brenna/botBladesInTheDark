@@ -204,6 +204,8 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["journal".casefold(), "log".casefold()], send_journal))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
