@@ -40,6 +40,8 @@ class Controller:
         new_game = Game(title=title, chat_id=chat_id)
 
         insert_game(new_game.identifier, new_game.title, new_game.chat_id)
+        new_game.journal.write_title(title)
+        insert_journal(new_game.identifier, new_game.journal.get_log_string())
 
         self.games.append(new_game)
 
@@ -179,9 +181,17 @@ class Controller:
                 pc.clear_consumable()
 
         game.state = new_state
+        game.journal.write_phase(new_state)
         insert_state(game_id, new_state)
 
     def get_user_characters_names(self, user_id: int, chat_id: int) -> List[str]:
+        """
+        Retrieves the list of the PCs' names of the specified user, in the specified chat.
+
+        :param user_id: the Telegram id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :return: a list of strings containing all the names.
+        """
 
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
@@ -193,6 +203,14 @@ class Controller:
         return pcs_names
 
     def get_pc_actions_ratings(self, user_id: int, chat_id: int, pc_name: str) -> List[Tuple[str, int]]:
+        """
+        Retrieves all the action with the related rating of rhe specified PC of the user in the chat.
+
+        :param user_id: the Telegram id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: a list of tuples with the name of the action and the action's rating in this order.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
         ratings = []
@@ -206,6 +224,13 @@ class Controller:
                 return ratings
 
     def is_master(self, user_id: int, chat_id: int) -> bool:
+        """
+        Check if the specified user is the master of his game in the specified chat.
+
+        :param user_id: the Telegram id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :return: True if the user is the GM, False otherwise.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         master = game.get_master()
 
@@ -214,8 +239,20 @@ class Controller:
         return False
 
     def commit_action_roll(self, chat_id: int, user_id: int, action_roll: dict) -> List[Tuple[str, int]]:
+        """
+        Applies the effects of the passed action roll to the interested game:
+        adds the stress to the eventual assistants,
+        to the performer of the action if "push yourself" option was selected,
+        sends the information to the Journal and updates PCs and Journal in the DB.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param action_roll: dictionary containing all the necessary information about the roll.
+        :return: a list of tuples with the names of the PCs and the numbers of their suffered trauma in this order.
+        """
 
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        action_roll.pop("bonus_dice")
 
         trauma_victims = []
 
@@ -226,24 +263,27 @@ class Controller:
 
             pcs_names = []
             for assistant in assistants:
-                traumas = game.get_player_by_id(assistant[0]).get_character_by_name(assistant[1]).add_stress(1)
+                user = game.get_player_by_id(assistant[0])
+                traumas = user.get_character_by_name(assistant[1]).add_stress(1)
                 pcs_names.append(assistant[1])
                 if traumas > 0:
                     trauma_victims.append((assistant[1], traumas))
+                update_user_characters(user.player_id, game.identifier, save_to_json(user.characters))
 
             action_roll["assistants"] = pcs_names
 
         # if Push +2 stress
         if action_roll["push"]:
-            traumas = game.get_player_by_id(user_id).get_character_by_name(action_roll["pc"]).add_stress(2)
+            user = game.get_player_by_id(user_id)
+            traumas = user.get_character_by_name(action_roll["pc"]).add_stress(2)
             if traumas > 0:
                 trauma_victims.append((action_roll["pc"], traumas))
+            update_user_characters(user_id, game.identifier, save_to_json(user.characters))
 
         # journal
+        game.journal.write_action_roll(**action_roll)
 
-        # TODO:
-        #   insert_pc and insert_journal
-        #  game.journal.write_action_roll(**action_roll)
+        insert_journal(game.identifier, game.journal.get_log_string())
 
         return trauma_victims
 

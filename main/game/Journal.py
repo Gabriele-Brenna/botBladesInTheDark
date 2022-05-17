@@ -32,8 +32,9 @@ class Journal:
         self.indentation = indentation
         with open(path_finder("{}.json".format(lang.upper())), 'r') as f:
             self.lang = json.load(f)["Journal"]
-        self.journal = BeautifulSoup("", 'html.parser')
+        self.log = BeautifulSoup("", 'html.parser')
         self.score_tags = []
+        self.write_heading()
 
     def edit_note(self, note: str, number: int = 1):
         """
@@ -50,10 +51,21 @@ class Journal:
         Method used to get the html file where the journal is written
         """
         parser = MyHTMLParser()
-        parser.feed(str(self.journal))
+        parser.feed(str(self.log))
         with open(self.name, 'w') as f:
             f.write(parser.get_parsed_string())
         # TODO
+
+    def get_log_string(self) -> str:
+        """
+        Gets the string version of the log with the correct indentation.
+
+        :return: the str containing the journal's html source.
+        """
+        parser = MyHTMLParser()
+        parser.feed(str(self.log))
+
+        return parser.get_parsed_string()
 
     def get_lang(self, method: str) -> dict:
         """
@@ -69,21 +81,21 @@ class Journal:
         Method used to write all the heading in the attribute journal representing the html file of the journal.
         """
         doctype = Doctype('html')
-        self.journal.append(doctype)
+        self.log.append(doctype)
 
-        html_tag = self.journal.new_tag("html", lang="en")
+        html_tag = self.log.new_tag("html", lang="en")
 
-        head_tag = self.journal.new_tag("head")
+        head_tag = self.log.new_tag("head")
         html_tag.append(head_tag)
 
-        meta_tag = self.journal.new_tag("meta", charset="UTF-8")
+        meta_tag = self.log.new_tag("meta", charset="UTF-8")
         head_tag.append(meta_tag)
 
-        title_tag = self.journal.new_tag("title")
+        title_tag = self.log.new_tag("title")
         title_tag.string = "Blades in The Dark - Journal"
         head_tag.append(title_tag)
 
-        style_tag = self.journal.new_tag("style")
+        style_tag = self.log.new_tag("style")
         style_tag.append('''
             body{
                 background-color: rgb(0, 0, 0);
@@ -151,9 +163,9 @@ class Journal:
 
         head_tag.append(style_tag)
 
-        self.journal.append(html_tag)
+        self.log.append(html_tag)
 
-        self.journal.select_one("html").append(self.journal.new_tag("body"))
+        self.log.select_one("html").append(self.log.new_tag("body"))
 
     def create_title_tag(self, game_name: str):
         """
@@ -162,7 +174,7 @@ class Journal:
         :param game_name: str representing the name of the game
         """
         # TODO: game object instead of string
-        title_tag = self.journal.new_tag("h1")
+        title_tag = self.log.new_tag("h1")
         title_tag.string = self.get_lang(self.write_title.__name__)["0"].format(game_name)
 
         return title_tag
@@ -174,38 +186,22 @@ class Journal:
         :param phase_name: name of the phase
         :return: tag containing the name of the phase
         """
-        table_tag = self.journal.new_tag("table",
-                                         style="width: 100%; border-collapse: collapse;padding-left: 0; margin-left: 0")
-        tr_tag = self.journal.new_tag("tr", style="padding-left: 0; border-style: dashed; background: #9f3b10")
-        th_tag = self.journal.new_tag("th")
+        table_tag = self.log.new_tag("table",
+                                     style="width: 100%; border-collapse: collapse;padding-left: 0; margin-left: 0")
+        tr_tag = self.log.new_tag("tr", style="padding-left: 0; border-style: dashed; background: #9f3b10")
+        th_tag = self.log.new_tag("th")
         th_tag.string = phase_name
         tr_tag.append(th_tag)
         table_tag.append(tr_tag)
         return table_tag
 
-    def write_free_play(self):
+    def write_phase(self, new_state: int):
         """
-        Method used to write free play heading in the attribute journal representing the html file of the journal.
+        Method used to write new phase heading in the attribute journal representing the html file of the journal.
         """
-        table_tag = self.create_phase_tag(self.get_lang(self.write_free_play.__name__)["0"])
+        table_tag = self.create_phase_tag(self.get_lang(self.write_phase.__name__)[str(new_state)])
 
-        self.journal.select_one("body").append(table_tag)
-
-    def write_score_phase(self):
-        """
-        Method used to write score phase heading in the attribute journal representing the html file of the journal.
-        """
-        table_tag = self.create_phase_tag(self.get_lang(self.write_score_phase.__name__)["0"])
-
-        self.journal.select_one("body").append(table_tag)
-
-    def write_downtime_phase(self):
-        """
-        Method used to write score phase heading in the attribute journal representing the html file of the journal.
-        """
-        table_tag = self.create_phase_tag(self.get_lang(self.write_downtime_phase.__name__)["0"])
-
-        self.journal.select_one("body").append(table_tag)
+        self.log.select_one("body").append(table_tag)
 
     def create_general_notes_tag(self, title: str, notes: str):
         """
@@ -280,22 +276,22 @@ class Journal:
 
         div_tag.append(self.create_h3_tag(self.get_lang(self.write_score.__name__)["3"]))
 
-        table_tag = self.journal.new_tag("table")
-        tr_tag = self.journal.new_tag("tr")
-        th_tag = self.journal.new_tag("th")
+        table_tag = self.log.new_tag("table")
+        tr_tag = self.log.new_tag("tr")
+        th_tag = self.log.new_tag("th")
         th_tag.string = self.get_lang(self.write_score.__name__)["4"]
         tr_tag.append(th_tag)
-        th_tag = self.journal.new_tag("th")
+        th_tag = self.log.new_tag("th")
         th_tag.string = self.get_lang(self.write_score.__name__)["5"]
         tr_tag.append(th_tag)
         table_tag.append(tr_tag)
 
         for i in range(len(pc_load)):
-            tr_tag = self.journal.new_tag("tr")
-            th_tag = self.journal.new_tag("th")
+            tr_tag = self.log.new_tag("tr")
+            th_tag = self.log.new_tag("th")
             th_tag.string = pc_load[i][0]
             tr_tag.append(th_tag)
-            th_tag = self.journal.new_tag("th")
+            th_tag = self.log.new_tag("th")
             th_tag.string = str(pc_load[i][1])
             tr_tag.append(th_tag)
             table_tag.append(tr_tag)
@@ -314,7 +310,7 @@ class Journal:
 
     def create_action_roll_tag(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
                                notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
-        """
+        """F
         Method used to create and insert a div tag with class attribute set to "actionRoll".
 
         :param pc: who does the action roll
@@ -356,9 +352,16 @@ class Journal:
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["8"].format(outcome)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["9"]))
+        try:
+            lang = self.get_lang("results")["action_roll"][position.lower()]
+        except:
+            lang = self.get_lang("results")["action_roll"]["others"]
 
-        p_tag = self.journal.new_tag("p")
+        for key in lang.keys():
+            if str(outcome) in key:
+                div_tag.append(self.create_p_tag(lang[key]))
+
+        p_tag = self.log.new_tag("p")
         p_tag.string = notes
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -476,9 +479,9 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(self.get_lang(self.write_secret_entanglement.__name__)["0"]))
 
-        details_tag = self.journal.new_tag("details")
+        details_tag = self.log.new_tag("details")
 
-        summary_tag = self.journal.new_tag("summary")
+        summary_tag = self.log.new_tag("summary")
         summary_tag.append(self.get_lang(self.write_secret_entanglement.__name__)["1"])
         details_tag.append(summary_tag)
 
@@ -488,7 +491,7 @@ class Journal:
 
         div_tag.append(details_tag)
 
-        self.journal.select_one("body").append(div_tag)
+        self.log.select_one("body").append(div_tag)
 
         return div_tag
 
@@ -585,7 +588,7 @@ class Journal:
 
         div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["2"].format(roll)))
 
-        p_tag = self.journal.new_tag("p")
+        p_tag = self.log.new_tag("p")
         p_tag.string = notes
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -727,7 +730,7 @@ class Journal:
         :param attrs: attributes of the div tag
         :return: a "div" Tag
         """
-        return self.journal.new_tag("div", attrs=attrs)
+        return self.log.new_tag("div", attrs=attrs)
 
     def create_h2_tag(self, content: str, attrs: dict = None):
         """
@@ -738,9 +741,9 @@ class Journal:
         :return: a "h2" Tag
         """
         if attrs:
-            h2_tag = self.journal.new_tag("h2", attrs=attrs)
+            h2_tag = self.log.new_tag("h2", attrs=attrs)
         else:
-            h2_tag = self.journal.new_tag("h2")
+            h2_tag = self.log.new_tag("h2")
         h2_tag.append(BeautifulSoup(content, 'html.parser'))
         return h2_tag
 
@@ -753,9 +756,9 @@ class Journal:
         :return: a "h3" Tag
         """
         if attrs:
-            h3_tag = self.journal.new_tag("h3", attrs=attrs)
+            h3_tag = self.log.new_tag("h3", attrs=attrs)
         else:
-            h3_tag = self.journal.new_tag("h3")
+            h3_tag = self.log.new_tag("h3")
         h3_tag.append(BeautifulSoup(content, 'html.parser'))
         return h3_tag
 
@@ -768,9 +771,9 @@ class Journal:
         :return: a "h4" Tag
         """
         if attrs:
-            h4_tag = self.journal.new_tag("h4", attrs=attrs)
+            h4_tag = self.log.new_tag("h4", attrs=attrs)
         else:
-            h4_tag = self.journal.new_tag("h4")
+            h4_tag = self.log.new_tag("h4")
         h4_tag.append(BeautifulSoup(content, 'html.parser'))
         return h4_tag
 
@@ -783,9 +786,9 @@ class Journal:
         :return: a "p" Tag
         """
         if attrs:
-            p_tag = self.journal.new_tag("p", attrs=attrs)
+            p_tag = self.log.new_tag("p", attrs=attrs)
         else:
-            p_tag = self.journal.new_tag("p")
+            p_tag = self.log.new_tag("p")
         p_tag.append(BeautifulSoup(content, 'html.parser'))
         return p_tag
 
@@ -803,7 +806,7 @@ class Journal:
             else:
                 temp.parent.append(tag)
         else:
-            self.journal.select_one("body").append(tag)
+            self.log.select_one("body").append(tag)
 
     def write_title(self, game_name: str):
         """
@@ -811,7 +814,7 @@ class Journal:
 
         :param game_name: str representing the name of the game
         """
-        self.journal.select_one("body").append(self.create_title_tag(game_name))
+        self.log.select_one("body").append(self.create_title_tag(game_name))
 
     def write_general_notes(self, title: str, notes: str):
         """
@@ -855,7 +858,7 @@ class Journal:
         self.score_tags.append(tag)
 
     def write_action_roll(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
-                          notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
+                          notes: str, assistants: List[str] = None, push: bool = False, devil_bargain: str = None):
         """
         Method used to write an action outcome in the attribute journal representing the html file of the journal.
 
@@ -868,10 +871,10 @@ class Journal:
         :param notes: extra notes
         :param assistants: from whom the user got help
         :param push: if the user push themselves
-        :param devils: what deal the user made
+        :param devil_bargain: what deal the user made
         """
         tag = self.create_action_roll_tag(pc, goal, action, position, effect, outcome,
-                                          notes, assistants, push, devils)
+                                          notes, assistants, push, devil_bargain)
 
         self.write_general(tag)
 

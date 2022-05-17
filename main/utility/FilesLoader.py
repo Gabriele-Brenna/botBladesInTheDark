@@ -2,6 +2,8 @@ import copy
 import json
 from typing import List
 
+from bs4 import BeautifulSoup
+
 from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Human import Human
@@ -162,7 +164,7 @@ def setup(game: Game) -> None:
         game.crafted_items = items_from_json(db_game["Crafted_Item_JSON"])
 
     if db_game["Journal"] is not None:
-        game.journal = db_game["Journal"]
+        game.journal.log = BeautifulSoup(db_game["Journal"], 'html.parser')
 
     if db_game["State"] is not None:
         game.state = db_game["State"]

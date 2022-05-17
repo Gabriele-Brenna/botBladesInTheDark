@@ -342,6 +342,50 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     context.user_data[command]["query_menu"] = query_menu
 
 
+def update_bonus_dice_kb(context: CallbackContext, command: str):
+    """
+    Utility method to update the InlineKeyboard of a bonus dice request.
+    Edit the message with the current total number of dice and the kb button with the number of bonus dice selected.
+
+    :param context: instance of CallbackContext linked to the user.
+    :param command: is the command related to the bonus dice request.
+    """
+    bonus_dice_lang = get_lang(context, "bonus_dice")
+    context.chat_data[command]["query_menu"].edit_text(bonus_dice_lang["message"].format(
+        action_roll_calc_total_dice(context.chat_data[command]["roll"])),
+        reply_markup=build_plus_minus_keyboard(
+            [bonus_dice_lang["button"].format(
+                context.chat_data[command]["roll"][
+                    "bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+
+def action_roll_calc_total_dice(ar_info: dict) -> int:
+    """
+    Utility method to calculate the amount of dice that will be rolled for the action roll.
+
+    :param ar_info: the dictionary containing all the necessary action roll's information.
+    :return: the actual amount of dice.
+    """
+    total = 0
+
+    total += int(ar_info["action"].split(": ")[1])
+
+    if ar_info["push"]:
+        total += 1
+    if "devil_bargain" in ar_info:
+        total += 1
+
+    if "assistants" in ar_info:
+        total += len(ar_info["assistants"])
+
+    total += ar_info["bonus_dice"]
+
+    return total
+
+
 def query_state_switcher(update: Update, context: CallbackContext, conversation: str, placeholders: dict,
                          keyboards: List[List[str]], index_inlines: List[int] = None, starting_state: int = 1,
                          split_inline_row: int = None,
@@ -392,7 +436,7 @@ def query_state_switcher(update: Update, context: CallbackContext, conversation:
                     context.user_data[conversation]["invocation_message"].reply_text(text=placeholders[str(i)],
                                                                                      reply_markup=custom_kb(
                                                                                          keyboards[i], inline=inline,
-                                                                                     split_row=split_row))
+                                                                                         split_row=split_row))
 
             return i + starting_state
     return 0

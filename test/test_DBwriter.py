@@ -291,6 +291,39 @@ class TestDBwriter(TestCase):
 
         delete_user_game(-1, -1)
 
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT *
+        FROM User_Game
+        WHERE User_ID = -1 AND Game_ID = -1""")
+
+        self.assertFalse(cursor.fetchall())
+
+        self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
+        self.cursor.execute("DELETE FROM User WHERE Tel_ID = -1")
+
+        self.connection.commit()
+
+    def test_update_user_characters(self):
+        insert_game(-1, "Game1", -1)
+        insert_user(-1, "Aldo")
+
+        insert_user_game(-1, -1, '{"Jonny": "A whisper"}', False)
+
+        update_user_characters(-1, -1, '{"Jack": "A leech"}')
+
+        connection = establish_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+                SELECT Char_JSON
+                FROM User_Game
+                WHERE User_ID = -1 AND Game_ID = -1""")
+
+        self.assertEqual('{"Jack": "A leech"}', cursor.fetchone()[0])
+
         self.cursor.execute("DELETE FROM Game WHERE Game_ID = -1")
         self.cursor.execute("DELETE FROM User WHERE Tel_ID = -1")
 
