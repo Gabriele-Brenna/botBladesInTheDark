@@ -1,15 +1,12 @@
 import json
 import math
-import os
 from typing import List, Union, Literal
 
 from bs4.element import Doctype
 from bs4 import *
 
-from utility.FilesManager import path_finder, get_resources_folder
+from utility.FilesManager import path_finder
 from utility.htmlFactory.HtmlParser import MyHTMLParser
-
-index = 1
 
 
 class Journal:
@@ -81,6 +78,11 @@ class Journal:
         meta_tag = self.log.new_tag("meta", charset="UTF-8")
         head_tag.append(meta_tag)
 
+        head_tag.append(BeautifulSoup('''<link rel="preconnect" href="https://fonts.googleapis.com"> 
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+        <link href="https://fonts.googleapis.com/css2?family=Merienda+One&family=Mochiy+Pop+One&family=Rye&family=Syne+Mono&family=Vast+Shadow&display=swap" rel="stylesheet">''',
+                                      'html.parser'))
+
         title_tag = self.log.new_tag("title")
         title_tag.string = "Blades in The Dark - Journal"
         head_tag.append(title_tag)
@@ -100,6 +102,10 @@ class Journal:
             }
             h1{
             	color: rgb(167, 85, 34);
+				font-family: "Rye";
+				font-size: 45px;
+				font-weight: bold;
+				text-align: center;
             	padding-left: 2%;
             }
             h2{
@@ -108,18 +114,21 @@ class Journal:
             	margin-right: 50%;
             	border-bottom-style: groove;
             	margin-left: 1%;
+				font-family: 'Marker Felt';
             }
             h3{
             	color: #b5abab;
             	padding-left: 2%;
+				font-family: "Mochiy Pop One";
             }
             h4{
             	color: #c3afaf;
             	padding-left: 2%;
+				font-family: "Merienda One";
             }
             p{
             	color: #ffffff;
-            	font-family: "Comic Sans MS", sans-serif;
+            	font-family: "Syne Mono";
             	padding-left: 5%
             }
             ul{
@@ -149,6 +158,16 @@ class Journal:
             .secret:hover{
             	color: white;
             }
+			.state{
+				font-family: "Vast Shadow";
+				font-size: xx-large;
+				margin-bottom: 5%;
+				margin-top: 1%;
+				color: rgb(161, 64, 0);
+				text-align: center;
+				border-bottom: 4px solid rgb(167, 85, 34);
+
+			}
         ''')
 
         head_tag.append(style_tag)
@@ -176,22 +195,15 @@ class Journal:
         :param phase_name: name of the phase
         :return: tag containing the name of the phase
         """
-        table_tag = self.log.new_tag("table",
-                                     style="width: 100%; border-collapse: collapse;padding-left: 0; margin-left: 0")
-        tr_tag = self.log.new_tag("tr", style="padding-left: 0; border-style: dashed; background: #9f3b10")
-        th_tag = self.log.new_tag("th")
-        th_tag.string = phase_name
-        tr_tag.append(th_tag)
-        table_tag.append(tr_tag)
-        return table_tag
+        return self.create_h4_tag(phase_name, {"class": "state"})
 
     def write_phase(self, new_state: int):
         """
         Method used to write new phase heading in the attribute journal representing the html file of the journal.
         """
-        table_tag = self.create_phase_tag(self.get_lang(self.write_phase.__name__)[str(new_state)])
+        h4_tag = self.create_phase_tag(self.get_lang(self.write_phase.__name__)[str(new_state)])
 
-        self.log.select_one("body").append(table_tag)
+        self.log.select_one("body").append(h4_tag)
 
     def create_general_notes_tag(self, title: str, notes: str):
         """
