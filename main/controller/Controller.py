@@ -305,7 +305,18 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(crew))
 
+    def add_clock_to_game(self, game_id: int, clock: dict):
+        """
+        Adds the given clock to the game's list of clock and updates the clocks in the Data Base.
 
+        :param game_id: the game's id.
+        :param clock: aa dictionary representing with the parameters used to build a Cohort
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.create_clock(**clock)
+
+        insert_clock_json(game_id, save_to_json(game.clocks))
 
     def __repr__(self) -> str:
         return str(self.games)
