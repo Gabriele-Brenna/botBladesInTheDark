@@ -126,6 +126,45 @@ def user_is_registered(update: Update, context: CallbackContext) -> bool:
     return True
 
 
+def is_user_not_in_game(update: Update, message_text: str) -> bool:
+    """
+    Checks if the user is in a game.
+
+    :param update: update: instance of Update sent by the user.
+    :param message_text: the error text to send the user if he is not in a game.
+    :return: True if the user is NOT in a game, False otherwise.
+    """
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(message_text, parse_mode=ParseMode.HTML)
+        return True
+    return False
+
+
+def is_game_in_wrong_phase(update: Update, context: CallbackContext, message_text: str, phase: int = 0) -> bool:
+    """
+    Checks if the user's game is in the wrong phase to call a certain command
+    (also checks if he even is in a game calling is_user_not_in_game()).
+
+    :param update: update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :param message_text: the error text to send the user if he is not in a game.
+    :param phase: the phase where the user's game should not be in order to use a specific commmand.
+    :return: True if the user's game is in the specified wrong phase or the INIT phase,
+        and he cannot perform the selected command, False otherwise
+    """
+    placeholders = get_lang(context, is_game_in_wrong_phase.__name__)
+
+    if is_user_not_in_game(update, message_text):
+        return True
+
+    game_state = controller.get_game_state(query_game_of_user(update.message.chat_id, get_user_id(update)))
+    if game_state == phase or game_state == 0:
+        update.message.reply_text(placeholders[str(game_state)].format(update.message.text), parse_mode=ParseMode.HTML)
+        return True
+
+    return False
+
+
 def test(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Test done")
     context.user_data.setdefault("myPCs", {})["pippo"] = {'name': 'Pippo', 'alias': 'Giovannino', 'look': 'Goofy',
@@ -488,6 +527,9 @@ def delete_conv_from_telegram_data(context: CallbackContext, command: str, locat
         pointer = context.bot_data
     else:
         pointer = context.user_data
+
+    if command not in pointer:
+        return
 
     dict_command = pointer[command]
     try:
