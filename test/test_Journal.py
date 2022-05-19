@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import game.Journal
+from component.Clock import Clock
 from game.Journal import Journal
 
 
@@ -52,6 +53,8 @@ class TestJournal(TestCase):
                                 devils="Devil's bargain conditions")
         temp.write_group_action("User1", "Goal of group action", "Tinker", 5, notes="extra notes", position="Secure",
                                 effect="particular effect", cohort="Type of the cohort that will help")
+        temp.write_clock("User1", Clock("project clock", 4, 0))
+        temp.write_clock("User1", Clock("project clock", 6, 6), Clock("project clock", 4, 0))
 
         with open("resources_test/journalTest.html", 'w+') as f:
             f.write(temp.get_log_string())
