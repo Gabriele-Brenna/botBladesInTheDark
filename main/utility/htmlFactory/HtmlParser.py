@@ -12,6 +12,7 @@ class MyHTMLParser(HTMLParser):
         self.lines = []
         self.__current_line = ''
         self.__current_tag = ''
+        self.__current_tag_attrs = None
 
     @staticmethod
     def __attr_str(attrs):
@@ -29,12 +30,13 @@ class MyHTMLParser(HTMLParser):
             self.__current_line += '<{}>'.format(tag + (' ' + self.__attr_str(attrs) if attrs else ''))
             return
 
-        if tag != self.__current_tag:
+        if tag != self.__current_tag or attrs != self.__current_tag_attrs:
             self.lines += [self.__current_line]
 
         self.__current_line = '\t' * self.__t + '<{}>'.format(tag + (' ' + self.__attr_str(attrs) if attrs else ''))
 
         self.__current_tag = tag
+        self.__current_tag_attrs = attrs
         self.__t += 1
 
     def handle_endtag(self, tag):

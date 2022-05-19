@@ -503,6 +503,12 @@
 	  "7": "They accept a Devil's Bargain: {}",
 	  "8": "They rolled {} and got {}"
 	},
+	"write_clock": {
+	  "0": "{} created a new clock: '{}'",
+	  "1": "{} modified the clock '{}'",
+	  "2": "{} ticked the clock '{}' by {} segments",
+	  "3": "{} completed the clock '{}'"
+	},
 
     "results": {
       "action_roll": {

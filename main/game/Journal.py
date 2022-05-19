@@ -5,6 +5,7 @@ from typing import List, Union, Literal
 from bs4.element import Doctype
 from bs4 import *
 
+from component.Clock import Clock
 from utility.FilesManager import path_finder
 from utility.htmlFactory.HtmlParser import MyHTMLParser
 
@@ -166,8 +167,32 @@ class Journal:
 				color: rgb(161, 64, 0);
 				text-align: center;
 				border-bottom: 4px solid rgb(167, 85, 34);
-
 			}
+			.piechart {
+            	width: 60px;
+            	height: 60px;
+            	border-radius: 50%;
+				border: solid white 1px;
+				align-self: center;
+        	}
+			.center {
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+				background-color: black;
+				position: relative;
+				margin: 25px;
+				border: none;
+			}
+			.clock {
+				height:auto;
+				display:flex;
+			} 
+			.one {
+				width:70%;
+				margin:10px;
+				border: none;
+			} 
         ''')
 
         head_tag.append(style_tag)
@@ -182,9 +207,9 @@ class Journal:
 
         :param game_name: str representing the name of the game
         """
-        # TODO: game object instead of string
+        placeholder = self.get_lang(self.write_title.__name__)
         title_tag = self.log.new_tag("h1")
-        title_tag.string = self.get_lang(self.write_title.__name__)["0"].format(game_name)
+        title_tag.string = placeholder["0"].format(game_name)
 
         return title_tag
 
@@ -201,7 +226,8 @@ class Journal:
         """
         Method used to write new phase heading in the attribute journal representing the html file of the journal.
         """
-        h4_tag = self.create_phase_tag(self.get_lang(self.write_phase.__name__)[str(new_state)])
+        placeholder = self.get_lang(self.write_phase.__name__)
+        h4_tag = self.create_phase_tag(placeholder[str(new_state)])
 
         self.log.select_one("body").append(h4_tag)
 
@@ -232,20 +258,22 @@ class Journal:
         :param notes: extra notes
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_fortune_roll.__name__)
+
         div_tag = self.create_div_tag(attrs={"class": "fortuneRoll",
                                              "style": "margin-left: {}%".format(str(self.get_indentation()))})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_fortune_roll.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_fortune_roll.__name__)["1"]))
+        div_tag.append(self.create_h4_tag(placeholder["1"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["2"].format(pc, what)))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(pc, what)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["3"].format(goal)))
+        div_tag.append(self.create_p_tag(placeholder["3"].format(goal)))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_fortune_roll.__name__)["4"]))
+        div_tag.append(self.create_h4_tag(placeholder["4"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_fortune_roll.__name__)["5"].format(outcome)))
+        div_tag.append(self.create_p_tag(placeholder["5"].format(outcome)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -263,28 +291,29 @@ class Journal:
         :param notes: extra notes
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_score.__name__)
         div_tag = self.create_div_tag({"class": "score",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_score.__name__)["0"].format(name)))
+        div_tag.append(self.create_h2_tag(placeholder["0"].format(name)))
 
-        div_tag.append(self.create_h3_tag(self.get_lang(self.write_score.__name__)["1"]))
+        div_tag.append(self.create_h3_tag(placeholder["1"]))
 
         div_tag.append(self.create_p_tag(plan_type))
 
-        div_tag.append(self.create_h3_tag(self.get_lang(self.write_score.__name__)["2"]))
+        div_tag.append(self.create_h3_tag(placeholder["2"]))
 
         div_tag.append(self.create_p_tag(details))
 
-        div_tag.append(self.create_h3_tag(self.get_lang(self.write_score.__name__)["3"]))
+        div_tag.append(self.create_h3_tag(placeholder["3"]))
 
         table_tag = self.log.new_tag("table")
         tr_tag = self.log.new_tag("tr")
         th_tag = self.log.new_tag("th")
-        th_tag.string = self.get_lang(self.write_score.__name__)["4"]
+        th_tag.string = placeholder["4"]
         tr_tag.append(th_tag)
         th_tag = self.log.new_tag("th")
-        th_tag.string = self.get_lang(self.write_score.__name__)["5"]
+        th_tag.string = placeholder["5"]
         tr_tag.append(th_tag)
         table_tag.append(tr_tag)
 
@@ -300,9 +329,9 @@ class Journal:
 
         div_tag.append(table_tag)
 
-        div_tag.append(self.create_h3_tag(self.get_lang(self.write_score.__name__)["6"]))
+        div_tag.append(self.create_h3_tag(placeholder["6"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_score.__name__)["7"].format(position)))
+        div_tag.append(self.create_p_tag(placeholder["7"].format(position)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -327,32 +356,33 @@ class Journal:
         :param devils: what deal the user made
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_action_roll.__name__)
         div_tag = self.create_div_tag({"class": "actionRoll",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_action_roll.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_action_roll.__name__)["1"]))
+        div_tag.append(self.create_h4_tag(placeholder["1"]))
 
         div_tag.append(
-            self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["2"].format(pc, goal, action)))
+            self.create_p_tag(placeholder["2"].format(pc, goal, action)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["3"].format(position, effect)))
+        div_tag.append(self.create_p_tag(placeholder["3"].format(position, effect)))
 
         if assistants:
             temp = assistants[0]
             for i in range(1, len(assistants)):
                 temp += ", " + assistants[i]
             div_tag.append(
-                self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["4"].format(pc, temp)))
+                self.create_p_tag(placeholder["4"].format(pc, temp)))
         if push:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["5"].format(pc)))
+            div_tag.append(self.create_p_tag(placeholder["5"].format(pc)))
         if devils:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["6"].format(pc, devils)))
+            div_tag.append(self.create_p_tag(placeholder["6"].format(pc, devils)))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_action_roll.__name__)["7"]))
+        div_tag.append(self.create_h4_tag(placeholder["7"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_action_roll.__name__)["8"].format(outcome)))
+        div_tag.append(self.create_p_tag(placeholder["8"].format(outcome)))
 
         try:
             lang = self.get_lang("results")["action_roll"][position.lower()]
@@ -377,9 +407,10 @@ class Journal:
         :param notes: extra notes
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_end_score.__name__)
         div_tag = self.create_div_tag({"class": "endScore"})
 
-        div_tag.append(self.create_h3_tag(self.get_lang(self.write_end_score.__name__)["0"].format(outcome)))
+        div_tag.append(self.create_h3_tag(placeholder["0"].format(outcome)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -396,14 +427,15 @@ class Journal:
         :param notes: extra notes about the payoff
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_payoff.__name__)
         div_tag = self.create_div_tag({"class": "payoff"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_payoff.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_payoff.__name__)["1"]))
+        div_tag.append(self.create_h4_tag(placeholder["1"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_payoff.__name__)["2"].format(
-            amount, self.get_lang(self.write_payoff.__name__)[str(3 + int(distributed))]
+        div_tag.append(self.create_p_tag(placeholder["2"].format(
+            amount, placeholder[str(3 + int(distributed))]
         )))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
@@ -425,27 +457,28 @@ class Journal:
         :param wanted: amount of wanted level received
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_heat.__name__)
         div_tag = self.create_div_tag({"class": "heat"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_heat.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["1"].format(execution, exposure), ))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(execution, exposure), ))
 
         if famous_target:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["2"]))
+            div_tag.append(self.create_p_tag(placeholder["2"]))
 
         if hostile:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["3"]))
+            div_tag.append(self.create_p_tag(placeholder["3"]))
 
         if war:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["4"]))
+            div_tag.append(self.create_p_tag(placeholder["4"]))
 
         if bodies:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["5"]))
+            div_tag.append(self.create_p_tag(placeholder["5"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["6"].format(heat)))
+        div_tag.append(self.create_p_tag(placeholder["6"].format(heat)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_heat.__name__)["7"].format(wanted)))
+        div_tag.append(self.create_p_tag(placeholder["7"].format(wanted)))
 
         return div_tag
 
@@ -457,11 +490,12 @@ class Journal:
         :param description: description of the entanglement
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_entanglement.__name__)
         div_tag = self.create_div_tag({"class": "entanglement"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_entanglement.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_entanglement.__name__)["1"]))
+        div_tag.append(self.create_h4_tag(placeholder["1"]))
 
         div_tag.append(self.create_p_tag(name))
 
@@ -477,14 +511,15 @@ class Journal:
         :param description: description of the secret entanglement
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_secret_entanglement.__name__)
         div_tag = self.create_div_tag({"class": "secretEntanglement"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_secret_entanglement.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
         details_tag = self.log.new_tag("details")
 
         summary_tag = self.log.new_tag("summary")
-        summary_tag.append(self.get_lang(self.write_secret_entanglement.__name__)["1"])
+        summary_tag.append(BeautifulSoup(placeholder["1"], 'html.parser'))
         details_tag.append(summary_tag)
 
         details_tag.append(self.create_p_tag(name))
@@ -520,34 +555,30 @@ class Journal:
         :param notes: extra notes
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_activity.__name__)
         activity = activity.lower()
         div_tag = self.create_div_tag({"class": "activity"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_activity.__name__)["default"]["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["default"]["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_activity.__name__)["default"]["1"].format(
-            pc, self.get_lang(self.write_activity.__name__)[activity]["0"],
-            "({})".format(extra_info) if extra_info else "")))
+        div_tag.append(self.create_p_tag(placeholder["default"]["1"].format(pc, placeholder[activity]["0"], "({})".
+                                                                            format(extra_info) if extra_info else "")))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_activity.__name__)["default"]["2"].format(
-            rolls, self.get_lang(self.write_activity.__name__)[activity]["1"].format(extra_roll))))
+        div_tag.append(self.create_p_tag(placeholder["default"]["2"].format(
+            rolls, placeholder[activity]["1"].format(extra_roll))))
 
         if activity == "indulge_vice" and overindulge:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_activity.__name__)[activity]["2"]))
+            div_tag.append(self.create_p_tag(placeholder[activity]["2"]))
             overindulge = overindulge.lower()
 
             if overindulge == "brag":
-                div_tag.append(self.create_p_tag(
-                    self.get_lang(self.write_activity.__name__)[activity]["3"].format(extra_overindulge)))
+                div_tag.append(self.create_p_tag(placeholder[activity]["3"].format(extra_overindulge)))
             elif overindulge == "lost":
-                div_tag.append(self.create_p_tag(
-                    self.get_lang(self.write_activity.__name__)[activity]["4"].format(extra_overindulge)))
+                div_tag.append(self.create_p_tag(placeholder[activity]["4"].format(extra_overindulge)))
             elif overindulge == "tapped":
-                div_tag.append(self.create_p_tag(
-                    self.get_lang(self.write_activity.__name__)[activity]["5"].format(extra_overindulge)))
+                div_tag.append(self.create_p_tag(placeholder[activity]["5"].format(extra_overindulge)))
             elif overindulge == "attracted trouble":
-                div_tag.append(self.create_p_tag(
-                    self.get_lang(self.write_activity.__name__)[activity]["6"].format(extra_overindulge)))
+                div_tag.append(self.create_p_tag(placeholder[activity]["6"].format(extra_overindulge)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -561,13 +592,13 @@ class Journal:
         :param claim_name: name of the new claim
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_add_claim.__name__)
         div_tag = self.create_div_tag({"class": "addClaim",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h4_tag(self.get_lang(self.write_add_claim.__name__)["0"]))
+        div_tag.append(self.create_h4_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_add_claim.__name__)["1"].format(
-            self.get_lang(self.write_add_claim.__name__)[str(2 + lair)], claim_name)))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(placeholder[str(2 + lair)], claim_name)))
 
         return div_tag
 
@@ -582,13 +613,14 @@ class Journal:
         :param notes: extra notes
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_incarceration.__name__)
         div_tag = self.create_div_tag({"class": "incarceration"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_incarceration.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["1"].format(pc)))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(pc)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["2"].format(roll)))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(roll)))
 
         p_tag = self.log.new_tag("p")
         p_tag.string = notes
@@ -600,7 +632,7 @@ class Journal:
             self.indentation -= 1
 
         elif isinstance(roll, int) and 1 <= roll < 3:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_incarceration.__name__)["3"].format(
+            div_tag.append(self.create_p_tag(placeholder["3"].format(
                 pc, extra_info)))
 
         return div_tag
@@ -617,17 +649,16 @@ class Journal:
         :param downtime_flashback: True if it is a downtime flashback, False otherwise
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_flashback.__name__)
         div_tag = self.create_div_tag({"class": "flashback"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_flashback.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_flashback.__name__)["1"].format(
-            pc, self.get_lang(self.write_flashback.__name__)["3"] if downtime_flashback else "")))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(pc, placeholder["3"] if downtime_flashback else "")))
 
         div_tag.append(self.create_p_tag('"{}"'.format(notes), {"class": "user"}))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_flashback.__name__)["2"].format(
-            pc, roll_info, roll)))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(pc, roll_info, roll)))
 
         return div_tag
 
@@ -643,24 +674,22 @@ class Journal:
         :param stress: amount of stress gained
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_resistance_roll.__name__)
         div_tag = self.create_div_tag({"class": "resistanceRoll"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_resistance_roll.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["1"].format(
+        div_tag.append(self.create_p_tag(placeholder["1"].format(
             pc, description)))
 
         if stress > 0:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                pc, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["3"].format(stress)
-            )))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
+                                                                     placeholder["3"].format(stress))))
         elif stress < 0:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                pc, attribute, roll, self.get_lang(self.write_resistance_roll.__name__)["4"].format(-stress)
-            )))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
+                                                                     placeholder["4"].format(-stress))))
         else:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_resistance_roll.__name__)["2"].format(
-                pc, attribute, roll, "")))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, "")))
 
         return div_tag
 
@@ -685,33 +714,102 @@ class Journal:
         :param devils: if a devil's bargain has been made this is its description. None otherwise
         :return: the div Tag
         """
+        placeholder = self.get_lang(self.write_group_action.__name__)
         div_tag = self.create_div_tag({"class": "groupAction"})
 
-        div_tag.append(self.create_h2_tag(self.get_lang(self.write_group_action.__name__)["0"]))
+        div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["1"].format(pc, goal)))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(pc, goal)))
 
         if players:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["2"].
-                                             format(" ".join(players))))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(" ".join(players))))
         elif cohort:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["3"].format(
-                pc, cohort)))
+            div_tag.append(self.create_p_tag(placeholder["3"].format(pc, cohort)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["4"].format(position, effect)))
+        div_tag.append(self.create_p_tag(placeholder["4"].format(position, effect)))
 
         if helper:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["5"].format(helper)))
+            div_tag.append(self.create_p_tag(placeholder["5"].format(helper)))
 
         if push:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["6"]))
+            div_tag.append(self.create_p_tag(placeholder["6"]))
 
         if devils:
-            div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["7"].format(devils)))
+            div_tag.append(self.create_p_tag(placeholder["7"].format(devils)))
 
-        div_tag.append(self.create_p_tag(self.get_lang(self.write_group_action.__name__)["8"].format(action, roll)))
+        div_tag.append(self.create_p_tag(placeholder["8"].format(action, roll)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_clock(self, pc: str, new_clock: Clock, old_clock: Clock = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "clock".
+
+        :param pc: who creates the clock
+        :param new_clock: new clock to represent with the div tag
+        :param old_clock: old clock used to compare with the new one to know with sentence to use in the paragraph
+        :return: the div Tag
+        """
+
+        placeholder = self.get_lang(self.write_clock.__name__)
+
+        # This first part is used to draw the clock with a div tag
+        divider_size = 4
+
+        black = "black {}deg {}deg"
+        white = "white {}deg {}deg"
+        red = "red {}deg {}deg"
+        conic_gradient = ""
+
+        segment_size = int((360 - (divider_size * new_clock.segments)) / new_clock.segments)
+        count = 0
+        for i in range(new_clock.segments - 1):
+            next_count = count + divider_size
+            conic_gradient += white.format(count, next_count) + ", "
+
+            count = next_count + segment_size
+            if i < new_clock.progress:
+                conic_gradient += red.format(next_count, count) + ", "
+            else:
+                conic_gradient += black.format(next_count, count) + ", "
+
+        next_count = count + divider_size
+        conic_gradient += white.format(count, next_count) + ", "
+
+        count = next_count + segment_size
+        if new_clock.segments == new_clock.progress:
+            conic_gradient += red.format(next_count, count)
+        else:
+            conic_gradient += black.format(next_count, count)
+
+        style = "background-image: conic-gradient({});".format(conic_gradient)
+
+        # This part is used to create the div tag
+        one_tag = self.create_div_tag({"class": "one"})
+
+        if old_clock is None:
+            p_tag = self.create_p_tag(placeholder["0"].format(pc, new_clock.name))
+            one_tag.append(p_tag)
+        else:
+            if new_clock.segments != old_clock.segments:
+                p_tag = self.create_p_tag(placeholder["1"].format(pc, new_clock.name))
+                one_tag.append(p_tag)
+            if new_clock.progress > old_clock.progress:
+                p_tag = self.create_p_tag(placeholder["2"].format(pc, new_clock.name,
+                                                                  (new_clock.progress - old_clock.progress)))
+                one_tag.append(p_tag)
+            if new_clock.segments == new_clock.progress:
+                p_tag = self.create_p_tag(placeholder["3"].format(pc, new_clock.name))
+                one_tag.append(p_tag)
+
+        div_tag = self.create_div_tag({"class": "clock"})
+        div_tag.append(one_tag)
+
+        clock_tag = self.create_div_tag({"class": "piechart", "style": style})
+
+        div_tag.append(clock_tag)
 
         return div_tag
 
@@ -1030,12 +1128,10 @@ class Journal:
     def write_group_action(self, pc: str, goal: str, action: str, roll: int, notes: str, position: str,
                            effect: str, players: List[str] = None, cohort: str = None, helper: str = None,
                            push: bool = None, devils: str = None):
-        tag = self.create_group_action_tag(pc, goal, action, roll, notes, position,
-                                           effect, players, cohort, helper, push, devils)
         """
         Method used to write a group action in the attribute journal representing the html file of the journal.
 
-        :param user: who starts the group action
+        :param pc: who starts the group action
         :param goal: goal of the group action
         :param action: action used to roll the group action
         :param roll: result of the dice roll
@@ -1048,6 +1144,20 @@ class Journal:
         :param push: True if the user pushed themselves. False otherwise
         :param devils: if a devil's bargain has been made this is its description. None otherwise
         """
+        tag = self.create_group_action_tag(pc, goal, action, roll, notes, position,
+                                           effect, players, cohort, helper, push, devils)
+
+        self.write_general(tag)
+
+    def write_clock(self, pc: str, new_clock: Clock, old_clock: Clock = None):
+        """
+        Method used to write a clock in the attribute journal representing the html file of the journal.
+
+        :param pc: who creates the clock
+        :param new_clock: new clock to represent with the div tag
+        :param old_clock: old clock used to compare with the new one to know with sentence to use in the paragraph
+        """
+        tag = self.create_clock(pc, new_clock, old_clock)
 
         self.write_general(tag)
 
