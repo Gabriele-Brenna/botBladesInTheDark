@@ -223,6 +223,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createClock".casefold(), "newClock".casefold()], create_clock)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_clock_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_clock_segments)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_clock_end)],
+            name="conv_addCohort",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

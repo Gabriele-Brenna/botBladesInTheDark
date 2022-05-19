@@ -334,6 +334,21 @@
     "add_cohort_flaws": {
       "0": "Choose another flaw",
       "keyboard": ["Principled", "Savage", "Unreliable", "Wild"]
+    },
+
+    "create_clock": {
+      "0": "Write the name of the clock",
+      "err": "You cannot create a clock without being in a game... /join to take part in a game"
+    },
+
+    "create_clock_name": {
+      "0": "Chose how many segments the clock should be divided into",
+      "keyboard": [4, 6, 8]
+    },
+
+    "create_clock_segments": {
+      "0": "\uD83D\uDD50 <u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51",
+      "1": "<i>{}</i> is invalid, it should be a number from 2 to 36..."
     }
 
   },
