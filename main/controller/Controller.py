@@ -305,18 +305,24 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(crew))
 
-    def add_clock_to_game(self, game_id: int, clock: dict):
+    def add_clock_to_game(self, chat_id: int, user_id: int, clock: dict):
         """
-        Adds the given clock to the game's list of clock and updates the clocks in the Data Base.
+        Adds the given clock to the game's list of clock, updates the clocks in the Data Base
+        and write into the Journal.
 
-        :param game_id: the game's id.
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
         :param clock: aa dictionary representing with the parameters used to build a Cohort
         """
-        game = self.get_game_by_id(game_id)
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
-        game.create_clock(**clock)
+        new_clock = game.create_clock(**clock)
 
-        insert_clock_json(game_id, save_to_json(game.clocks))
+        insert_clock_json(game.identifier, save_to_json(game.clocks))
+
+        game.journal.write_clock(query_users_names(user_id)[0], new_clock)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)

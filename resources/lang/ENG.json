@@ -347,7 +347,7 @@
     },
 
     "create_clock_segments": {
-      "0": "<u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>'",
+      "0": "\uD83D\uDD50 <u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51",
       "1": "<i>{}</i> is invalid, it should be a number from 2 to 36..."
     }
 
