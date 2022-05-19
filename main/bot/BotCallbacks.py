@@ -2123,7 +2123,19 @@ def create_clock_segments(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, create_clock_segments.__name__)
     context.user_data["create_clock"]["message"].delete()
 
-    add_tag_in_telegram_data(context, ["create_clock", "clock", "segments"], update.message.text)
+    num = update.message.text
+
+    if num.isdigit():
+        num = int(num)
+
+    if isinstance(num, int) and 2 <= num <= 36:
+        add_tag_in_telegram_data(context, ["create_clock", "clock", "segments"], update.message.text)
+    else:
+        message = context.user_data["create_clock"]["invocation_message"].reply_text(
+            placeholders["1"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+        update.message.delete()
+        return 1
 
     controller.add_clock_to_game(
         query_game_of_user(update.message.chat_id, get_user_id(update)), context.user_data["create_clock"]["clock"])
