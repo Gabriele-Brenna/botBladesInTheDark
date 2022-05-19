@@ -169,7 +169,7 @@ class Crew(Organization, ISavable):
 
     def add_tier(self, n: int = 1) -> bool:
         """
-        Increases the crew's tier.
+        Increases the crew's tier and calls self.update_cohorts().
 
         :param n: is the amount of level the crew's tier will increase.
         :return: True if the hold of the crew is True, False otherwise (and the crew's tier remains the same)
@@ -177,6 +177,7 @@ class Crew(Organization, ISavable):
         if self.hold is True:
             self.change_hold()
             self.tier += n
+            self.update_cohorts()
             return True
         return False
 
@@ -212,6 +213,26 @@ class Crew(Organization, ISavable):
             if u.name.lower() == upgrade.lower():
                 self.upgrades.remove(u)
                 return u
+
+    def add_cohort(self, cohort: Cohort):
+        """
+        Adds the given cohort to self.cohorts, then calls self.update_cohorts().
+        :param cohort: the Cohort to add
+        """
+        self.cohorts.append(cohort)
+        self.update_cohorts()
+
+    def update_cohorts(self):
+        """
+        Updates all the cohort of the crew: sets the cohorts' scale and quality accordingly to the game rules.
+        """
+        for cohort in self.cohorts:
+            if cohort.expert:
+                cohort.scale = 0
+                cohort.quality = self.tier + 1
+            else:
+                cohort.scale = self.tier
+                cohort.quality = self.tier
 
     def change_crew_type(self, new_type: str) -> bool:
         """

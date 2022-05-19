@@ -1803,7 +1803,7 @@ def change_state_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_changeState-------------------------------------------------------------
+# ------------------------------------------conv_changeState------------------------------------------------------------
 
 
 def roll_dice(update: Update, context: CallbackContext) -> None:
@@ -1858,6 +1858,205 @@ def send_journal(update: Update, context: CallbackContext) -> None:
 
     journal = controller.get_journal_of_game(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
     update.message.reply_document(document=journal[0], filename=journal[1], caption=placeholders["1"])
+
+
+# ------------------------------------------conv_addCohort--------------------------------------------------------------
+
+
+def add_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the creation of a cohort checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_cohort", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"], True, 1))
+
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort"], {})
+
+    return 0
+
+
+def add_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort class (Gang or Expert) in the user_data and advances the conversation to
+    the next state that regards the cohort's type.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_choice.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    expert = True
+    if choice.lower() != "expert":
+        expert = False
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort", "expert"], expert)
+
+    message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"+str(expert)]))
+
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    return 1
+
+
+def add_cohort_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort type in the user_data and advances the conversation to
+    the next state that regards the choice of the number of edges and flaws.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_type.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort", "type"], update.message.text)
+
+    message = context.user_data["add_cohort"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    update.message.delete()
+    return 2
+
+
+def add_cohort_edgflaw_num(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen number of edges and flaws in the user_data and advances the conversation to
+    the next state that regards the choice of the edges.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_edgflaw_num.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    num = update.message.text
+
+    if num.isdigit():
+        num = int(num)
+
+    if isinstance(num, int) and 0 <= num <= 4:
+        if num == 0:
+            return add_cohort_end(update, context)
+
+        add_tag_in_telegram_data(context, ["add_cohort", "numEdgeFlaws"], num)
+
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_edges.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+        update.message.delete()
+        return 3
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["1"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+        update.message.delete()
+        return 2
+
+
+def add_cohort_edges(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the edges in the user_data and advances the conversation to
+    the next state that regards the choice of the flaws after all the edges have been selected.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_edges.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    context.user_data["add_cohort"]["cohort"].setdefault("edges", []).append(update.message.text)
+
+    if len(context.user_data["add_cohort"]["cohort"]["edges"]) == context.user_data["add_cohort"]["numEdgeFlaws"]:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["1"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_flaws.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 4
+
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_edges.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 3
+
+
+def add_cohort_flaws(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the flaws in the user_data and advances the conversation to
+    the end state after all the edges have been selected; before advancing to the next state the new cohort is stored
+    calling the Controller method add_cohort_in_crew().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_flaws.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    context.user_data["add_cohort"]["cohort"].setdefault("flaws", []).append(update.message.text)
+
+    if len(context.user_data["add_cohort"]["cohort"]["flaws"]) == context.user_data["add_cohort"]["numEdgeFlaws"]:
+
+        controller.add_cohort_in_crew(
+            query_game_of_user(update.message.chat_id, get_user_id(update)), context.user_data["add_cohort"]["cohort"])
+
+        return add_cohort_end(update, context)
+
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 4
+
+
+def add_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "add_cohort")
+
+    return end_conv(update, context)
+
+# ------------------------------------------conv_addCohort--------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

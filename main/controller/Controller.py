@@ -292,5 +292,20 @@ class Controller:
 
         return game.journal.read_journal(), ("Journal - " + game.title + ".html")
 
+    def add_cohort_in_crew(self, game_id: int, cohort: dict):
+        """
+        Adds the given cohort to the crew of the specified game and updates the crew in the Data Base.
+
+        :param game_id: the game's id.
+        :param cohort: aa dictionary representing with the parameters used to build a Cohort
+        """
+        crew = self.get_game_by_id(game_id).crew
+
+        crew.add_cohort(Cohort(**cohort))
+
+        insert_crew_json(game_id, save_to_json(crew))
+
+
+
     def __repr__(self) -> str:
         return str(self.games)
