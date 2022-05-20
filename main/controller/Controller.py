@@ -338,6 +338,7 @@ class Controller:
 
     def tick_clock_of_game(self, chat_id: int, user_id: int, old_clock: dict, ticks: int) -> Tuple[bool, dict]:
         """
+        Advances the specified clock of the game, updates the database and write into the journal.
 
         :param chat_id: the Telegram id of the user who invoked the action roll.
         :param user_id: the Telegram chat id of the user.
