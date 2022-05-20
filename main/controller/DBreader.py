@@ -2,6 +2,7 @@ from typing import List, Tuple, Dict, Union, Optional
 
 from character.Action import Action
 from character.Attribute import Attribute
+from character.Item import Item
 from character.NPC import NPC
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
@@ -252,6 +253,46 @@ def query_character_sheets(canon: bool = None, spirit: bool = None) -> List[str]
         sheets.append(elem[0])
 
     return sheets
+
+
+def query_sheet_descriptions(sheet: str = None) -> List[str]:
+    """
+    Retrieves the description of a specified sheet (regardless if character or crew).
+
+    :param sheet: represents the target sheet. If not passed, all the descriptions are retrieved.
+    :return: a list of strings containing the sheets descriptions.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    if sheet is not None:
+        if exists_crew(sheet):
+            query = """SELECT Description
+                    FROM CrewSheet
+                    WHERE type = ?"""
+        elif exists_character(sheet):
+            query = """SELECT Description
+                         FROM CharacterSheet
+                         WHERE class = ?"""
+        else:
+            return []
+
+        cursor.execute(query, (sheet,))
+        rows = cursor.fetchall()
+    else:
+        cursor.execute("""SELECT Description
+                            FROM CharacterSheet""")
+        rows = cursor.fetchall()
+
+        cursor.execute("""SELECT Description
+                                FROM CrewSheet""")
+        rows.extend(cursor.fetchall())
+
+    descriptions = []
+    for elem in rows:
+        descriptions.append(elem[0])
+
+    return descriptions
 
 
 def query_crew_sheets(canon: bool = None) -> List[str]:
@@ -547,7 +588,7 @@ def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
 def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
                                as_dict: bool = False) -> Union[List[NPC], List[Dict[str, str]]]:
     """
-
+    Retrieves the List of the Strange Friends of the specified sheet.
 
     :param pc_class: the target pc class.
     :param strange_friend: the target NPC.
@@ -562,13 +603,14 @@ def query_char_strange_friends(pc_class: str = None, strange_friend: str = None,
     FROM Char_Friend JOIN NPC ON NPC = NpcID"""
 
     if pc_class is not None and strange_friend is not None:
-        query += "\nWHERE Character = '{}' AND Name = '{}'".format(pc_class, strange_friend)
+        query += "\nWHERE Character = ? AND Name = ?"
+        cursor.execute(query, (pc_class, strange_friend))
     elif pc_class is not None:
-        query += "\nWHERE Character = '{}'".format(pc_class)
+        query += "\nWHERE Character = ?".format(pc_class)
+        cursor.execute(query, (pc_class,))
     elif strange_friend is not None:
-        query += "\nWHERE Name = '{}'".format(strange_friend)
-
-    cursor.execute(query)
+        query += "\nWHERE Name = ?"
+        cursor.execute(query, (strange_friend,))
 
     rows = cursor.fetchall()
 
@@ -769,3 +811,187 @@ def query_starting_upgrades_and_cohorts(crew_sheet: str) -> \
         cohorts.append({"type": elem[0], "expert": bool(elem[1])})
 
     return upgrades, cohorts
+
+
+def query_frame_features(feature: str = None, group: str = None,
+                         as_dict: bool = False) -> Union[List[SpecialAbility], List[Dict[str, str]]]:
+    """
+    Retrieves the name and the description of the specified hull's frame feature
+    or all the frame features of a specified group. If neither feature nor group are specified, the complete list of
+    frame features is retrieved.
+
+    :param feature: is the target frame feature.
+    :param group: is the target group.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of SpecialAbility
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    if feature is not None:
+        query = """
+        SELECT Name, Description
+        FROM SpecialAbility
+        WHERE FrameFeature != 'N' AND Name = ?
+        """
+
+        cursor.execute(query, (feature,))
+    else:
+        if group is not None:
+            query = """
+            SELECT Name, Description
+            FROM SpecialAbility
+            WHERE FrameFeature = ?"""
+
+            cursor.execute(query, (group,))
+        else:
+            query = """
+                    SELECT Name, Description
+                    FROM SpecialAbility
+                    WHERE FrameFeature != 'N'
+                    """
+            cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    frame_features = []
+    for elem in rows:
+        frame_features.append({"name": elem[0], "description": elem[1]})
+
+    if not as_dict:
+        for i in range(len(frame_features)):
+            frame_features[i] = SpecialAbility(**frame_features[i])
+
+    return frame_features
+
+
+def query_items(item_name: str = None, common_items: bool = False, pc_class: str = None, canon: bool = None,
+                as_dict: bool = False) -> Union[List[Item], List[dict]]:
+    """
+    Retrieves a list of Items from the DB. If item_name is passed this method searches for its occurrence.
+    Otherwise, if pc_class is passed, the targets are all the items of this specific sheet.
+
+    :param item_name: is the target item's name.
+    :param common_items: True if only the common items should be retrieved, False otherwise.
+    :param pc_class: is the target PC's sheet.
+    :param canon: True if the canon items are the target, false if the non-canon items are the target.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of Item.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    if item_name is not None:
+        query = """
+        SELECT Name, Description, Weight, Usages
+        FROM Item
+        WHERE Name = ?"""
+        cursor.execute(query, (item_name,))
+
+    elif common_items:
+        query = """
+                SELECT Name, Description, Weight, Usages
+                FROM Item
+                WHERE Canon = True AND Name NOT IN (SELECT Item
+                                  FROM Char_Item)"""
+
+        cursor.execute(query)
+
+    else:
+        if pc_class is not None and canon is not None:
+            query = """SELECT Name, Description, Weight, Usages
+                       FROM Item JOIN Char_Item ON Name = Item
+                       WHERE Character = ? AND Canon = ?"""
+            cursor.execute(query, (pc_class, canon))
+
+        elif pc_class is not None:
+            query = """
+                    SELECT Name, Description, Weight, Usages
+                    FROM Item JOIN Char_Item ON Name = Item
+                    WHERE Character = ?"""
+            cursor.execute(query, (pc_class,))
+
+        elif canon is not None:
+            query = """SELECT Name, Description, Weight, Usages
+                       FROM Item
+                       WHERE Canon = ?"""
+            cursor.execute(query, (canon,))
+        else:
+            query = """SELECT Name, Description, Weight, Usages
+                       FROM Item
+                       WHERE Canon = ?"""
+            cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    items = []
+    for elem in rows:
+        items.append({"name": elem[0], "description": elem[1], "weight": elem[2], "usages": elem[3]})
+
+    if not as_dict:
+        for i in range(len(items)):
+            items[i] = Item(**items[i])
+
+    return items
+
+
+def query_hunting_grounds(hunting_ground: str = None, crew_type: str = None, canon: bool = None,
+                          only_names: bool = True) -> List[str]:
+    """
+    Retrieves a list of hunting grounds from The DB. If crew_type is passed this method searches for all the hunting
+    grounds of the crew.
+
+    :param hunting_ground: represents the target hunting ground.
+    :param crew_type: represents the target crew sheet.
+    :param canon: True if the canon hunting grounds are the target,
+            false if the non-canon hunting grounds are the target.
+    :param only_names: True if only the hunting grounds' names should be returned, False otherwise.
+    :return: a list of string composed with name and description of the hunting grounds.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    if hunting_ground is not None:
+        query = """
+                SELECT Name, Description
+                FROM HuntingGround
+                WHERE Name = ?"""
+        cursor.execute(query, (hunting_ground, ))
+    else:
+        if crew_type is not None and canon is not None:
+            query = """
+                    SELECT Name, Description
+                    FROM HuntingGround JOIN Crew_HG ON Name = HuntingGround
+                    WHERE Crew = ? AND Canon = ?"""
+            cursor.execute(query, (crew_type, canon))
+
+        elif crew_type is not None:
+            query = """
+                    SELECT Name, Description
+                    FROM HuntingGround JOIN Crew_HG ON Name = HuntingGround
+                    WHERE Crew = ?"""
+            cursor.execute(query, (crew_type,))
+
+        elif canon is not None:
+            query = """
+                    SELECT Name, Description
+                    FROM HuntingGround
+                    WHERE Canon = ?"""
+            cursor.execute(query, (canon,))
+
+        else:
+            query = """
+                    SELECT Name, Description
+                    FROM HuntingGround"""
+            cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    hg = []
+    for elem in rows:
+        if only_names:
+            hg.append(elem[0])
+        else:
+            hg.append(elem[0] + ": " + elem[1])
+
+    return hg

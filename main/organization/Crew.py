@@ -9,10 +9,12 @@ from character.NPC import NPC
 from organization.Organization import Organization
 from component.SpecialAbility import SpecialAbility
 from organization.Upgrade import Upgrade
+from utility.IDrawable import IDrawable, image_to_bytes
 from utility.ISavable import ISavable, pop_dict_items
+from utility.imageFactory.CrewFactory import *
 
 
-class Crew(Organization, ISavable):
+class Crew(Organization, ISavable, IDrawable):
     """
     The organization of the playing characters.
     """
@@ -269,6 +271,43 @@ class Crew(Organization, ISavable):
         temp = super().save_to_dict()
         temp["contact"] = self.contact.save_to_dict()
         return temp
+
+    def draw_image(self, **kwargs) -> bytes:
+        """
+        Reimplement draw_image method of IDrawable. It opens the blank sheet of the crew and calls the methods
+        to paste this class' peculiar attributes.
+
+        :param kwargs: keyword arguments.
+        :return: the bytes array of the produced image.
+        """
+        sheet = Image.open("resources/images/CrewBlank.png")
+
+        paste_crew_name(self.name, sheet)
+        paste_crew_reputation(self.reputation, sheet)
+        paste_lair(self.lair, sheet)
+        paste_crew_description(self.description, sheet)
+
+        paste_rep(self.rep, len(self.lair.claims), sheet)
+        paste_hold(self.hold, sheet)
+        paste_tier(self.tier, sheet)
+        paste_heat(self.heat, sheet)
+        paste_wanted_level(self.wanted_level, sheet)
+        paste_vault(self.coins, self.vault_capacity, sheet)
+
+        paste_crew_type(self.type, sheet)
+        paste_crew_type_description(self.type, sheet)
+        paste_special_abilities(self.abilities, sheet)
+        paste_xp_triggers(self.xp_triggers, sheet)
+        paste_contact(self.contact, sheet)
+        paste_crew_exp(self.crew_exp, sheet)
+        paste_crew_upgrades(self.upgrades, sheet)
+        paste_cohorts(self.cohorts, sheet)
+
+        paste_hunting_grounds(self.type, sheet)
+
+        paste_prison_claims(self.prison_claims, sheet)
+
+        return image_to_bytes(sheet)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

@@ -8,6 +8,7 @@ from character.NPC import NPC
 from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.IDrawable import image_to_bytes
 from utility.ISavable import pop_dict_items
 
 
@@ -23,7 +24,7 @@ class Vampire(Owner, ISavable):
                  playbook: Playbook = Playbook(8), attributes: List[Attribute] = None,
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0,
-                 strictures: List[str] = None, dark_servants: List[NPC] = None,
+                 strictures: List[SpecialAbility] = None, dark_servants: List[NPC] = None,
                  migrating_character: PC = None) -> None:
 
         if migrating_character is not None:
@@ -89,8 +90,9 @@ class Vampire(Owner, ISavable):
         """
         temp = pc_from_json(data)
         dark_servants = list(map(NPC.from_json, data["dark_servants"]))
-        pop_dict_items(data, ["vice", "dark_servants"])
-        return cls(**data, **temp, dark_servants=dark_servants)
+        strictures = list(map(SpecialAbility.from_json, data["strictures"]))
+        pop_dict_items(data, ["vice", "dark_servants", "strictures"])
+        return cls(**data, **temp, dark_servants=dark_servants, strictures=strictures)
 
     def save_to_dict(self) -> dict:
         """
@@ -104,6 +106,28 @@ class Vampire(Owner, ISavable):
         for i in self.dark_servants:
             temp["dark_servants"].append(i.save_to_dict())
         return {**{"Class": "Vampire"}, **temp}
+
+    def draw_image(self, **kwargs) -> bytes:
+        """
+        Reimplement draw_image method of IDrawable. It opens the blank sheet of this class, calls the
+        paste_common_items method and finally calls the methods to paste this class' peculiar attributes.
+
+        :param kwargs: keyword arguments.
+        :return: the bytes array of the produced image.
+        """
+        sheet = Image.open("resources/images/VampireBlank.png")
+
+        paste_common_attributes(self, sheet, **kwargs)
+
+        paste_vice(self.vice, sheet)
+        paste_description(self.description, sheet, 320)
+        paste_vampire_servants(self.dark_servants, sheet)
+        paste_vampire_strictures(self.strictures, sheet)
+
+        paste_coin(self.coin, sheet)
+        paste_stash(self.stash, sheet)
+
+        return image_to_bytes(sheet)
 
     def __repr__(self) -> str:
         return str(self.__dict__)

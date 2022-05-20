@@ -4,6 +4,7 @@ from controller.DBreader import *
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.IDrawable import image_to_bytes
 
 
 class Ghost(PC, ISavable):
@@ -76,6 +77,24 @@ class Ghost(PC, ISavable):
         :return: dictionary of the object
         """
         return {**{"Class": "Ghost"}, **super().save_to_dict()}
+
+    def draw_image(self, **kwargs) -> bytes:
+        """
+        Reimplement draw_image method of IDrawable. It opens the blank sheet of this class, calls the
+        paste_common_items method and finally calls the methods to paste this class' peculiar attributes.
+
+        :param kwargs: keyword arguments.
+        :return: the bytes array of the produced image.
+        """
+        sheet = Image.open("resources/images/GhostBlank.png")
+
+        paste_common_attributes(self, sheet, **kwargs)
+
+        paste_vice(self.need, sheet)
+        paste_description(self.description, sheet)
+        paste_ghost_enemies(self.enemies_rivals, sheet)
+
+        return image_to_bytes(sheet)
 
     def __repr__(self) -> str:
         return str(self.__dict__)
