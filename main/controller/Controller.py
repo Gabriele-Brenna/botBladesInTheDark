@@ -1,6 +1,8 @@
+import copy
 import threading
 
 from character.Human import Human
+from component.Clock import Clock
 from controller.DBreader import *
 from controller.DBwriter import *
 from game.Game import Game
@@ -312,7 +314,7 @@ class Controller:
 
         :param chat_id: the Telegram id of the user who invoked the action roll.
         :param user_id: the Telegram chat id of the user.
-        :param clock: aa dictionary representing with the parameters used to build a Cohort
+        :param clock: a dictionary representing the parameters used to build a Clock
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
@@ -323,6 +325,44 @@ class Controller:
         game.journal.write_clock(query_users_names(user_id)[0], new_clock)
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def get_clocks_of_game(self, game_id: int) -> List[str]:
+        """
+        Retrieves the list of clocks of the specified game.
+
+        :param game_id: the game's id.
+        :return: the list of clocks' names of the specified game
+        """
+        return ["{}: {}/{}".format(clock.name, clock.progress, clock.segments)
+                for clock in self.get_game_by_id(game_id).clocks]
+
+    def tick_clock_of_game(self, chat_id: int, user_id: int, old_clock: dict, ticks: int) -> Tuple[bool, dict]:
+        """
+        Advances the specified clock of the game, updates the database and write into the journal.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param old_clock: a dictionary representing the Clock to tick
+        :param ticks: the number of ticks to add to the clock
+        :return: a tuple with a bool (True if the clock has been completed)
+        and a dictionary representing the modified Clock.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        clock_to_tick = Clock(**old_clock)
+
+        game.tick_clock(clock_to_tick, ticks)
+
+        new_clock = copy.deepcopy(clock_to_tick)
+        filled = new_clock.tick(ticks)
+
+        insert_clock_json(game.identifier, save_to_json(game.clocks))
+
+        game.journal.write_clock(query_users_names(user_id)[0], new_clock, clock_to_tick)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        return filled, new_clock.__dict__
 
     def __repr__(self) -> str:
         return str(self.games)

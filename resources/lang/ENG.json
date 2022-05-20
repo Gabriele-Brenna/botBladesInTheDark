@@ -349,6 +349,22 @@
     "create_clock_segments": {
       "0": "\uD83D\uDD50 <u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51",
       "1": "<i>{}</i> is invalid, it should be a number from 2 to 36..."
+    },
+
+    "tick_clock": {
+      "0": "Choose which clock you want to advance",
+      "err": "You cannot tick a clock without being in a game... /join to take part in a game",
+      "err2": "You dont' have any clock... /createClock to make one"
+    },
+
+    "tick_clock_choice": {
+      "0": "How many ticks need to be added ?"
+    },
+
+    "tick_clock_progress": {
+      "0": "<u>{}</u> has made an advancement for the clock: '<i>{}</i>' \nprogress: {}/{}",
+      "1": "<u>{}</u> completed the clock: '<i>{}</i>'",
+      "err": ""
     }
 
   },

@@ -225,13 +225,28 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
-            entry_points=[CommandHandler(["createClock".casefold(), "newClock".casefold()], create_clock)],
+            entry_points=[CommandHandler(["createClock".casefold(), "newClock".casefold(), "addClock".casefold()],
+                                         create_clock)],
             states={
                 0: [MessageHandler(Filters.text & ~Filters.command, create_clock_name)],
                 1: [MessageHandler(Filters.text & ~Filters.command, create_clock_segments)],
             },
             fallbacks=[CommandHandler("cancel".casefold(), create_clock_end)],
-            name="conv_addCohort",
+            name="conv_createClock",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["tick".casefold(), "tickClock".casefold(), "advanceClock".casefold()],
+                                         tick_clock)],
+            states={
+                0: [CallbackQueryHandler(tick_clock_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, tick_clock_progress)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), tick_clock_end)],
+            name="conv_tickClock",
             persistent=True
         )
     )

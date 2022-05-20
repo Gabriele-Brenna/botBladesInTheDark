@@ -98,17 +98,17 @@ class Game:
         self.clocks.append(Clock(name, segments))
         return self.clocks[-1]
 
-    def tick_clock(self, name: str, ticks: int) -> Clock:
+    def tick_clock(self, clock: Clock, ticks: int) -> Clock:
         """
-        Ticks a Clock given its name by the specified number of ticks.
+        Ticks the given Clock by the specified number of ticks.
         If the clock is completed it removes it from the clocks list
 
-        :param name: is the name of the clock that needs to be ticked
+        :param clock: the clock that needs to be ticked.
         :param ticks: is the number of ticks
         :return: the Clock ticked if found, None otherwise
         """
         for c in self.clocks:
-            if c.name.lower() == name.lower():
+            if c == clock:
                 if c.tick(ticks):
                     self.clocks.remove(c)
                 return c
