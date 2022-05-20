@@ -796,7 +796,7 @@ class Journal:
             if new_clock.segments != old_clock.segments:
                 p_tag = self.create_p_tag(placeholder["1"].format(pc, new_clock.name))
                 one_tag.append(p_tag)
-            if new_clock.progress > old_clock.progress:
+            if new_clock.progress != old_clock.progress:
                 p_tag = self.create_p_tag(placeholder["2"].format(pc, new_clock.name,
                                                                   (new_clock.progress - old_clock.progress)))
                 one_tag.append(p_tag)

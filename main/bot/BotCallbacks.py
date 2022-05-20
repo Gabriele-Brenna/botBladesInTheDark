@@ -2137,7 +2137,8 @@ def create_clock_segments(update: Update, context: CallbackContext) -> int:
         update.message.delete()
         return 1
 
-    controller.add_clock_to_game(update.message.chat_id, get_user_id(update), context.user_data["create_clock"]["clock"])
+    controller.add_clock_to_game(update.message.chat_id, get_user_id(update),
+                                 context.user_data["create_clock"]["clock"])
 
     if controller.is_master(get_user_id(update), update.message.chat_id):
         name = "The GM"
@@ -2166,6 +2167,135 @@ def create_clock_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_createClock------------------------------------------------------------
+
+
+# ------------------------------------------conv_tickClock--------------------------------------------------------------
+
+
+def tick_clock(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the advancement of a clock checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, tick_clock.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return create_clock_end(update, context)
+
+    add_tag_in_telegram_data(context, ["tick_clock", "invocation_message"], update.message)
+
+    clocks = controller.get_clocks_of_game(query_game_of_user(update.message.chat_id, get_user_id(update)))
+    if not clocks:
+        update.message.reply_text(placeholders["err2"])
+        return tick_clock_end(update, context)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(clocks, inline=True, split_row=1))
+    add_tag_in_telegram_data(context, ["tick_clock", "message"], message)
+
+    add_tag_in_telegram_data(context, ["tick_clock", "old_clock"], {})
+    add_tag_in_telegram_data(context, ["tick_clock", "new_clock"], {})
+
+    return 0
+
+
+def tick_clock_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen clock in the user_data and advances the conversation to
+    the next state that regards the number of ticks to advance the clock.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, tick_clock_choice.__name__)
+    context.user_data["tick_clock"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    name = choice.split(": ")[0]
+
+    choice = choice.split(": ")[1]
+
+    progress = int(choice.split("/")[0])
+    segments = int(choice.split("/")[1])
+
+    add_tag_in_telegram_data(context, ["tick_clock", "old_clock", "name"], name)
+    add_tag_in_telegram_data(context, ["tick_clock", "old_clock", "segments"], segments)
+    add_tag_in_telegram_data(context, ["tick_clock", "old_clock", "progress"], progress)
+
+    message = context.user_data["tick_clock"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["tick_clock", "message"], message)
+
+    return 1
+
+
+def tick_clock_progress(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the number of ticks in the user_data and advances the conversation to
+    the end state; before advancing to the next state the clock is ticked and stored
+    calling the Controller method tick_clock_of_game().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, tick_clock_progress.__name__)
+    context.user_data["tick_clock"]["message"].delete()
+
+    num = update.message.text
+
+    try:
+        num = int(num)
+    except ValueError:
+        message = context.user_data["tick_clock"]["invocation_message"].reply_text(
+            placeholders["err"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["tick_clock", "message"], message)
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["tick_clock", "ticks"], num)
+
+    finished, new_clock = controller.tick_clock_of_game(update.message.chat_id, get_user_id(update),
+                                                        context.user_data["tick_clock"]["old_clock"],
+                                                        context.user_data["tick_clock"]["ticks"])
+
+    if controller.is_master(get_user_id(update), update.message.chat_id):
+        username = "The GM"
+    else:
+        username = query_users_names(get_user_id(update))[0]
+
+    if finished:
+        context.user_data["tick_clock"]["invocation_message"].reply_text(
+            placeholders["1"].format(username, new_clock["name"]), parse_mode=ParseMode.HTML)
+    else:
+        context.user_data["tick_clock"]["invocation_message"].reply_text(
+            placeholders["0"].format(username, new_clock["name"], new_clock["progress"], new_clock["segments"]),
+            parse_mode=ParseMode.HTML)
+
+    return tick_clock_end(update, context)
+
+
+def tick_clock_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "tick_clock_end")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_tickClock--------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

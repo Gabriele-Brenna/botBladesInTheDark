@@ -27,16 +27,19 @@ class TestGame(TestCase):
         self.assertEqual([c1, c3], self.game.get_project_clocks())
 
     def test_tick_clock(self):
-        self.game.clocks.append(Clock("Burn", 7, 3))
-        self.game.clocks.append(Clock("Kill", 10, 3))
-        self.game.clocks.append(Clock("Steal", 4, 3))
+        burn_clock = Clock("Burn", 7, 3)
+        kill_clock = Clock("Kill", 10, 3)
+        steal_clock = Clock("Steal", 4, 3)
+        self.game.clocks.append(burn_clock)
+        self.game.clocks.append(kill_clock)
+        self.game.clocks.append(steal_clock)
 
-        self.assertEqual(Clock("Burn", 7, 6), self.game.tick_clock("Burn", 3))
+        self.assertEqual(Clock("Burn", 7, 6), self.game.tick_clock(burn_clock, 3))
 
-        self.assertEqual(Clock("Kill", 10, 11), self.game.tick_clock("Kill", 8))
+        self.assertEqual(Clock("Kill", 10, 11), self.game.tick_clock(kill_clock, 8))
         self.assertEqual([Clock("Burn", 7, 6), Clock("Steal", 4, 3)], self.game.clocks)
 
-        self.assertIsNone(self.game.tick_clock("Demolish", 69))
+        self.assertIsNone(self.game.tick_clock(Clock("Demolish"), 69))
         self.assertEqual([Clock("Burn", 7, 6), Clock("Steal", 4, 3)], self.game.clocks)
 
     def test_see_clocks(self):
