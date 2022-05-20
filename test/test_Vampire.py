@@ -21,7 +21,8 @@ class TestVampire(TestCase):
                              playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
                                                                Attribute("Prowess", [Action("Skirmish", 3)]),
                                                                Attribute("Resolve", [Action("Attune", 3)])],
-                             dark_servants=[NPC("Orianna"), self.harry])
+                             dark_servants=[NPC("Orianna"), self.harry],
+                             strictures=[SpecialAbility("Bound", "You cannot leave your body or your soul will be lost.")])
 
     def test_save_and_load_json(self):
         temp_str = json.dumps(self.regis.save_to_dict(), indent=5)

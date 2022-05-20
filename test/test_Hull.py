@@ -15,7 +15,8 @@ class TestHull(TestCase):
                          abilities=[SpecialAbility("Automaton", "Spirit animating clock")],
                          playbook=Playbook(5), attributes=[Attribute("Insight", [Action("Hunt", 3)]),
                                                            Attribute("Prowess", [Action("Skirmish", 3)]),
-                                                           Attribute("Resolve", [Action("Attune", 3)])])
+                                                           Attribute("Resolve", [Action("Attune", 3)])],
+                         frame_features=[SpecialAbility("Spider-Climb", "You climb as a spider")])
 
     def test_save_and_load_json(self):
         temp_str = json.dumps(self.jeeg.save_to_dict(), indent=5)
@@ -23,3 +24,5 @@ class TestHull(TestCase):
         temp_dict.pop("Class")
         temp_obj = Hull.from_json(temp_dict)
         self.assertEqual(self.jeeg, temp_obj)
+        print(temp_obj)
+        print(temp_str)

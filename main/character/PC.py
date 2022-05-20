@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import List
 
+from PIL.Image import Image
+
 from character.Action import Action
 from character.Attribute import Attribute
 from character.Character import Character
@@ -9,10 +11,13 @@ from controller.DBreader import query_special_abilities, query_attributes, query
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.IDrawable import IDrawable
 from utility.ISavable import ISavable, pop_dict_items
 
+from utility.imageFactory.PCfactory import *
 
-class PC(Character, ISavable):
+
+class PC(Character, ISavable, IDrawable):
     """
     Represent each type of playable character
     """
@@ -379,3 +384,30 @@ def pc_from_json(data: dict) -> dict:
 
     pop_dict_items(data, list(dictionary.keys()))
     return dictionary
+
+
+def paste_common_attributes(pc: PC, sheet: Image, **kwargs):
+    paste_name(pc.name, sheet)
+    paste_alias(pc.alias, sheet)
+
+    if "crew_name" in kwargs and isinstance(kwargs["crew_name"], str):
+        paste_crew(kwargs["crew_name"], sheet)
+
+    paste_look(pc.look, sheet)
+    paste_heritage(pc.heritage, sheet)
+    paste_background(pc.background, sheet)
+
+    paste_stress(pc.stress_level, pc.stress_limit, sheet)
+    paste_traumas(pc.traumas, sheet)
+    paste_harms(pc.harms, sheet)
+    paste_healing_clock(pc.healing, sheet)
+    paste_armor_uses(pc.armors, sheet)
+
+    paste_special_abilities(pc.abilities, sheet)
+    paste_xp_triggers(pc.xp_triggers, sheet)
+    paste_load(pc.load, sheet)
+
+    paste_playbook(pc.playbook, sheet)
+    paste_attributes(pc.attributes, sheet)
+
+    paste_items(pc.items, pc.pc_class, sheet)

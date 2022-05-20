@@ -169,21 +169,12 @@ class Journal:
 				border-bottom: 4px solid rgb(167, 85, 34);
 			}
 			.piechart {
-            	width: 60px;
-            	height: 60px;
+            	width: 80px;
+            	height: 80px;
             	border-radius: 50%;
 				border: solid white 1px;
 				align-self: center;
         	}
-			.center {
-				width: 10px;
-				height: 10px;
-				border-radius: 50%;
-				background-color: black;
-				position: relative;
-				margin: 25px;
-				border: none;
-			}
 			.clock {
 				height:auto;
 				display:flex;
@@ -764,8 +755,8 @@ class Journal:
         conic_gradient = ""
 
         segment_size = int((360 - (divider_size * new_clock.segments)) / new_clock.segments)
-        count = 0
-        for i in range(new_clock.segments - 1):
+        count = -2
+        for i in range(new_clock.segments):
             next_count = count + divider_size
             conic_gradient += white.format(count, next_count) + ", "
 
@@ -775,14 +766,7 @@ class Journal:
             else:
                 conic_gradient += black.format(next_count, count) + ", "
 
-        next_count = count + divider_size
-        conic_gradient += white.format(count, next_count) + ", "
-
-        count = next_count + segment_size
-        if new_clock.segments == new_clock.progress:
-            conic_gradient += red.format(next_count, count)
-        else:
-            conic_gradient += black.format(next_count, count)
+        conic_gradient += "white 0"
 
         style = "background-image: conic-gradient({});".format(conic_gradient)
 

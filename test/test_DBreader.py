@@ -344,3 +344,44 @@ class TestDBReader(TestCase):
 
         self.assertEqual(([{"name": "Prowess", "quality": 1}], [{"type": "Thugs", "expert": False}]),
                          query_starting_upgrades_and_cohorts("bravos"))
+
+    def test_query_sheet_description(self):
+        self.assertFalse(query_sheet_descriptions("NotExistingSheet"))
+
+        self.assertEqual("An arcane adept and channeler", query_sheet_descriptions("Whisper")[0])
+        self.assertEqual("Vice dealers: All of Doskvol craves escape. They can’t go outside... but they can turn to "
+                         "you.",
+                         query_sheet_descriptions("Hawkers")[0])
+
+        self.assertTrue(len(query_sheet_descriptions()) >= 16)
+
+    def test_query_frame_features(self):
+        self.assertFalse(query_frame_features("Calculating"))
+
+        self.assertEqual(SpecialAbility("Reflexes", "You have lightning-fast reaction time. When there's a question "
+                                                    "about who acts first, the answer is you (two characters with "
+                                                    "Reflexes act simultaneously). "),
+                         query_frame_features("Reflexes")[0])
+        self.assertEqual(4, len(query_frame_features(group="E")))
+
+    def test_query_items(self):
+        self.assertFalse(query_items("NotExistingItem"))
+
+        self.assertEqual([Item("Fine long rifle", "A finely crafted hunting rifle, deadly at long range, unwieldy in "
+                                                  "close quarters. Long rifles are usually illegal for private "
+                                                  "citizens in Doskvoll, but you have (real or forged) military "
+                                                  "paperwork for this one.", 2, -1)],
+                         query_items(item_name="Fine long rifle"))
+
+        self.assertEqual(6, len(query_items(pc_class="whisper")))
+        self.assertEqual(16, len(query_items(common_items=True)))
+
+    def test_query_hunting_grounds(self):
+        self.assertEqual("Sabotage: Hurt an opponent by destroying something.",
+                         query_hunting_grounds("Sabotage", only_names=False)[0])
+        self.assertEqual(['Accident', 'Disappearance', 'Murder', 'Ransom', 'Battle', 'Extortion', 'Sabotage',
+                          'Smash & Grab', 'Acquisition', 'Augury', 'Consecration', 'Sacrifice', 'Sale', 'Supply',
+                          'Show of Force', 'Socialize', 'Burglary', 'Espionage', 'Robbery', 'Arcane/Weird', 'Arms',
+                          'Contraband', 'Passengers'], query_hunting_grounds())
+        self.assertEqual(['Arcane/Weird', 'Arms', 'Contraband', 'Passengers'],
+                         query_hunting_grounds(crew_type="Smugglers"))

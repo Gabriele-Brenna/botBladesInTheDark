@@ -4,6 +4,7 @@ from controller.DBreader import query_xp_triggers
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.IDrawable import image_to_bytes
 from utility.ISavable import pop_dict_items
 
 
@@ -19,7 +20,7 @@ class Hull(PC, ISavable):
                  playbook: Playbook = Playbook(8), attributes: List[Attribute] = None, load: int = 0,
                  xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "small",
-                 migrating_character: PC = None) -> None:
+                 frame_features: List[SpecialAbility] = None, migrating_character: PC = None) -> None:
 
         if migrating_character is not None:
             self.migrate(migrating_character)
@@ -37,6 +38,9 @@ class Hull(PC, ISavable):
             functions = []
         self.functions = functions
         self.frame = frame
+        if frame_features is None:
+            frame_features = []
+        self.frame_features = frame_features
 
     def migrate(self, mc: super.__class__):
         """
@@ -82,7 +86,9 @@ class Hull(PC, ISavable):
         :return: Hull
         """
         temp = pc_from_json(data)
-        return cls(**data, **temp)
+        frame_features = list(map(SpecialAbility.from_json, data["frame_features"]))
+        pop_dict_items(data, ["frame_features"])
+        return cls(**data, **temp, frame_features=frame_features)
 
     def save_to_dict(self) -> dict:
         """
@@ -91,6 +97,25 @@ class Hull(PC, ISavable):
         :return: dictionary of the object
         """
         return {**{"Class": "Hull"}, **super().save_to_dict()}
+
+    def draw_image(self, **kwargs) -> bytes:
+        """
+        Reimplement draw_image method of IDrawable. It opens the blank sheet of this class, calls the
+        paste_common_items method and finally calls the methods to paste this class' peculiar attributes.
+
+        :param kwargs: keyword arguments.
+        :return: the bytes array of the produced image.
+        """
+        sheet = Image.open("resources/images/HullBlank.png")
+
+        paste_common_attributes(self, sheet, **kwargs)
+
+        paste_hull_functions(self.functions, sheet)
+        paste_description(self.description, sheet, 360)
+        paste_hull_frame(self.frame, sheet)
+        paste_hull_frame_features(self.frame_features, sheet)
+
+        return image_to_bytes(sheet)
 
     def __repr__(self) -> str:
         return str(self.__dict__)
