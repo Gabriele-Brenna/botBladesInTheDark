@@ -28,6 +28,7 @@ def start_bot():
     dispatcher.add_handler(CommandHandler("help".casefold(), help_msg))
 
     dispatcher.add_handler(CommandHandler("login".casefold(), start_login))
+
     dispatcher.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler("start", login, Filters.regex("login-BladesInTheDark-BotTelegram"))],
@@ -200,6 +201,37 @@ def start_bot():
                        CommandHandler("assist".casefold(), action_roll_assistance)],
             name="conv_actionRoll",
             per_user=False,
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(CommandHandler(["journal".casefold(), "log".casefold()], send_journal))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler("addCohort".casefold(), add_cohort)],
+            states={
+                0: [CallbackQueryHandler(add_cohort_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_cohort_type)],
+                2: [MessageHandler(Filters.text & ~Filters.command, add_cohort_edgflaw_num)],
+                3: [MessageHandler(Filters.text & ~Filters.command, add_cohort_edges)],
+                4: [MessageHandler(Filters.text & ~Filters.command, add_cohort_flaws)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_cohort_end)],
+            name="conv_addCohort",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createClock".casefold(), "newClock".casefold()], create_clock)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_clock_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_clock_segments)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_clock_end)],
+            name="conv_addCohort",
             persistent=True
         )
     )

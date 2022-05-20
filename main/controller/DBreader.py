@@ -564,18 +564,25 @@ def query_game_ids(tel_chat_id: int = None, title: str = None) -> List[int]:
     connection = establish_connection()
     cursor = connection.cursor()
 
-    query = """
-    SELECT Game_ID
-    FROM Game"""
-
     if tel_chat_id is not None and title is not None:
-        query += "\nWHERE (Tel_Chat_ID, Title) = ({}, '{}')".format(tel_chat_id, title)
-    elif tel_chat_id is not None:
-        query += "\nWHERE Tel_Chat_ID = {}".format(tel_chat_id)
-    elif title is not None:
-        query += "\nWHERE Title = '{}'".format(title)
+        cursor.execute("""
+        SELECT Game_ID
+        FROM Game
+        WHERE (Tel_Chat_ID, Title) = (?, ?)""", (tel_chat_id, title))
 
-    cursor.execute(query)
+    elif tel_chat_id is not None:
+        cursor.execute("""
+                SELECT Game_ID
+                FROM Game
+                WHERE Tel_Chat_ID = ?""", (tel_chat_id,))
+    elif title is not None:
+        cursor.execute("""
+                       SELECT Game_ID
+                       FROM Game
+                       WHERE Title = ?""", (title,))
+    else:
+        cursor.execute("""SELECT Game_ID
+                          FROM Game""")
 
     rows = cursor.fetchall()
 
@@ -794,7 +801,7 @@ def query_starting_upgrades_and_cohorts(crew_sheet: str) -> \
     SELECT Name, Quality
     FROM Upgrade JOIN Crew_StartingUpgrade ON Name = Upgrade
     WHERE Crew = ? 
-    """, (crew_sheet, ))
+    """, (crew_sheet,))
 
     upgrades = []
     for elem in cursor.fetchall():

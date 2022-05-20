@@ -1,7 +1,7 @@
-import unittest
 from unittest import TestCase
 
 import game.Journal
+from component.Clock import Clock
 from game.Journal import Journal
 
 
@@ -9,7 +9,6 @@ class TestJournal(TestCase):
     def test_read_journal(self):
         game.Journal.index = 1
         temp = Journal()
-        temp.write_heading()
         temp.write_title("The Knives of Doskvol")
         temp.write_phase(1)
         temp.write_phase(2)
@@ -54,9 +53,8 @@ class TestJournal(TestCase):
                                 devils="Devil's bargain conditions")
         temp.write_group_action("User1", "Goal of group action", "Tinker", 5, notes="extra notes", position="Secure",
                                 effect="particular effect", cohort="Type of the cohort that will help")
-        temp.read_journal()
+        temp.write_clock("User1", Clock("project clock", 2, 0))
+        temp.write_clock("User1", Clock("project clock", 6, 6), Clock("project clock", 4, 0))
 
-    @unittest.skip("default")
-    def test_default(self):
-        for i in range(5):
-            self.default = Journal()
+        with open("resources_test/journalTest.html", 'w+') as f:
+            f.write(temp.get_log_string())

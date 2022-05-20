@@ -216,6 +216,13 @@
       "callback": ["Free Play$1", "Score Phase$2", "Downtime phase$3"]
     },
 
+    "is_game_in_wrong_phase": {
+      "0": "You can't do <i>{}</i> in <i><b>INIT</b></i> phase",
+      "1": "You can't do <i>{}</i> in <i><b>FREE PLAY</b></i> phase",
+      "2": "You can't do <i>{}</i> in <i><b>SCORE PHASE</b></i>",
+      "3": "You can't do <i>{}</i> in <i><b>DOWNTIME PHASE</b></i>"
+    },
+
     "change_state_choice": {
       "0": "State changed to : <i>{}</i>"
     },
@@ -274,7 +281,9 @@
     },
 
     "action_roll_assistance": {
-      "0": "<i>{}</i> is ready to help!"
+      "0": "<i>{}</i> is ready to help!",
+      "1": "You cannot help again...",
+      "2": "You cannot help now...\nYou should /join the same game with at least one character"
     },
 
     "action_roll_bargains": {
@@ -287,6 +296,59 @@
 
     "action_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
+    },
+
+    "send_journal": {
+      "0": "You can't have a journal without being in a game... /join to take part in a game",
+      "1": "Enjoy the diary of your deeds in Doskvol so far !"
+    },
+
+    "add_cohort": {
+      "0": "Select which cohort you want",
+      "err": "You cannot create a cohort without being in a game... /join to take part in a game",
+      "keyboard": ["Gang", "Expert"]
+    },
+
+    "add_cohort_choice": {
+      "0": "Which type of cohort you want ?",
+      "keyboardTrue": ["Doctor", "Investigator", "Occultist", "Assassin", "Spy"],
+      "keyboardFalse": ["Adepts", "Rooks", "Rovers", "Skulks", "Thugs"]
+    },
+
+    "add_cohort_type": {
+      "0": "Write how many edges & flaws your cohort will have (from 0 to 4)"
+    },
+
+    "add_cohort_edgflaw_num": {
+      "0": "Choose one edge for your cohort",
+      "1": "<i>{}</i> is invalid, it should be a number from 0 to 4..."
+    },
+
+    "add_cohort_edges": {
+      "0": "Choose another edge",
+      "1": "Choose one flaws for your cohort",
+
+      "keyboard": ["Fearsome", "Independent", "Loyal", "Tenacious"]
+    },
+
+    "add_cohort_flaws": {
+      "0": "Choose another flaw",
+      "keyboard": ["Principled", "Savage", "Unreliable", "Wild"]
+    },
+
+    "create_clock": {
+      "0": "Write the name of the clock",
+      "err": "You cannot create a clock without being in a game... /join to take part in a game"
+    },
+
+    "create_clock_name": {
+      "0": "Chose how many segments the clock should be divided into",
+      "keyboard": [4, 6, 8]
+    },
+
+    "create_clock_segments": {
+      "0": "\uD83D\uDD50 <u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51",
+      "1": "<i>{}</i> is invalid, it should be a number from 2 to 36..."
     }
 
   },
@@ -440,6 +502,12 @@
 	  "6": "They decided to push themselves",
 	  "7": "They accept a Devil's Bargain: {}",
 	  "8": "They rolled {} and got {}"
+	},
+	"write_clock": {
+	  "0": "{} created a new clock: '{}'",
+	  "1": "{} modified the clock '{}'",
+	  "2": "{} ticked the clock '{}' by {} segments",
+	  "3": "{} completed the clock '{}'"
 	},
 
     "results": {

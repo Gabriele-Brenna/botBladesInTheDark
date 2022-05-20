@@ -118,7 +118,7 @@ def create_pc(update: Update, context: CallbackContext) -> int:
     url = helpers.create_deep_linked_url(context.bot.username)
 
     if update.message.chat.type != "private":
-        update.effective_chat.send_message(placeholders["0"].format(update.message.from_user.username, url),
+        update.effective_chat.send_message(placeholders["0"].format(query_users_names(get_user_id(update))[0], url),
                                            reply_to_message_id=update.message.message_id,
                                            parse_mode=ParseMode.HTML)
 
@@ -539,7 +539,7 @@ def join_complete_pc(update: Update, context: CallbackContext):
     url = helpers.create_deep_linked_url(context.bot.username)
 
     if update.message.chat.type != "private":
-        update.effective_chat.send_message(placeholders["0"].format(update.message.from_user.username,
+        update.effective_chat.send_message(placeholders["0"].format(query_users_names(get_user_id(update))[0],
                                                                     context.user_data["join"]["pc"]["name"], url),
                                            parse_mode=ParseMode.HTML)
 
@@ -1501,7 +1501,7 @@ def action_roll_effect(update: Update, context: CallbackContext) -> int:
                                                            context.chat_data["action_roll"]["roll"]["goal"]),
                                   quote=False, parse_mode=ParseMode.HTML), 20)
 
-    context.chat_data["action_roll"]["query_menu"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
+    context.chat_data["action_roll"]["message"] = context.chat_data["action_roll"]["invocation_message"].reply_text(
         placeholders["1"], reply_markup=custom_kb(buttons=placeholders["keyboard"],
                                                   callback_data=placeholders["callbacks"],
                                                   inline=True, split_row=1))
@@ -1519,16 +1519,27 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
     """
+    placeholders = get_lang(context, action_roll_assistance.__name__)
+
     user_id = get_user_id(update)
     chat_id = update.effective_message.chat_id
     invoker_id = context.chat_data["action_roll"]["invoker"]
     if user_id != invoker_id:
         if query_game_of_user(chat_id, user_id) == query_game_of_user(chat_id, invoker_id):
             if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
-                placeholders = get_lang(context, action_roll_assistance.__name__)
+
+                new_assistant = (user_id, context.user_data["active_PCs"][chat_id])
+
+                if "assistants" in context.chat_data["action_roll"]["roll"]:
+                    for elem in context.chat_data["action_roll"]["roll"]["assistants"]:
+                        if elem == new_assistant:
+                            auto_delete_message(update.message.reply_text(
+                                placeholders["1"], parse_mode=ParseMode.HTML), 10)
+
+                            return
 
                 context.chat_data["action_roll"]["roll"].setdefault(
-                    "assistants", []).append((user_id, context.user_data["active_PCs"][chat_id]))
+                    "assistants", []).append(new_assistant)
 
                 if "query_menu" in context.chat_data["action_roll"]:
                     update_bonus_dice_kb(context, "action_roll")
@@ -1536,6 +1547,10 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
                 auto_delete_message(
                     update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
                                               parse_mode=ParseMode.HTML), 18)
+                return
+
+    auto_delete_message(
+        update.message.reply_text(placeholders["2"], parse_mode=ParseMode.HTML), 18)
 
 
 def action_roll_bargains(update: Update, context: CallbackContext) -> int:
@@ -1554,7 +1569,7 @@ def action_roll_bargains(update: Update, context: CallbackContext) -> int:
 
     if user_id == invoker_id:
         context.chat_data["action_roll"]["master_message"].delete()
-        context.chat_data["action_roll"]["query_menu"].delete()
+        context.chat_data["action_roll"]["message"].delete()
         query = update.callback_query
         query.answer()
 
@@ -1716,7 +1731,7 @@ def action_roll_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_actionRoll-------------------------------------------------------------
 
 
-# ------------------------------------------conv_changeState-------------------------------------------------------------
+# ------------------------------------------conv_changeState------------------------------------------------------------
 
 
 def change_state(update: Update, context: CallbackContext) -> int:
@@ -1788,7 +1803,7 @@ def change_state_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_changeState-------------------------------------------------------------
+# ------------------------------------------conv_changeState------------------------------------------------------------
 
 
 def roll_dice(update: Update, context: CallbackContext) -> None:
@@ -1832,6 +1847,325 @@ def roll_dice(update: Update, context: CallbackContext) -> None:
         pass
     except:
         traceback.print_exc()
+
+
+def send_journal(update: Update, context: CallbackContext) -> None:
+    placeholders = get_lang(context, send_journal.__name__)
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(placeholders["0"])
+        return
+
+    journal = controller.get_journal_of_game(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+    update.message.reply_document(document=journal[0], filename=journal[1], caption=placeholders["1"])
+
+
+# ------------------------------------------conv_addCohort--------------------------------------------------------------
+
+
+def add_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the creation of a cohort checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_cohort", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"], True, 1))
+
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort"], {})
+
+    return 0
+
+
+def add_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort class (Gang or Expert) in the user_data and advances the conversation to
+    the next state that regards the cohort's type.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_choice.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    expert = True
+    if choice.lower() != "expert":
+        expert = False
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort", "expert"], expert)
+
+    message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(placeholders["keyboard" + str(expert)]))
+
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    return 1
+
+
+def add_cohort_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort type in the user_data and advances the conversation to
+    the next state that regards the choice of the number of edges and flaws.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_type.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["add_cohort", "cohort", "type"], update.message.text)
+
+    message = context.user_data["add_cohort"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+    update.message.delete()
+    return 2
+
+
+def add_cohort_edgflaw_num(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen number of edges and flaws in the user_data and advances the conversation to
+    the next state that regards the choice of the edges.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_edgflaw_num.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    num = update.message.text
+
+    if num.isdigit():
+        num = int(num)
+
+    if isinstance(num, int) and 0 <= num <= 4:
+        if num == 0:
+            return add_cohort_end(update, context)
+
+        add_tag_in_telegram_data(context, ["add_cohort", "numEdgeFlaws"], num)
+
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_edges.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+        update.message.delete()
+        return 3
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["1"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+        update.message.delete()
+        return 2
+
+
+def add_cohort_edges(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the edges in the user_data and advances the conversation to
+    the next state that regards the choice of the flaws after all the edges have been selected.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_edges.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    context.user_data["add_cohort"]["cohort"].setdefault("edges", []).append(update.message.text)
+
+    if len(context.user_data["add_cohort"]["cohort"]["edges"]) == context.user_data["add_cohort"]["numEdgeFlaws"]:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["1"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_flaws.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 4
+
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(
+                get_lang(context, add_cohort_edges.__name__)["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 3
+
+
+def add_cohort_flaws(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the flaws in the user_data and advances the conversation to
+    the end state after all the edges have been selected; before advancing to the next state the new cohort is stored
+    calling the Controller method add_cohort_in_crew().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_cohort_flaws.__name__)
+    context.user_data["add_cohort"]["message"].delete()
+
+    context.user_data["add_cohort"]["cohort"].setdefault("flaws", []).append(update.message.text)
+
+    if len(context.user_data["add_cohort"]["cohort"]["flaws"]) == context.user_data["add_cohort"]["numEdgeFlaws"]:
+
+        controller.add_cohort_in_crew(
+            query_game_of_user(update.message.chat_id, get_user_id(update)), context.user_data["add_cohort"]["cohort"])
+
+        return add_cohort_end(update, context)
+
+    else:
+        message = context.user_data["add_cohort"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"], split_row=2))
+
+        add_tag_in_telegram_data(context, ["add_cohort", "message"], message)
+
+        update.message.delete()
+        return 4
+
+
+def add_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "add_cohort")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addCohort--------------------------------------------------------------
+
+
+# ------------------------------------------conv_createClock------------------------------------------------------------
+
+
+def create_clock(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the creation of a clock checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_clock.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return create_clock_end(update, context)
+
+    add_tag_in_telegram_data(context, ["create_clock", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+
+    add_tag_in_telegram_data(context, ["create_clock", "clock"], {})
+
+    return 0
+
+
+def create_clock_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen clock name in the user_data and advances the conversation to
+    the next state that regards the clock's number of segments.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_clock_name.__name__)
+    context.user_data["create_clock"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_clock", "clock", "name"], update.message.text)
+
+    message = context.user_data["create_clock"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
+
+    add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_clock_segments(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the clock's number of segments in the user_data and advances the conversation to
+    the end state; before advancing to the next state the new clock is stored
+    calling the Controller method add_clock_to_game().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_clock_segments.__name__)
+    context.user_data["create_clock"]["message"].delete()
+
+    num = update.message.text
+
+    if num.isdigit():
+        num = int(num)
+
+    if isinstance(num, int) and 2 <= num <= 36:
+        add_tag_in_telegram_data(context, ["create_clock", "clock", "segments"], num)
+    else:
+        message = context.user_data["create_clock"]["invocation_message"].reply_text(
+            placeholders["1"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+        update.message.delete()
+        return 1
+
+    controller.add_clock_to_game(update.message.chat_id, get_user_id(update), context.user_data["create_clock"]["clock"])
+
+    if controller.is_master(get_user_id(update), update.message.chat_id):
+        name = "The GM"
+    else:
+        name = query_users_names(get_user_id(update))[0]
+
+    update.message.reply_text(placeholders["0"].format(
+        name, context.user_data["create_clock"]["clock"]["segments"],
+        context.user_data["create_clock"]["clock"]["name"]), quote=False, parse_mode=ParseMode.HTML)
+
+    return create_clock_end(update, context)
+
+
+def create_clock_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "create_clock")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_createClock------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
