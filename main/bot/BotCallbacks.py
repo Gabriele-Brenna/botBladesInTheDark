@@ -1860,6 +1860,17 @@ def send_journal(update: Update, context: CallbackContext) -> None:
     update.message.reply_document(document=journal[0], filename=journal[1], caption=placeholders["1"])
 
 
+def send_map(update: Update, context: CallbackContext) -> None:
+    placeholders = get_lang(context, send_map.__name__)
+
+    if query_game_of_user(update.message.chat_id, get_user_id(update)) is None:
+        update.message.reply_text(placeholders["0"])
+        return
+
+    map = controller.get_interactive_map(update.effective_message.chat_id, get_user_id(update))
+    update.message.reply_document(document=map[0], filename=map[1], caption=placeholders["1"])
+
+
 # ------------------------------------------conv_addCohort--------------------------------------------------------------
 
 
@@ -2196,7 +2207,6 @@ def tick_clock(update: Update, context: CallbackContext) -> int:
     add_tag_in_telegram_data(context, ["tick_clock", "message"], message)
 
     add_tag_in_telegram_data(context, ["tick_clock", "old_clock"], {})
-    add_tag_in_telegram_data(context, ["tick_clock", "new_clock"], {})
 
     return 0
 
@@ -2290,12 +2300,171 @@ def tick_clock_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END.
     """
-    delete_conv_from_telegram_data(context, "tick_clock_end")
+    delete_conv_from_telegram_data(context, "tick_clock")
 
     return end_conv(update, context)
 
 
 # ------------------------------------------conv_tickClock--------------------------------------------------------------
+
+# ------------------------------------------conv_addClaim---------------------------------------------------------------
+
+def add_claim(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the addition of a new claim checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_claim.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_claim_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_claim", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["add_claim", "message"], message)
+
+    add_tag_in_telegram_data(context, ["add_claim", "claim"], {})
+
+    return 0
+
+
+def add_claim_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen claim type in the user_data and advances the conversation to
+    the next state that regards the claim selection.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, add_claim_type.__name__)
+    context.user_data["add_claim"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = bool(query.data == "True")
+
+    add_tag_in_telegram_data(context, ["add_claim", "claim", "prison"], choice)
+
+    claims_names = [claim["name"] for claim in query_claims(prison=choice, as_dict=True)]
+
+    buttons_list = []
+    buttons = []
+    for i in range(len(claims_names)):
+        buttons.append(claims_names[i])
+        if (i + 1) % 8 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+
+    add_tag_in_telegram_data(context, tags=["add_claim", "buttons_list"], value=buttons_list)
+
+    query_menu = context.user_data["add_claim"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(buttons_list[0]))
+    add_tag_in_telegram_data(context, ["add_claim", "query_menu"], query_menu)
+    add_tag_in_telegram_data(context, ["add_claim", "query_menu_index"], 0)
+
+    return 1
+
+
+def add_claim_name(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, add_claim_type.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["add_claim"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["add_claim"]["buttons_list"]):
+            index = 0
+        context.user_data["add_claim"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["add_claim"]["buttons_list"]):
+            index = 0
+
+        context.user_data["add_claim"]["query_menu_index"] = index
+
+    else:
+        name = choice.split("$")[0]
+        description = query_claims(name=name, as_dict=True)[0]["description"]
+        if "$" in choice:
+            choice = choice.split("$")[0]
+            add_tag_in_telegram_data(context, ["add_claim", "claim", "name"], choice)
+            add_tag_in_telegram_data(context, ["add_claim", "claim", "name"], description)
+
+            controller.add_claim_to_game(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                         context.user_data["add_claim"]["claim"])
+
+            return add_claim_end(update, context)
+
+        else:
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 1
+
+    context.user_data["add_claim"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["add_claim"]["buttons_list"][context.user_data["add_claim"]["query_menu_index"]]))
+    return 1
+
+
+def add_claim_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "add_claim")
+
+    return end_conv(update, context, True)
+
+
+# ------------------------------------------conv_addClaim---------------------------------------------------------------
+
+# ------------------------------------------send_sheets-----------------------------------------------------------------
+
+def send_character_sheet(update: Update, context: CallbackContext) -> None:
+    placeholders = get_lang(context, send_character_sheet.__name__)
+    chat_id = update.effective_message.chat_id
+    if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
+        img_bytes, file_name = controller.get_character_sheet_image(chat_id, get_user_id(update),
+                                                                    context.user_data["active_PCs"][chat_id])
+
+        update.effective_message.reply_photo(photo=img_bytes, filename=file_name, caption=placeholders["1"])
+    else:
+        update.message.reply_text(placeholders["0"])
+
+
+def send_crew_sheet(update: Update, context: CallbackContext) -> None:
+    placeholders = get_lang(context, send_crew_sheet.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return
+
+    if controller.game_has_crew(query_game_of_user(update.effective_message.chat_id, get_user_id(update))):
+        chat_id = update.effective_message.chat_id
+        img_bytes, file_name = controller.get_crew_sheet_image(chat_id, get_user_id(update))
+        update.effective_message.reply_photo(photo=img_bytes, filename=file_name, caption=placeholders["1"])
+    else:
+        update.message.reply_text(placeholders["0"])
+
+
+# ------------------------------------------send_sheets-----------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

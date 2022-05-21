@@ -106,9 +106,12 @@ class Hull(PC, ISavable):
         :param kwargs: keyword arguments.
         :return: the bytes array of the produced image.
         """
-        sheet = Image.open("resources/images/HullBlank.png")
+        sheet = Image.open(path_finder("images/HullBlank.png"))
 
         paste_common_attributes(self, sheet, **kwargs)
+
+        paste_pc_class(self.__class__.__name__, sheet)
+        paste_class_description(self.__class__.__name__, sheet)
 
         paste_hull_functions(self.functions, sheet)
         paste_description(self.description, sheet, 360)

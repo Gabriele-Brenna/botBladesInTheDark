@@ -4,6 +4,7 @@ from controller.DBreader import *
 from character.Item import Item
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.FilesManager import path_finder
 from utility.IDrawable import image_to_bytes
 
 
@@ -86,9 +87,12 @@ class Ghost(PC, ISavable):
         :param kwargs: keyword arguments.
         :return: the bytes array of the produced image.
         """
-        sheet = Image.open("resources/images/GhostBlank.png")
+        sheet = Image.open(path_finder("images/GhostBlank.png"))
 
         paste_common_attributes(self, sheet, **kwargs)
+
+        paste_pc_class(self.__class__.__name__, sheet)
+        paste_class_description(self.__class__.__name__, sheet)
 
         paste_vice(self.need, sheet)
         paste_description(self.description, sheet)

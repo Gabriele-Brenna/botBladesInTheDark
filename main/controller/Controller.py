@@ -11,6 +11,7 @@ from organization.Cohort import Cohort
 from organization.Crew import Crew
 from utility.FilesLoader import load_games
 from utility.ISavable import save_to_json
+from utility.htmlFactory import MapFactory
 
 
 class Controller:
@@ -294,6 +295,27 @@ class Controller:
 
         return game.journal.read_journal(), ("Journal - " + game.title + ".html")
 
+    def get_character_sheet_image(self, chat_id: int, user_id: int, pc_name: str) -> Tuple[bytes, str]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        kwargs = {}
+        if game.crew is not None:
+            kwargs["crew_name"] = game.crew.name
+        return game.get_player_by_id(user_id).get_character_by_name(pc_name).draw_image(**kwargs), (pc_name + ".png")
+
+    def get_crew_sheet_image(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        return game.crew.draw_image(), (game.crew.name + ".png")
+
+    def get_interactive_map(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        players = game.users
+        players_names = []
+        for player in players:
+            players_names.append(player.name)
+
+        return MapFactory.modify(players_names), ("DoskvolMap.html")
+
     def add_cohort_in_crew(self, game_id: int, cohort: dict):
         """
         Adds the given cohort to the crew of the specified game and updates the crew in the Data Base.
@@ -363,6 +385,28 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         return filled, new_clock.__dict__
+
+    def add_claim_to_game(self, game_id: int, claim: dict):
+        game = self.get_game_by_id(game_id)
+
+        new_claim = Claim(claim["name"], claim["description"])
+
+        if claim["prison"]:
+            game.crew.add_prison_claim(new_claim)
+        else:
+            game.crew.add_lair_claim(new_claim)
+
+        insert_crew_json(game_id, save_to_json(game.crew))
+
+        claim.pop("description")
+
+        game.journal.write_add_claim(**claim)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+    def game_has_crew(self, game_id: int) -> bool:
+        game = self.get_game_by_id(game_id)
+        return game.crew is not None
 
     def __repr__(self) -> str:
         return str(self.games)

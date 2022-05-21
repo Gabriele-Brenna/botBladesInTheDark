@@ -1,14 +1,4 @@
-from typing import List
-
-from character.Playbook import Playbook
-from controller.DBreader import query_xp_triggers, exists_crew
-from organization.Claim import Claim
-from organization.Cohort import Cohort
-from organization.Lair import Lair
-from character.NPC import NPC
 from organization.Organization import Organization
-from component.SpecialAbility import SpecialAbility
-from organization.Upgrade import Upgrade
 from utility.IDrawable import IDrawable, image_to_bytes
 from utility.ISavable import ISavable, pop_dict_items
 from utility.imageFactory.CrewFactory import *
@@ -301,7 +291,7 @@ class Crew(Organization, ISavable, IDrawable):
         :param kwargs: keyword arguments.
         :return: the bytes array of the produced image.
         """
-        sheet = Image.open("resources/images/CrewBlank.png")
+        sheet = Image.open(path_finder("images/CrewBlank.png"))
 
         paste_crew_name(self.name, sheet)
         paste_crew_reputation(self.reputation, sheet)
@@ -319,7 +309,7 @@ class Crew(Organization, ISavable, IDrawable):
         paste_crew_type_description(self.type, sheet)
         paste_special_abilities(self.abilities, sheet)
         paste_xp_triggers(self.xp_triggers, sheet)
-        paste_contact(self.contact, sheet)
+        paste_contact(self.contact, self.type, sheet)
         paste_crew_exp(self.crew_exp, sheet)
         paste_crew_upgrades(self.upgrades, sheet)
         paste_cohorts(self.cohorts, sheet)

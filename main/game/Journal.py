@@ -575,12 +575,12 @@ class Journal:
 
         return div_tag
 
-    def create_add_claim_tag(self, lair: bool, claim_name: str):
+    def create_add_claim_tag(self, prison: bool, name: str):
         """
         Method used to create and insert a div tag with class attribute set to "addClaim".
 
-        :param lair: True if the new claim is a lair claim, False if it's a prison claim
-        :param claim_name: name of the new claim
+        :param prison: True if the new claim is a lair claim, False if it's a prison claim
+        :param name: name of the new claim
         :return: the div Tag
         """
         placeholder = self.get_lang(self.write_add_claim.__name__)
@@ -589,7 +589,7 @@ class Journal:
 
         div_tag.append(self.create_h4_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(placeholder["1"].format(placeholder[str(2 + lair)], claim_name)))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(placeholder[str(2 + prison)], name)))
 
         return div_tag
 
@@ -1054,14 +1054,14 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_add_claim(self, lair: bool, claim_name: str):
+    def write_add_claim(self, prison: bool, claim_name: str):
         """
         Method used to write add claim in the attribute journal representing the html file of the journal.
 
-        :param lair: True if the new claim is a lair claim, False if it's a prison claim
+        :param prison: True if the new claim is a lair claim, False if it's a prison claim
         :param claim_name: name of the new claim
         """
-        tag = self.create_add_claim_tag(lair, claim_name)
+        tag = self.create_add_claim_tag(prison, claim_name)
 
         self.write_general(tag)
 

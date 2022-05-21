@@ -5,6 +5,7 @@ from PIL import ImageFont
 
 from character.Playbook import Playbook
 from component.Clock import Clock
+from utility.FilesManager import path_finder
 from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
@@ -147,8 +148,8 @@ def paste_hull_functions(functions: List[str], sheet: Image):
 
 
 def paste_stress(stress_level: int, stress_limit: int, sheet: Image):
-    stress_empty = Image.open("resources/images/StressEmpty.png")
-    stress_full = Image.open("resources/images/StressFull.png")
+    stress_empty = Image.open(path_finder("images/StressEmpty.png"))
+    stress_full = Image.open(path_finder("images/StressFull.png"))
 
     box_dim = (130, 30)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -171,8 +172,8 @@ def paste_traumas(traumas: List[str], sheet: Image):
 
 
 def paste_traumas_notches(traumas_n: int, sheet: Image):
-    trauma_empty = Image.open("resources/images/TraumaEmpty.png")
-    trauma_full = Image.open("resources/images/TraumaFull.png")
+    trauma_empty = Image.open(path_finder("images/TraumaEmpty.png"))
+    trauma_full = Image.open(path_finder("images/TraumaFull.png"))
 
     notch_box_dim = (52, 20)
     notch_box = Image.new('RGBA', notch_box_dim, (255, 255, 255, 255))
@@ -217,7 +218,11 @@ def paste_harms(harms: List[List[str]], sheet: Image):
     draw = ImageDraw.Draw(last_box)
 
     font = ImageFont.truetype("verdanab.ttf", 16)
-    draw.text((last_box_dim[0] / 2, last_box_dim[1] / 2), harms[len(harms) - 1][0], anchor="mm", fill="black",
+    if harms[len(harms) - 1]:
+        last_harm = harms[len(harms) - 1][0]
+    else:
+        last_harm = ""
+    draw.text((last_box_dim[0] / 2, last_box_dim[1] / 2), last_harm, anchor="mm", fill="black",
               font=font)
 
     coordinates = (52, 340)
@@ -370,10 +375,10 @@ def paste_special_abilities(abilities: List[SpecialAbility], sheet: Image):
 
 
 def paste_strange_friends(friend: NPC, enemy: NPC, pc_class: str, sheet: Image):
-    friend_mark = Image.open("resources/images/SFfriend.png")
-    enemy_mark = Image.open("resources/images/SFenemy.png")
-    neutral_mark = Image.open("resources/images/SFneutral.png")
-    complex_mark = Image.open("resources/images/SFneutral.png")
+    friend_mark = Image.open(path_finder("images/SFfriend.png"))
+    enemy_mark = Image.open(path_finder("images/SFenemy.png"))
+    neutral_mark = Image.open(path_finder("images/SFneutral.png"))
+    complex_mark = Image.open(path_finder("images/SFneutral.png"))
 
     box_dim = (200, 115)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
@@ -437,8 +442,8 @@ def paste_ghost_enemies(enemies: List[str], sheet: Image):
 
 
 def paste_vampire_servants(servants: List[NPC], sheet: Image):
-    servant_empty = Image.open("resources/images/RoundEmpty.png")
-    servant_full = Image.open("resources/images/RoundFull.png")
+    servant_empty = Image.open(path_finder("images/RoundEmpty.png"))
+    servant_full = Image.open(path_finder("images/RoundFull.png"))
 
     box_dim = (200, 115)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
@@ -474,8 +479,8 @@ def paste_vampire_servants(servants: List[NPC], sheet: Image):
 
 
 def paste_hull_frame(frame: str, sheet: Image):
-    frame_empty = Image.open("resources/images/RoundEmpty.png")
-    frame_full = Image.open("resources/images/RoundFull.png")
+    frame_empty = Image.open(path_finder("images/RoundEmpty.png"))
+    frame_full = Image.open(path_finder("images/RoundFull.png"))
 
     box_dim = (370, 115)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
@@ -704,8 +709,8 @@ def paste_items_peculiar(items: List[Item], sheet: Image):
 
 
 def paste_load(load: int, sheet: Image):
-    load_empty = Image.open("resources/images/LoadEmpty.png")
-    load_full = Image.open("resources/images/LoadFull.png")
+    load_empty = Image.open(path_finder("images/LoadEmpty.png"))
+    load_full = Image.open(path_finder("images/LoadFull.png"))
 
     box_dim = (240, 15)
     box = Image.new('RGBA', box_dim, (188, 190, 192, 255))
@@ -806,8 +811,8 @@ def paste_playbook(playbook: Playbook, sheet: Image):
 
 
 def paste_playbook_exp(playbook: Playbook, sheet: Image):
-    notch_empty = Image.open("resources/images/NotchEmpty.png")
-    notch_full = Image.open("resources/images/NotchFull.png")
+    notch_empty = Image.open(path_finder("images/NotchEmpty.png"))
+    notch_full = Image.open(path_finder("images/NotchFull.png"))
 
     box_dim = (playbook.exp_limit * 9, 20)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -849,8 +854,8 @@ def paste_attributes(attributes: List[Attribute], sheet: Image):
 
 
 def paste_attribute_exp(attributes: List[Attribute], sheet: Image):
-    notch_empty = Image.open("resources/images/NotchEmpty.png")
-    notch_full = Image.open("resources/images/NotchFull.png")
+    notch_empty = Image.open(path_finder("images/NotchEmpty.png"))
+    notch_full = Image.open(path_finder("images/NotchFull.png"))
 
     y_box = 135
 
@@ -895,8 +900,8 @@ def paste_attribute_points(attributes: List[Attribute], sheet: Image):
 
 
 def paste_attribute_actions_dots(attributes: List[Attribute], sheet: Image):
-    dot_empty = Image.open("resources/images/ActionDotEmpty.png")
-    dot_full = Image.open("resources/images/ActionDotFull.png")
+    dot_empty = Image.open(path_finder("images/ActionDotEmpty.png"))
+    dot_full = Image.open(path_finder("images/ActionDotFull.png"))
     font = ImageFont.truetype("verdanab.ttf", 11)
 
     y_box = 154
