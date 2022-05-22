@@ -226,6 +226,13 @@ class Controller:
 
                 return ratings
 
+    def get_pc_action_rating(self, user_id: int, chat_id: int, pc_name: str, action: str) -> Tuple[str, int]:
+        actions_ratings = self.get_pc_actions_ratings(user_id, chat_id, pc_name)
+
+        for elem in actions_ratings:
+            if elem[0].lower() == action.lower():
+                return elem
+
     def is_master(self, user_id: int, chat_id: int) -> bool:
         """
         Check if the specified user is the master of his game in the specified chat.
@@ -241,11 +248,11 @@ class Controller:
             return True
         return False
 
-    def commit_action_roll(self, chat_id: int, user_id: int, action_roll: dict) -> List[Tuple[str, int]]:
+    def commit_action(self, chat_id: int, user_id: int, action_roll: dict) -> List[Tuple[str, int]]:
         """
-        Applies the effects of the passed action roll to the interested game:
-        adds the stress to the eventual assistants,
-        to the performer of the action if "push yourself" option was selected,
+        Applies the effects of the passed action to the interested game:
+        adds the stress to the eventual assistants and
+        to the performer of the action;
         sends the information to the Journal and updates PCs and Journal in the DB.
 
         :param chat_id: the Telegram id of the user who invoked the action roll.
@@ -283,8 +290,40 @@ class Controller:
                 trauma_victims.append((action_roll["pc"], traumas))
             update_user_characters(user_id, game.identifier, save_to_json(user.characters))
 
+        # groupActionCohort
+        if "cohort" in action_roll:
+            action_roll["cohort"] = action_roll["cohort"][0]
+
+        # groupAction
+        if "participants" in action_roll:
+            participants_journal = []
+            participants = action_roll["participants"]
+            for pc_name in participants:
+                # if Push +2 stress
+                if participants[pc_name]["push"]:
+                    user = game.get_player_by_id(participants[pc_name]["id"])
+                    traumas = user.get_character_by_name(pc_name).add_stress(2)
+                    update_user_characters(participants[pc_name]["id"], game.identifier, save_to_json(user.characters))
+                    if traumas > 0:
+                        trauma_victims.append((pc_name, traumas))
+                # if outcome<4 +1 stress to the leader
+                if participants[pc_name]["outcome"] < 4 and participants[pc_name]["outcome"] != "CRIT":
+                    user = game.get_player_by_id(user_id)
+                    traumas = user.get_character_by_name(action_roll["pc"]).add_stress(1)
+                    update_user_characters(user.player_id, game.identifier, save_to_json(user.characters))
+                    if traumas > 0:
+                        trauma_victims.append((action_roll["pc"], traumas))
+
+                participants[pc_name].pop("id")
+                participants[pc_name].pop("bonus_dice")
+                participants[pc_name]["name"] = pc_name
+                participants_journal.append(participants[pc_name])
+
+            action_roll["participants"] = participants_journal
+
         # journal
-        game.journal.write_action_roll(**action_roll)
+
+        game.journal.write_action(**action_roll)
 
         insert_journal(game.identifier, game.journal.get_log_string())
 
@@ -407,6 +446,34 @@ class Controller:
     def game_has_crew(self, game_id: int) -> bool:
         game = self.get_game_by_id(game_id)
         return game.crew is not None
+
+    def get_cohorts_of_crew(self, chat_id: int, user_id: int) -> List[Tuple[str, int]]:
+        """
+        Gives a list of tuple representing the cohorts of the specified crew.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :return: a list of tuple with a string representing the cohort's types and an int representing its quality
+        """
+        crew = self.get_game_by_id(query_game_of_user(chat_id, user_id)).crew
+
+        co = []
+        for cohort in crew.cohorts:
+            label = ""
+            if cohort.elite:
+                label += "💠"
+            if cohort.expert:
+                label += "expert: "
+            else:
+                label += "gang: "
+            label += cohort.type[0]
+            for i in range(1, len(cohort.type)):
+                label += ", "
+                label += cohort.type[i]
+
+            co.append((label, cohort.quality))
+
+        return co
 
     def __repr__(self) -> str:
         return str(self.games)

@@ -204,7 +204,8 @@ def print_controller(update: Update, context: CallbackContext):
     print("------------------------------------------------------------------------------")
 
 
-def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None, callback_data: List[str] = None,
+def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None,
+              callback_data: List[Union[str, int]] = None,
               selective: bool = True, input_field_placeholder: str = None) -> ReplyMarkup:
     """
     Builds a parametric customized keyboard.
@@ -309,7 +310,6 @@ def build_multi_page_kb(object_buttons: List[str], inline: bool = True):
     return custom_kb(buttons, inline, 2, callbacks)
 
 
-
 def store_value_and_update_kb(update: Update, context: CallbackContext, tags: List[str], value: Union[str, dict, list],
                               lang_source: str = None, btn_label: str = None, split_row: int = None,
                               reply_in_group: bool = False):
@@ -402,21 +402,34 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     context.user_data[command]["query_menu"] = query_menu
 
 
-def update_bonus_dice_kb(context: CallbackContext, command: str):
+def update_bonus_dice_kb(context: CallbackContext, command: str, tot_dice: int = None):
     """
     Utility method to update the InlineKeyboard of a bonus dice request.
     Edit the message with the current total number of dice and the kb button with the number of bonus dice selected.
 
+    :param tot_dice:
     :param context: instance of CallbackContext linked to the user.
     :param command: is the command related to the bonus dice request.
     """
     bonus_dice_lang = get_lang(context, "bonus_dice")
-    context.chat_data[command]["query_menu"].edit_text(bonus_dice_lang["message"].format(
-        action_roll_calc_total_dice(context.chat_data[command]["roll"])),
+    if tot_dice is None:
+        tot_dice = action_roll_calc_total_dice(context.chat_data[command]["roll"])
+
+        context.chat_data[command]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
+                                                           reply_markup=build_plus_minus_keyboard(
+                                                               [bonus_dice_lang["button"].format(
+                                                                   context.chat_data[command]["roll"]["bonus_dice"])],
+                                                               done_button=True,
+                                                               back_button=False),
+                                                           parse_mode=ParseMode.HTML)
+        return
+
+    pc_name = context.chat_data["action_roll"]["group_action"][0][1]
+    context.chat_data[command]["query_menu"].edit_text(
+        bonus_dice_lang["message"].format(tot_dice),
         reply_markup=build_plus_minus_keyboard(
             [bonus_dice_lang["button"].format(
-                context.chat_data[command]["roll"][
-                    "bonus_dice"])],
+                context.chat_data[command]["roll"]["participants"][pc_name]["bonus_dice"])],
             done_button=True,
             back_button=False),
         parse_mode=ParseMode.HTML)
@@ -437,9 +450,37 @@ def action_roll_calc_total_dice(ar_info: dict) -> int:
         total += 1
     if "devil_bargain" in ar_info:
         total += 1
-
     if "assistants" in ar_info:
         total += len(ar_info["assistants"])
+    if "cohort" in ar_info:
+        total += int(ar_info["cohort"][1])
+
+    total += ar_info["bonus_dice"]
+
+    return total
+
+
+def group_action_calc_total_dice(update: Update, context: CallbackContext) -> int:
+    """
+    Utility method to calculate the amount of dice that will be rolled for the group action.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the actual amount of dice.
+    """
+    total = 0
+
+    pc_name = context.chat_data["action_roll"]["group_action"][0][1]
+
+    total += controller.get_pc_action_rating(get_user_id(update), update.effective_message.chat_id, pc_name,
+                                             context.chat_data["action_roll"]["roll"]["action"].split(":")[0])[1]
+
+    ar_info = context.chat_data["action_roll"]["roll"]["participants"][pc_name]
+
+    if ar_info["push"]:
+        total += 1
+    if "devil_bargain" in ar_info:
+        total += 1
 
     total += ar_info["bonus_dice"]
 
@@ -584,4 +625,3 @@ def auto_delete_message(message: Message, timer: Union[float, str] = 5.0) -> Non
         m.delete()
 
     Thread(target=execute, args=(message, timer)).start()
-

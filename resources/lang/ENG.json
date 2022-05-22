@@ -253,6 +253,15 @@
       "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get."
     },
 
+    "group_action_cohort": {
+      "0": "Select the cohort you want to lead",
+      "1": "You can't perform a group action without being in a game... /join to take part in a game."
+    },
+
+    "group_action": {
+      "0": "\u26A0\uFE0F <i><b>{}</b></i> is starting a group action. If anyone wants to join\n/unite"
+    },
+
     "action_roll": {
       "0": "Write the <i>goal</i> of your action.\nWhat's the concrete outcome you want to achieve?",
       "1": "You can't perform an action roll without being in a game... /join to take part in a game."
@@ -276,6 +285,8 @@
     "action_roll_effect": {
       "0": "\u26A0\uFE0F <i><b>{}</b></i> is trying to <i>{}</i>. If anyone wants to help\n/assist",
       "1": "Every action can have consequences, if you feel yourself in trouble you can always...",
+      "2": "<i>{}</i> even if you are not leading the action, you can still suffer its consequences, if you feel yourself in trouble you can always...",
+      "3": "No one joined you in the group action... looks like you are alone this time",
       "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
       "callbacks": [1, 2, 3]
     },
@@ -286,12 +297,27 @@
       "2": "You cannot help now...\nYou should /join the same game with at least one character"
     },
 
+    "group_action_participate": {
+      "0": "<i>{}</i> will participate in the group action!",
+      "1": "You are already part of the group action...",
+      "2": "You cannot take part in a group action now...\nYou should /join the same game with at least one character"
+    },
+
+    "group_action_bonus_dice": {
+      "0": "Every action can have consequences, if you feel yourself in trouble you can always...",
+      "1": "<i>{}</i> even if you are not leading the action, you can still suffer its consequences, if you feel yourself in trouble you can always...",
+
+      "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
+      "callbacks": [1, 2, 3]
+    },
+
     "action_roll_bargains": {
       "0": "Describe your Devil's Bargain:"
     },
 
     "action_roll_bonus_dice": {
-      "0": "Describe the final outcome of your roll."
+      "0": "Describe the final outcome of your roll.",
+      "1": "The group action outcome is: <b>{}</b>"
     },
 
     "action_roll_notes": {
@@ -423,17 +449,21 @@
 	  "6": "ENGAGEMENT",
 	  "7": "The engagement roll determines that you are in a {} position."
 	},
-	"write_action_roll": {
-	  "0": "ACTION ROLL",
-	  "1": "SITUATION",
-	  "2": "<b>{}</b>'s goal is: {}<br>The action rolled is {}",
-	  "3": "The position for this action is {}.<br>The action will have a {} effect if successful.",
-	  "4": "{} receives assistance from {}",
-	  "5": "{} decides to push themselves.",
-	  "6": "{} accepts a <b>Devil's Bargain</b>: <span class=\"user\">{}</span>",
-	  "7": "OUTCOME",
-	  "8": "The result of the roll is {}."
-	},
+	"write_action": {
+      "0": "ACTION ROLL",
+      "1": "SITUATION",
+      "2": "<b>{}</b>'s goal is: {}<br>The action rolled is {}",
+      "3": "The position for this action is {}.<br>The action will have a {} effect if successful.",
+      "4": "The action was assisted by:<i>{}</i>",
+      "5": "<i>{}</i> decided to push themselves.",
+      "6": "<i>{}</i> accepts a <b>Devil's Bargain</b>: <span class=\"user\">{}</span>",
+      "7": "OUTCOME",
+      "8": "The result of the roll is {}.",
+      "9": "PARTICIPANTS",
+      "10": "<b>{}</b> asked the help of a cohort: {}",
+      "11": "<b><i>{}</i> rolled {}</b>",
+      "12": "GROUP ACTION"
+    },
 	"write_end_score": {
 	  "0": "SCORE OUTCOME: <span class=\"user\">{}</span> "
 	},
@@ -536,26 +566,14 @@
 	  "3": " Their stress is increased by {}",
 	  "4": " Their stress is lessen by {}"
 	},
-	"write_group_action": {
-	  "0": "GROUP ACTION",
-	  "1": "<b>{}</b> decided to start a group action with the following goal: {}",
-	  "2": "The players participating are:<i>{}</i>",
-	  "3": "<b>{}</b> asked the help of a cohort: {}",
-	  "4": "The position of the group action is {} and will have this effect: {}",
-	  "5": "<i>{}</i> helped with the group action",
-	  "6": "They decided to push themselves",
-	  "7": "They accept a Devil's Bargain: {}",
-	  "8": "They rolled {} and got {}"
-	},
 	"write_clock": {
 	  "0": "{} created a new clock: '{}'",
 	  "1": "{} modified the clock '{}'",
 	  "2": "{} ticked the clock '{}' by {} segments",
 	  "3": "{} completed the clock '{}'"
 	},
-
     "results": {
-      "action_roll": {
+      "action": {
         "controlled": {
           "CRIT": "You do it with increased effect.",
           "6": "You do it.",
@@ -565,19 +583,19 @@
         "risky": {
           "CRIT": "You do it with increased effect.",
           "6": "You do it.",
-          "4,5": " You do it, but there’s a consequence: you suffer harm, a complication occurs, you have reduced effect, you end up in a desperate position.",
+          "4,5": " You do it, but there's a consequence: you suffer harm, a complication occurs, you have reduced effect, you end up in a desperate position.",
           "1,2,3": "Things go badly. You suffer harm, a complication occurs, you end up in a desperate position, you lose this opportunity."
         },
         "desperate": {
           "CRIT": "You do it with increased effect.",
           "6": "You do it.",
-          "4,5": "You do it, but there’s a consequence: you suffer severe harm, a serious complication occurs, you have reduced effect.",
-          "1,2,3": " It’s the worst outcome. You suffer severe harm, a serious complication occurs, you lose this opportunity  for action."
+          "4,5": "You do it, but there's a consequence: you suffer severe harm, a serious complication occurs, you have reduced effect.",
+          "1,2,3": " It's the worst outcome. You suffer severe harm, a serious complication occurs, you lose this opportunity  for action."
         },
         "others": {
           "CRIT": "You do it with increased effect.",
           "6": "You do it.",
-          "4,5": "You do it, but there’s a consequence.",
+          "4,5": "You do it, but there's a consequence.",
           "1,2,3": "Things go badly."
         }
       }

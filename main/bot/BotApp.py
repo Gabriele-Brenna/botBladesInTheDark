@@ -156,8 +156,13 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
-            entry_points=[CommandHandler(["actionRoll".casefold(), "ar".casefold()], action_roll)],
+            entry_points=[CommandHandler(["actionRoll".casefold(), "ar".casefold()], action_roll),
+                          CommandHandler(["groupActionCohort".casefold(), "leadCohort".casefold(), "lC".casefold()],
+                                         group_action_cohort),
+                          CommandHandler(["groupAction".casefold(), "leadAction".casefold(), "ga".casefold()],
+                                         group_action)],
             states={
+                10: [CallbackQueryHandler(group_action_cohort_choice)],
                 0: [ConversationHandler(
                     entry_points=[MessageHandler(Filters.text & ~Filters.command, action_roll_goal)],
                     states={
@@ -170,7 +175,7 @@ def start_bot():
                         ConversationHandler.END: ConversationHandler.END,
                         1: 1
                     }
-                    )],
+                )],
                 1: [ConversationHandler(
                     entry_points=[CommandHandler("reply_action_roll".casefold(), master_reply)],
                     states={
@@ -182,9 +187,10 @@ def start_bot():
                     persistent=True,
                     map_to_parent={
                         ConversationHandler.END: ConversationHandler.END,
-                        2: 2
+                        2: 2,
+                        20: 20
                     }
-                    )],
+                )],
                 2: [ConversationHandler(
                     entry_points=[CallbackQueryHandler(action_roll_bargains)],
                     states={
@@ -198,10 +204,26 @@ def start_bot():
                     map_to_parent={
                         ConversationHandler.END: ConversationHandler.END
                     }
-                    )]
+                )],
+                20: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(group_action_bargains)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, action_roll_devil_bargains)],
+                        1: [CallbackQueryHandler(group_action_bonus_dice)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), action_roll_end)],
+                    name="player_conv_groupAction",
+                    persistent=True,
+                    map_to_parent={
+                        20: 20,
+                        2: 2,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )]
             },
             fallbacks=[CommandHandler("cancel".casefold(), action_roll_end),
-                       CommandHandler("assist".casefold(), action_roll_assistance)],
+                       CommandHandler("assist".casefold(), action_roll_assistance),
+                       CommandHandler("unite".casefold(), group_action_participate)],
             name="conv_actionRoll",
             per_user=False,
             persistent=True

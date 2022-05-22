@@ -9,6 +9,8 @@ class Cohort:
                  flaws: List[str] = None, edges: List[str] = None, scale: int = 0, quality: int = 0) -> None:
         if type is None:
             type = []
+        if isinstance(type, str):
+            type = [type]
         self.type = type
         self.armor = armor
         self.elite = elite
