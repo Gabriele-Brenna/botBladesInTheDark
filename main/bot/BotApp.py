@@ -77,7 +77,10 @@ def start_bot():
         )
     )
 
-    dispatcher.add_handler(CommandHandler("myPCs".casefold(), show_pc))
+    dispatcher.add_handler(CommandHandler(["myPC".casefold(), "PCsheet".casefold(), "myPCsheet".casefold(),
+                                           "activePC".casefold(), "characterSheet".casefold()], send_character_sheet))
+    dispatcher.add_handler(CommandHandler(["myCrew".casefold(), "CrewSheet".casefold(), "myCrewsheet".casefold()],
+                                          send_crew_sheet))
 
     dispatcher.add_handler(
         ConversationHandler(
@@ -206,6 +209,7 @@ def start_bot():
     )
 
     dispatcher.add_handler(CommandHandler(["journal".casefold(), "log".casefold()], send_journal))
+    dispatcher.add_handler(CommandHandler(["map".casefold(), "DoskvolMap".casefold()], send_map))
 
     dispatcher.add_handler(
         ConversationHandler(
@@ -247,6 +251,20 @@ def start_bot():
             },
             fallbacks=[CommandHandler("cancel".casefold(), tick_clock_end)],
             name="conv_tickClock",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addClaim".casefold(), "newClaim".casefold()],
+                                         add_claim)],
+            states={
+                0: [CallbackQueryHandler(add_claim_type)],
+                1: [CallbackQueryHandler(add_claim_name)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_claim_end)],
+            name="conv_addClaim",
             persistent=True
         )
     )

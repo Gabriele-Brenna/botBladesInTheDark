@@ -8,6 +8,7 @@ from character.NPC import NPC
 from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
+from utility.FilesManager import path_finder
 from utility.IDrawable import image_to_bytes
 from utility.ISavable import pop_dict_items
 
@@ -115,9 +116,12 @@ class Vampire(Owner, ISavable):
         :param kwargs: keyword arguments.
         :return: the bytes array of the produced image.
         """
-        sheet = Image.open("resources/images/VampireBlank.png")
+        sheet = Image.open(path_finder("images/VampireBlank.png"))
 
         paste_common_attributes(self, sheet, **kwargs)
+
+        paste_pc_class(self.__class__.__name__, sheet)
+        paste_class_description(self.__class__.__name__, sheet)
 
         paste_vice(self.vice, sheet)
         paste_description(self.description, sheet, 320)

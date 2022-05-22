@@ -7,6 +7,7 @@ from organization.Claim import Claim
 from organization.Cohort import Cohort
 from organization.Lair import Lair
 from organization.Upgrade import Upgrade
+from utility.FilesManager import path_finder
 from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
@@ -147,11 +148,11 @@ def paste_crew_description(description: str, sheet: Image):
 
 
 def paste_rep(rep: int, turfs: int, sheet: Image):
-    rep_empty = Image.open("resources/images/StressEmpty.png")
-    rep_full = Image.open("resources/images/StressFull.png")
-    turf_full = Image.open("resources/images/TurfFull.png")
-    turf_rep = Image.open("resources/images/TurfRep.png")
-    turf_empty = Image.open("resources/images/TurfEmpty.png")
+    rep_empty = Image.open(path_finder("images/StressEmpty.png"))
+    rep_full = Image.open(path_finder("images/StressFull.png"))
+    turf_full = Image.open(path_finder("images/TurfFull.png"))
+    turf_rep = Image.open(path_finder("images/TurfRep.png"))
+    turf_empty = Image.open(path_finder("images/TurfEmpty.png"))
 
     box_dim = (175, 30)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -177,8 +178,8 @@ def paste_rep(rep: int, turfs: int, sheet: Image):
 
 
 def paste_hold(hold: bool, sheet: Image):
-    hold_empty = Image.open("resources/images/StressEmpty.png")
-    hold_full = Image.open("resources/images/StressFull.png")
+    hold_empty = Image.open(path_finder("images/StressEmpty.png"))
+    hold_full = Image.open(path_finder("images/StressFull.png"))
 
     box_dim = (10, 30)
     weak = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -217,8 +218,8 @@ def paste_tier(tier: int, sheet: Image):
 
 
 def paste_heat(heat: int, sheet: Image):
-    rep_empty = Image.open("resources/images/StressEmpty.png")
-    rep_full = Image.open("resources/images/StressFull.png")
+    rep_empty = Image.open(path_finder("images/StressEmpty.png"))
+    rep_full = Image.open(path_finder("images/StressFull.png"))
 
     box_dim = (138, 32)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -236,8 +237,8 @@ def paste_heat(heat: int, sheet: Image):
 
 
 def paste_wanted_level(w_level: int, sheet: Image):
-    trauma_empty = Image.open("resources/images/TraumaEmpty.png")
-    trauma_full = Image.open("resources/images/TraumaFull.png")
+    trauma_empty = Image.open(path_finder("images/TraumaEmpty.png"))
+    trauma_full = Image.open(path_finder("images/TraumaFull.png"))
 
     notch_box_dim = (70, 20)
     notch_box = Image.new('RGBA', notch_box_dim, (255, 255, 255, 255))
@@ -319,7 +320,7 @@ def paste_crew_type(crew_type: str, sheet: Image):
 
 def paste_crew_type_description(crew_type: str, sheet: Image):
 
-    description = query_sheet_descriptions(crew_type)
+    description = query_sheet_descriptions(crew_type)[0]
     box_dim = (94, 60)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
@@ -397,8 +398,8 @@ def paste_contact(contact: NPC, crew_type: str, sheet: Image):
     # DB query
     contacts = query_crew_contacts()
 
-    contact_full = Image.open("resources/images/ContactFull.png")
-    contact_empty = Image.open("resources/images/ContactEmpty.png")
+    contact_full = Image.open(path_finder("images/ContactFull.png"))
+    contact_empty = Image.open(path_finder("images/ContactEmpty.png"))
 
     box_dim = (200, 130)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
@@ -568,8 +569,8 @@ def paste_crew_exp(exp: Playbook, sheet: Image):
 
 
 def paste_playbook_exp(playbook: Playbook, sheet: Image):
-    notch_empty = Image.open("resources/images/NotchEmpty.png")
-    notch_full = Image.open("resources/images/NotchFull.png")
+    notch_empty = Image.open(path_finder("images/NotchEmpty.png"))
+    notch_full = Image.open(path_finder("images/NotchFull.png"))
 
     box_dim = (playbook.exp_limit * 9, 20)
     box = Image.new('RGBA', box_dim, (0, 0, 0, 255))
@@ -663,8 +664,8 @@ def paste_cohort_header(cohort: Cohort, sheet: Image, coordinates: Tuple[int, in
 
 
 def paste_cohort_harm(cohort: Cohort, sheet: Image, coordinates: Tuple[int, int]):
-    harm_empty = Image.open("resources/images/CohortHarmEmpty.png")
-    harm_full = Image.open("resources/images/CohortHarmFull.png")
+    harm_empty = Image.open(path_finder("images/CohortHarmEmpty.png"))
+    harm_full = Image.open(path_finder("images/CohortHarmFull.png"))
 
     box_dim = (210, 20)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))

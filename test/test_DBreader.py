@@ -385,3 +385,12 @@ class TestDBReader(TestCase):
                           'Contraband', 'Passengers'], query_hunting_grounds())
         self.assertEqual(['Arcane/Weird', 'Arms', 'Contraband', 'Passengers'],
                          query_hunting_grounds(crew_type="Smugglers"))
+
+    def test_query_claims(self):
+        self.assertFalse(query_claims("NotExistingClaim"))
+
+        self.assertEqual(Claim("Cloister", "+1 scale for your Adept cohorts"), query_claims("Cloister")[0])
+
+        self.assertEqual(6, len(query_claims(prison=True, canon=True)))
+        self.assertTrue(len(query_claims()) >= 52)
+        print(query_claims())

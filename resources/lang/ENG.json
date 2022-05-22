@@ -303,6 +303,11 @@
       "1": "Enjoy the diary of your deeds in Doskvol so far !"
     },
 
+    "send_map": {
+      "0": "You can't have a map without being in a game... /join to take part in a game",
+      "1": "Here is the map of the City. Use it to plan your movements in Doskvol."
+    },
+
     "add_cohort": {
       "0": "Select which cohort you want",
       "err": "You cannot create a cohort without being in a game... /join to take part in a game",
@@ -365,6 +370,28 @@
       "0": "<u>{}</u> has made an advancement for the clock: '<i>{}</i>' \nprogress: {}/{}",
       "1": "<u>{}</u> completed the clock: '<i>{}</i>'",
       "err": ""
+    },
+
+    "add_claim": {
+      "err": "You cannot add a claim without being in a game... /join to take part in a game",
+      "0": "Select the type of your new claim",
+      "keyboard": ["Lair", "Prison"],
+      "callbacks": ["False", "True"]
+    },
+
+    "add_claim_type": {
+      "0": "Select the claim you want."
+    },
+
+    "send_character_sheet": {
+      "0": "You don't have an active PC in this chat... /join to take part in a game",
+      "1": "Here is your character's sheet"
+    },
+
+    "send_crew_sheet": {
+      "0": "You don't have a crew in this game... /createCrew to make a new one.",
+      "1": "Here is your crew's sheet",
+      "err": "You can't see a crew sheet without being in a game... /join to take part in a game"
     }
 
   },
@@ -486,8 +513,9 @@
 	"write_add_claim": {
 	  "0": "NEW CLAIM",
 	  "1": "The crew has a new {} claim: <b>{}</b>",
-	  "2": "prison",
-	  "3": "lair"
+      "2": "lair",
+	  "3": "prison"
+
 	},
 	"write_incarceration": {
 	  "0": "INCARCERATION",

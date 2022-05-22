@@ -7,6 +7,7 @@ from character.NPC import NPC
 from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 from controller.DBmanager import *
+from organization.Claim import Claim
 
 
 def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
@@ -963,7 +964,7 @@ def query_hunting_grounds(hunting_ground: str = None, crew_type: str = None, can
                 SELECT Name, Description
                 FROM HuntingGround
                 WHERE Name = ?"""
-        cursor.execute(query, (hunting_ground, ))
+        cursor.execute(query, (hunting_ground,))
     else:
         if crew_type is not None and canon is not None:
             query = """
@@ -1002,3 +1003,60 @@ def query_hunting_grounds(hunting_ground: str = None, crew_type: str = None, can
             hg.append(elem[0] + ": " + elem[1])
 
     return hg
+
+
+def query_claims(name: str = None, prison: bool = None, canon: bool = None,
+                 as_dict: bool = False) -> Union[List[Claim], List[dict]]:
+    """
+    Retrieves a list of Claim from the DB. If name is passed this method searches for its occurrence.
+    Otherwise, if prison is passed, the targets are all the claims of this specific group.
+
+    :param name: is the target claim's name.
+    :param prison: True if only the prison claims should be retrieved, False if only the lair claims should be retrieved.
+    :param canon: True if the canon claims are the target, false if the non-canon claims are the target.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of Claim.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+            SELECT Name, Description
+            FROM Claim \n"""
+
+    if name is not None:
+        query += "WHERE Name = ?"
+        query += "\nORDER BY Canon DESC"
+
+        cursor.execute(query, (name,))
+    else:
+        if prison is not None and canon is not None:
+            query += "WHERE Prison is ? AND Canon is ?"
+            query += "\nORDER BY Canon DESC"
+
+            cursor.execute(query, (prison, canon))
+        elif prison is not None:
+            query += "WHERE Prison is ?"
+            query += "\nORDER BY Canon DESC"
+
+            cursor.execute(query, (prison,))
+        elif canon is not None:
+            query += "WHERE Canon is ?"
+            query += "\nORDER BY Canon DESC"
+
+            cursor.execute(query, (canon,))
+        else:
+            query += "\nORDER BY Canon DESC"
+            cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    claims = []
+    for elem in rows:
+        claims.append({"name": elem[0], "description": elem[1]})
+
+    if not as_dict:
+        for i in range(len(claims)):
+            claims[i] = Claim(**claims[i])
+
+    return claims

@@ -4,6 +4,7 @@ from typing import *
 
 from telegram.ext import *
 from telegram import *
+from telegram.error import BadRequest
 from controller.DBreader import *
 from controller.DBwriter import *
 from utility.FilesManager import *
@@ -289,6 +290,26 @@ def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = Tr
     return custom_kb(buttons, inline, split_row, callbacks)
 
 
+def build_multi_page_kb(object_buttons: List[str], inline: bool = True):
+    buttons = []
+    callbacks = []
+
+    for button in object_buttons:
+        buttons.append(button)
+        buttons.append("✅")
+
+        callbacks.append(button)
+        callbacks.append(button + "$")
+
+    buttons.append("\u2B05\uFE0F")
+    buttons.append("\u27A1\uFE0F")
+    callbacks.append("LEFT")
+    callbacks.append("RIGHT")
+
+    return custom_kb(buttons, inline, 2, callbacks)
+
+
+
 def store_value_and_update_kb(update: Update, context: CallbackContext, tags: List[str], value: Union[str, dict, list],
                               lang_source: str = None, btn_label: str = None, split_row: int = None,
                               reply_in_group: bool = False):
@@ -496,7 +517,7 @@ def invalid_state_choice(update: Update, context: CallbackContext, command: str,
     update.message.delete()
 
 
-def end_conv(update: Update, context: CallbackContext) -> int:
+def end_conv(update: Update, context: CallbackContext, callback: bool = False) -> int:
     """
     Handles the abort of a conversation.
 
@@ -506,9 +527,11 @@ def end_conv(update: Update, context: CallbackContext) -> int:
     """
     placeholders = get_lang(context, end_conv.__name__)
 
-    message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
-    auto_delete_message(update.effective_message, 3.0)
-
+    if callback:
+        message = context.bot.send_message(chat_id=update.effective_message.chat_id, text=placeholders["0"],
+                                           reply_markup=ReplyKeyboardRemove())
+    else:
+        message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
     auto_delete_message(message, 3.0)
     return ConversationHandler.END
 
@@ -562,23 +585,3 @@ def auto_delete_message(message: Message, timer: Union[float, str] = 5.0) -> Non
 
     Thread(target=execute, args=(message, timer)).start()
 
-
-def show_pc(update: Update, context: CallbackContext) -> None:
-    """
-    Displays the PCs stored in the user_data of the sender.
-
-    :param update: instance of Update sent by the user.
-    :param context: instance of CallbackContext linked to the user.
-    """
-    if "myPCs" not in context.user_data:
-        update.message.reply_text("You don't have any PCs yet. Use /createPC to make one")
-        return
-
-    text = "<b>Your PCs</b>🔪:\n"
-    for pc in context.user_data["myPCs"]:
-        text += "\n"
-        text += "<b><i>{}</i></b>:\n".format(pc["name"])
-        for key in pc:
-            if key != "name":
-                text += "\t<i><u>{}</u></i>: {}\n".format(key, pc[key])
-    update.message.reply_text(text, parse_mode=ParseMode.HTML)

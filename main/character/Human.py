@@ -11,11 +11,13 @@ from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
 from character.Vice import Vice
+from utility.FilesManager import get_resources_folder, path_finder
 from utility.IDrawable import image_to_bytes
 from utility.ISavable import ISavable, pop_dict_items
 from PIL import Image
 
-from utility.imageFactory.PCfactory import paste_vice, paste_description, paste_strange_friends, paste_coin, paste_stash
+from utility.imageFactory.PCfactory import paste_vice, paste_description, paste_strange_friends, paste_coin, \
+    paste_stash, paste_pc_class, paste_class_description
 
 
 class Human(Owner, ISavable):
@@ -89,9 +91,12 @@ class Human(Owner, ISavable):
         :param kwargs: keyword arguments.
         :return: the bytes array of the produced image.
         """
-        sheet = Image.open("resources/images/HumanBlank.png")
+        sheet = Image.open(path_finder("images/HumanBlank.png"))
 
         paste_common_attributes(self, sheet, **kwargs)
+
+        paste_pc_class(self.pc_class, sheet)
+        paste_class_description(self.pc_class, sheet)
 
         paste_vice(self.vice, sheet)
         paste_description(self.description, sheet)
