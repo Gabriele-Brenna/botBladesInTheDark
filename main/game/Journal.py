@@ -330,55 +330,70 @@ class Journal:
 
         return div_tag
 
-    def create_action_roll_tag(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
-                               notes: str, assistants: List[str] = None, push: bool = False, devils: str = None):
-        """F
-        Method used to create and insert a div tag with class attribute set to "actionRoll".
+    def create_action_tag(self, pc: str, goal: str, action: str, position: str, effect: str,
+                          outcome: Union[int, str], notes: str, participants: List[dict] = None,
+                          cohort: str = None, assistants: List[str] = None, push: bool = False,
+                          devils: str = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "action".
 
-        :param pc: who does the action roll
-        :param goal: goal of the action roll
-        :param action: what will the character do
+        :param pc: who starts the action
+        :param goal: goal of the action
+        :param action: what will be rolled
         :param position: starting position of the action
         :param effect: effect of the action if successful
         :param outcome: outcome of the dice roll
         :param notes: extra notes
+        :param participants: if it's a group action made with other players this is the list of their name. None otherwise
+        :param cohort: if it's a group action made with a cohort this is the type of the cohort. None otherwise
         :param assistants: from whom the user got help
-        :param push: if the user push themselves
-        :param devils: what deal the user made
+        :param push: True if the pc pushed themselves. False otherwise
+        :param devils: if a devil's bargain has been made this is its description. None otherwise
         :return: the div Tag
         """
-        placeholder = self.get_lang(self.write_action_roll.__name__)
-        div_tag = self.create_div_tag({"class": "actionRoll",
+        placeholder = self.get_lang(self.write_action.__name__)
+        div_tag = self.create_div_tag({"class": "action",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(placeholder["0"]))
+        if participants is not None or cohort is not None:
+            div_tag.append(self.create_h2_tag(placeholder["12"]))
+        else:
+            div_tag.append(self.create_h2_tag(placeholder["0"]))
 
         div_tag.append(self.create_h4_tag(placeholder["1"]))
 
-        div_tag.append(
-            self.create_p_tag(placeholder["2"].format(pc, goal, action)))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(pc, goal, action)))
 
         div_tag.append(self.create_p_tag(placeholder["3"].format(position, effect)))
 
-        if assistants:
-            temp = assistants[0]
-            for i in range(1, len(assistants)):
-                temp += ", " + assistants[i]
-            div_tag.append(
-                self.create_p_tag(placeholder["4"].format(pc, temp)))
         if push:
             div_tag.append(self.create_p_tag(placeholder["5"].format(pc)))
         if devils:
             div_tag.append(self.create_p_tag(placeholder["6"].format(pc, devils)))
+
+        if assistants:
+            div_tag.append(self.create_p_tag(placeholder["4"].format(" ".join(assistants))))
+
+        if cohort is not None and participants is None:
+            div_tag.append(self.create_p_tag(placeholder["10"].format(pc, cohort)))
+
+        elif cohort is None and participants is not None:
+            div_tag.append(self.create_h4_tag(placeholder["9"]))
+            for p in participants:
+                if p["push"]:
+                    div_tag.append(self.create_p_tag(placeholder["5"].format(p["name"])))
+                if "devil_bargain" in p:
+                    div_tag.append(self.create_p_tag(placeholder["6"].format(p["name"], p["devil_bargain"])))
+                div_tag.append(self.create_p_tag(placeholder["11"].format(p["name"], p["outcome"])))
 
         div_tag.append(self.create_h4_tag(placeholder["7"]))
 
         div_tag.append(self.create_p_tag(placeholder["8"].format(outcome)))
 
         try:
-            lang = self.get_lang("results")["action_roll"][position.lower()]
+            lang = self.get_lang("results")["action"][position.lower()]
         except:
-            lang = self.get_lang("results")["action_roll"]["others"]
+            lang = self.get_lang("results")["action"]["others"]
 
         for key in lang.keys():
             if str(outcome) in key:
@@ -653,11 +668,12 @@ class Journal:
 
         return div_tag
 
-    def create_resistance_roll_tag(self, pc: str, description: str, attribute: str, roll: Union[str, int],
+    def create_resistance_roll_tag(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
                                    stress: int = 0):
         """
         Method used to create and insert a div tag with class attribute set to "resistanceRoll".
 
+        :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
@@ -681,54 +697,6 @@ class Journal:
                                                                      placeholder["4"].format(-stress))))
         else:
             div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, "")))
-
-        return div_tag
-
-    def create_group_action_tag(self, pc: str, goal: str, action: str, roll: int, notes: str, position: str,
-                                effect: str,
-                                players: List[str] = None, cohort: str = None, helper: str = None, push: bool = False,
-                                devils: str = None):
-        """
-        Method used to create and insert a div tag with class attribute set to "groupAction".
-
-        :param pc: who starts the group action
-        :param goal: goal of the group action
-        :param action: action used to roll the group action
-        :param roll: result of the dice roll
-        :param notes: extra notes
-        :param position: starting position of the group action
-        :param effect: effect of the group action
-        :param players: if it's a group action made with other players this is the list of their name. None otherwise
-        :param cohort: if it's a group action made with a cohort this is the type of the cohort. None otherwise
-        :param helper: if someone helps this is their name. None otherwise
-        :param push: True if the user pushed themselves. False otherwise
-        :param devils: if a devil's bargain has been made this is its description. None otherwise
-        :return: the div Tag
-        """
-        placeholder = self.get_lang(self.write_group_action.__name__)
-        div_tag = self.create_div_tag({"class": "groupAction"})
-
-        div_tag.append(self.create_h2_tag(placeholder["0"]))
-
-        div_tag.append(self.create_p_tag(placeholder["1"].format(pc, goal)))
-
-        if players:
-            div_tag.append(self.create_p_tag(placeholder["2"].format(" ".join(players))))
-        elif cohort:
-            div_tag.append(self.create_p_tag(placeholder["3"].format(pc, cohort)))
-
-        div_tag.append(self.create_p_tag(placeholder["4"].format(position, effect)))
-
-        if helper:
-            div_tag.append(self.create_p_tag(placeholder["5"].format(helper)))
-
-        if push:
-            div_tag.append(self.create_p_tag(placeholder["6"]))
-
-        if devils:
-            div_tag.append(self.create_p_tag(placeholder["7"].format(devils)))
-
-        div_tag.append(self.create_p_tag(placeholder["8"].format(action, roll)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -941,8 +909,9 @@ class Journal:
 
         self.score_tags.append(tag)
 
-    def write_action_roll(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: int,
-                          notes: str, assistants: List[str] = None, push: bool = False, devil_bargain: str = None):
+    def write_action(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: Union[int, str],
+                     notes: str, participants: List[dict] = None, cohort: str = None, assistants: List[str] = None,
+                     push: bool = False, devil_bargain: str = None):
         """
         Method used to write an action outcome in the attribute journal representing the html file of the journal.
 
@@ -953,12 +922,14 @@ class Journal:
         :param effect: effect of the action of successful
         :param outcome: result of the dice roll
         :param notes: extra notes
+        :param participants: if it's a group action made with other players this is the list of their name. None otherwise
+        :param cohort: if it's a group action made with a cohort this is the type of the cohort. None otherwise
         :param assistants: from whom the user got help
         :param push: if the user push themselves
         :param devil_bargain: what deal the user made
         """
-        tag = self.create_action_roll_tag(pc, goal, action, position, effect, outcome,
-                                          notes, assistants, push, devil_bargain)
+        tag = self.create_action_tag(pc, goal, action, position, effect, outcome, notes, participants, cohort,
+                                     assistants, push, devil_bargain)
 
         self.write_general(tag)
 
@@ -1094,42 +1065,19 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_resistance_roll(self, pc: str, description: str, attribute: str, roll: Union[str, int],
+    def write_resistance_roll(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
                               stress: int = 0):
         """
         Method used to write a resistance roll in the attribute journal representing the html file of the journal.
 
+        :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
         :param roll: roll of the dice
         :param stress: amount of stress gained
         """
-        tag = self.create_resistance_roll_tag(pc, description, attribute, roll, stress)
-
-        self.write_general(tag)
-
-    def write_group_action(self, pc: str, goal: str, action: str, roll: int, notes: str, position: str,
-                           effect: str, players: List[str] = None, cohort: str = None, helper: str = None,
-                           push: bool = None, devils: str = None):
-        """
-        Method used to write a group action in the attribute journal representing the html file of the journal.
-
-        :param pc: who starts the group action
-        :param goal: goal of the group action
-        :param action: action used to roll the group action
-        :param roll: result of the dice roll
-        :param notes: extra notes
-        :param position: starting position of the group action
-        :param effect: effect of the group action
-        :param players: if it's a group action made with other players this is the list of their name. None otherwise
-        :param cohort: if it's a group action made with a cohort this is the type of the cohort. None otherwise
-        :param helper: if someone helps this is their name. None otherwise
-        :param push: True if the user pushed themselves. False otherwise
-        :param devils: if a devil's bargain has been made this is its description. None otherwise
-        """
-        tag = self.create_group_action_tag(pc, goal, action, roll, notes, position,
-                                           effect, players, cohort, helper, push, devils)
+        tag = self.create_resistance_roll_tag(pc, description, attribute, roll, notes, stress)
 
         self.write_general(tag)
 
