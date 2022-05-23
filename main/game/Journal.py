@@ -270,12 +270,14 @@ class Journal:
 
         return div_tag
 
-    def create_score_tag(self, name: str, plan_type: str, details: str, pc_load: List, position: str, notes: str):
+    def create_score_tag(self, name: str, plan_type: str, target: str, details: str, pc_load: List,
+                         position: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "score".
 
         :param name: name of the score
         :param plan_type: type of the score's plan
+        :param target: target of the score
         :param details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
         :param position: position of the engagement roll
@@ -291,6 +293,10 @@ class Journal:
         div_tag.append(self.create_h3_tag(placeholder["1"]))
 
         div_tag.append(self.create_p_tag(plan_type))
+
+        div_tag.append(self.create_h3_tag(placeholder["8"]))
+
+        div_tag.append(self.create_p_tag(target))
 
         div_tag.append(self.create_h3_tag(placeholder["2"]))
 
@@ -896,18 +902,21 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_score(self, name: str, plan_type: str, details: str, pc_load: List, position: str, notes: str):
-        tag = self.create_score_tag(name, plan_type, details, pc_load, position, notes)
+    def write_score(self, name: str, plan_type: str, target: str, details: str, pc_load: List,
+                    position: str, notes: str):
         """
         Method used to write a score in the attribute journal representing the html file of the journal.
 
         :param name: name of the score
         :param plan_type: type of the score's plan
+        :param target: the target of the score
         :param details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
         :param position: position of the engagement roll
         :param notes: extra notes
         """
+        tag = self.create_score_tag(name, plan_type, target, details, pc_load, position, notes)
+
         self.write_general(tag)
 
         self.score_tags.append(tag)

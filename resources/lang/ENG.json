@@ -464,13 +464,14 @@
 	},
 	"write_score": {
 	  "0": "SCORE: {}",
-	  "1": "TYPE OF PLAN:",
-	  "2": "DETAILS:",
+	  "1": "TYPE OF PLAN",
+	  "2": "DETAILS",
 	  "3": "PARTICIPANTS",
 	  "4": "PC",
 	  "5": "Load",
 	  "6": "ENGAGEMENT",
-	  "7": "The engagement roll determines that you are in a {} position."
+	  "7": "The engagement roll determines that you are in a {} position.",
+	  "8": "TARGET"
 	},
 	"write_action": {
       "0": "ACTION ROLL",
