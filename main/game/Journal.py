@@ -112,7 +112,7 @@ class Journal:
             h2{
             	color: #e3ded9; padding-left: 1%;
             	border-bottom: 4px solid rgb(167, 85, 34);
-            	margin-right: 50%;
+            	margin-right: 30%;
             	border-bottom-style: groove;
             	margin-left: 1%;
 				font-family: 'Marker Felt';
@@ -270,12 +270,13 @@ class Journal:
 
         return div_tag
 
-    def create_score_tag(self, name: str, plan_type: str, target: str, details: str, pc_load: List,
+    def create_score_tag(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
                          position: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "score".
 
         :param name: name of the score
+        :param category: category of the score
         :param plan_type: type of the score's plan
         :param target: target of the score
         :param details: details of the plan
@@ -288,7 +289,7 @@ class Journal:
         div_tag = self.create_div_tag({"class": "score",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(placeholder["0"].format(name)))
+        div_tag.append(self.create_h2_tag(placeholder["0"].format(name, category)))
 
         div_tag.append(self.create_h3_tag(placeholder["1"]))
 
@@ -902,12 +903,13 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_score(self, name: str, plan_type: str, target: str, details: str, pc_load: List,
+    def write_score(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
                     position: str, notes: str):
         """
         Method used to write a score in the attribute journal representing the html file of the journal.
 
         :param name: name of the score
+        :param category: category of the score
         :param plan_type: type of the score's plan
         :param target: the target of the score
         :param details: details of the plan
@@ -915,7 +917,7 @@ class Journal:
         :param position: position of the engagement roll
         :param notes: extra notes
         """
-        tag = self.create_score_tag(name, plan_type, target, details, pc_load, position, notes)
+        tag = self.create_score_tag(name, category, plan_type, target, details, pc_load, position, notes)
 
         self.write_general(tag)
 
