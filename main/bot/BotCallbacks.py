@@ -3040,6 +3040,41 @@ def resistance_roll_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_resistanceRoll---------------------------------------------------------
 
 
+def add_stress(update: Update, context: CallbackContext) -> None:
+    """
+    Adds the given stress to the active pc of the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, add_stress.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return
+
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return
+
+    try:
+        stress = int(context.args[0])
+    except (ValueError, IndexError, AttributeError):
+        stress = 1
+
+    pc_name = context.user_data["active_PCs"][update.effective_message.chat_id]
+    trauma_victim = controller.add_stress_to_pc(update.effective_message.chat_id, get_user_id(update), pc_name, stress)
+
+    auto_delete_message(update.message.reply_text(placeholders["0"].format(stress, pc_name),
+                                                  parse_mode=ParseMode.HTML), 18)
+
+    if trauma_victim:
+        update.effective_message.reply_text(placeholders["1"].format(trauma_victim[0], trauma_victim[1]),
+                                            parse_mode=ParseMode.HTML,
+                                            quote=False)
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

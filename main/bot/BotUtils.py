@@ -572,6 +572,7 @@ def end_conv(update: Update, context: CallbackContext, callback: bool = False) -
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
+    :param callback: bool that states if this method is called from a CallbackQueryHandler
     :return: ConversationHandler.END
     """
     placeholders = get_lang(context, end_conv.__name__)

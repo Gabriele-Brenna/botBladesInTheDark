@@ -517,7 +517,7 @@ class Controller:
             stress = -1
 
         for pc in game.get_pcs_list(user_id):
-            if pc.name == resistance_roll["pc"]:
+            if pc.name.lower() == resistance_roll["pc"].lower():
                 traumas = pc.add_stress(stress)
                 if traumas != 0:
                     trauma_victim = (pc.name, traumas)
@@ -529,6 +529,29 @@ class Controller:
         game.journal.write_resistance_roll(**resistance_roll, stress=stress)
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
+        return trauma_victim
+
+    def add_stress_to_pc(self, chat_id: int, user_id: int, pc_name: str, stress: int) -> Tuple[str, int]:
+        """
+        Adds the given stress to the selected pc of the user and updates the PCs in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :param stress: the amount of stress to add.
+        :return: a list of tuples with the name of the attribute and the attribute's rating in this order.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        trauma_victim = ()
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                traumas = pc.add_stress(stress)
+                if traumas != 0:
+                    trauma_victim = (pc.name, traumas)
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
 
         return trauma_victim
 

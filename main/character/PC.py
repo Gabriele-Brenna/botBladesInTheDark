@@ -76,6 +76,8 @@ class PC(Character, ISavable, IDrawable):
         :return: number of traumas (how many times the stress limit has been exceeded)
         """
         self.stress_level += stress
+        if self.stress_level < 0:
+            self.stress_level = 0
         if self.stress_level >= self.stress_limit:
             temp = int(self.stress_level / self.stress_limit)
             self.stress_level %= self.stress_limit

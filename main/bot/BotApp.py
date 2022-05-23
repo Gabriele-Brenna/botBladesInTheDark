@@ -331,6 +331,8 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["addStress", "stress".casefold()], add_stress))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
