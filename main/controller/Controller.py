@@ -207,7 +207,7 @@ class Controller:
 
     def get_pc_actions_ratings(self, user_id: int, chat_id: int, pc_name: str) -> List[Tuple[str, int]]:
         """
-        Retrieves all the action with the related rating of rhe specified PC of the user in the chat.
+        Retrieves all the action with the related rating of the specified PC of the user in the chat.
 
         :param user_id: the Telegram id of the user.
         :param chat_id: the Telegram chat id of the user.
@@ -474,6 +474,63 @@ class Controller:
             co.append((label, cohort.quality))
 
         return co
+
+    def get_pc_attribute_rating(self, chat_id: int, user_id: int, pc_name: str) -> List[Tuple[str, int]]:
+        """
+        Retrieves all the attributes with the related rating of the specified PC of the user in the chat.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: a list of tuples with the name of the attribute and the attribute's rating in this order.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        attributes_ratings = []
+
+        pcs = game.get_pcs_list(user_id)
+        for pc in pcs:
+            if pc.name.lower() == pc_name.lower():
+                for attribute in pc.attributes:
+                    attributes_ratings.append((attribute.name, attribute.attribute_level()))
+                return attributes_ratings
+
+    def commit_resistance_roll(self, chat_id: int, user_id: int, resistance_roll: dict) -> Tuple[str, int]:
+        """
+        Applies the effects of the passed action to the interested game:
+        adds the stress to the eventual assistants and to the performer of the action;
+        sends the information to the Journal and updates PCs and Journal in the DB.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param resistance_roll: dictionary containing all the necessary information about the roll.
+        :return: a list of tuples with the names of the PCs and the numbers of their suffered trauma in this order.
+        """
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        resistance_roll.pop("bonus_dice")
+
+        trauma_victim = ()
+        if isinstance(resistance_roll["outcome"], int):
+            stress = 6 - resistance_roll["outcome"]
+        else:
+            stress = -1
+
+        for pc in game.get_pcs_list(user_id):
+            if pc.name == resistance_roll["pc"]:
+                traumas = pc.add_stress(stress)
+                if traumas != 0:
+                    trauma_victim = (pc.name, traumas)
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        # journal
+
+        game.journal.write_resistance_roll(**resistance_roll, stress=stress)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        return trauma_victim
 
     def __repr__(self) -> str:
         return str(self.games)

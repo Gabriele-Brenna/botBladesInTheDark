@@ -259,7 +259,7 @@
     },
 
     "group_action": {
-      "0": "\u26A0\uFE0F <i><b>{}</b></i> is starting a group action. If anyone wants to join\n/unite"
+      "0": "\u26A0\uFE0F <i><b>{}</b></i> is starting a group action: <i>{}</i>. If anyone wants to join\n/unite"
     },
 
     "action_roll": {
@@ -418,8 +418,31 @@
       "0": "You don't have a crew in this game... /createCrew to make a new one.",
       "1": "Here is your crew's sheet",
       "err": "You can't see a crew sheet without being in a game... /join to take part in a game"
-    }
+    },
 
+	"resistance_roll": {
+	  "0": "What are you trying to resist to?",
+	  "1": "You can't perform an resistance roll without being in a game... /join to take part in a game."
+	},
+
+	"resistance_roll_description": {
+	  "0": "Select what the outcome will be",
+	  "1": "The <b>GM</b> has to set some information: <i><b>{}</b></i> is trying to resist to <i>{}</i>\n/reply_resistance_roll",
+	  "keyboard": ["Damage reduced", "Damage avoided"],
+	  "callbacks": ["reduced", "avoided"]
+	},
+
+	"resistance_roll_damage": {
+	  "0": "Select the attribute to roll"
+	},
+
+	"resistance_roll_bonus_dice": {
+      "0": "Describe the final outcome of your roll."
+    },
+
+	"resistance_roll_notes": {
+      "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
+    }
   },
 
   "Journal": {
@@ -562,9 +585,11 @@
 	"write_resistance_roll": {
 	  "0": "RESISTANCE ROLL",
 	  "1": "{} is trying to deal with the following situation: {}",
-	  "2": "<b>{}</b> used {} and rolled {}.{}",
-	  "3": " Their stress is increased by {}",
-	  "4": " Their stress is lessen by {}"
+	  "2": "<b>{}</b> used {} and rolled {}. {}",
+	  "3": "Their stress is increased by {}",
+	  "4": "Their stress is lessen by {}",
+	  "5": "The damage will be <i>{}</i>",
+	  "6": "Your stress isn't changed"
 	},
 	"write_clock": {
 	  "0": "{} created a new clock: '{}'",

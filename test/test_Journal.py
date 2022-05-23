@@ -44,9 +44,9 @@ class TestJournal(TestCase):
         temp.write_incarceration("User1", 2, "Extra information", "Extra notes")
         temp.write_incarceration("User1", 10, "Extra information", "Extra notes")
         temp.write_flashback("User1", "what happened during the flashback", 6, "stretching", True)
-        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 10, "notes", 0)
-        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 1, "notes", 10)
-        temp.write_resistance_roll("User1", "description of the resistance roll", "Skirmish", 1, "notes", -3)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "avoided", "Skirmish", 10, "notes", 0)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "reduced", "Skirmish", 1, "notes", 10)
+        temp.write_resistance_roll("User1", "description of the resistance roll", "avoided", "Skirmish", 1, "notes", -3)
         temp.write_clock("User1", Clock("project clock", 2, 0))
         temp.write_clock("User1", Clock("project clock", 6, 6), Clock("project clock", 4, 0))
         temp.write_action("User1", "goal of the action", "Skirmish", "controlled", "effect of the action", 5,

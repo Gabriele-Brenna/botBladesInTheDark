@@ -668,11 +668,12 @@ class Journal:
 
         return div_tag
 
-    def create_resistance_roll_tag(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
-                                   stress: int = 0):
+    def create_resistance_roll_tag(self, pc: str, description: str, damage: str, attribute: str, roll: Union[str, int],
+                                   notes: str, stress: int = 0):
         """
         Method used to create and insert a div tag with class attribute set to "resistanceRoll".
 
+        :param damage: if the damage will be reduced or avoided
         :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
@@ -689,6 +690,8 @@ class Journal:
         div_tag.append(self.create_p_tag(placeholder["1"].format(
             pc, description)))
 
+        div_tag.append(self.create_p_tag(placeholder["5"].format(damage)))
+
         if stress > 0:
             div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
                                                                      placeholder["3"].format(stress))))
@@ -696,7 +699,7 @@ class Journal:
             div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
                                                                      placeholder["4"].format(-stress))))
         else:
-            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, "")))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, placeholder["6"])))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -1065,19 +1068,20 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_resistance_roll(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
-                              stress: int = 0):
+    def write_resistance_roll(self, pc: str, description: str, damage: str, attribute: str, outcome: Union[str, int],
+                              notes: str, stress: int = 0):
         """
         Method used to write a resistance roll in the attribute journal representing the html file of the journal.
 
+        :param damage: if the damage will be reduced or avoided
         :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
-        :param roll: roll of the dice
+        :param outcome: roll of the dice
         :param stress: amount of stress gained
         """
-        tag = self.create_resistance_roll_tag(pc, description, attribute, roll, notes, stress)
+        tag = self.create_resistance_roll_tag(pc, description, damage, attribute, outcome, notes, stress)
 
         self.write_general(tag)
 

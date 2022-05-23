@@ -1379,8 +1379,6 @@ def group_action(update: Update, context: CallbackContext) -> int:
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "group_action"], value=[])
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "participants"], value={})
 
-        auto_delete_message(update.message.reply_text(
-            text=get_lang(context, group_action.__name__)["0"].format(pc_name), parse_mode=ParseMode.HTML), 25)
         return 0
 
 
@@ -1498,6 +1496,11 @@ def action_roll_goal(update: Update, context: CallbackContext):
 
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "goal"],
                                  value=update.message.text)
+
+        auto_delete_message(context.chat_data["action_roll"]["invocation_message"].reply_text(
+            text=get_lang(context, group_action.__name__)["0"].format(
+                context.chat_data["action_roll"]["roll"]["pc"], update.message.text),
+            parse_mode=ParseMode.HTML), 25)
 
         chat_id = update.message.chat_id
         action_ratings = controller.get_pc_actions_ratings(get_user_id(update),
@@ -1670,7 +1673,8 @@ def action_roll_assistance(update: Update, context: CallbackContext) -> None:
                     "assistants", []).append(new_assistant)
 
                 if "query_menu" in context.chat_data["action_roll"]:
-                    update_bonus_dice_kb(context, "action_roll")
+                    update_bonus_dice_kb(context, ["action_roll", "roll", "bonus_dice"],
+                                         action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"]))
 
                 auto_delete_message(
                     update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
@@ -1910,7 +1914,8 @@ def action_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
         add_tag_in_telegram_data(context, location="chat",
                                  tags=["action_roll", "roll", "bonus_dice"], value=bonus_dice)
 
-        update_bonus_dice_kb(context, "action_roll")
+        update_bonus_dice_kb(context, ["action_roll", "roll", "bonus_dice"],
+                             action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"]))
 
     elif choice == "DONE":
         dice_to_roll = action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])
@@ -1974,13 +1979,13 @@ def group_action_bonus_dice(update: Update, context: CallbackContext) -> int:
 
     choice = query.data
     if "+" in choice or "-" in choice:
+        tags = ["action_roll", "roll", "participants", pc_name, "bonus_dice"]
         bonus_dice += int(choice.split(" ")[2])
-        add_tag_in_telegram_data(context, location="chat",
-                                 tags=["action_roll", "roll", "participants", pc_name, "bonus_dice"], value=bonus_dice)
+        add_tag_in_telegram_data(context, location="chat", tags=tags, value=bonus_dice)
 
         total_dice = group_action_calc_total_dice(update, context)
 
-        update_bonus_dice_kb(context, "action_roll", total_dice)
+        update_bonus_dice_kb(context, tags, total_dice)
 
     elif choice == "DONE":
         dice_to_roll = group_action_calc_total_dice(update, context)
@@ -2800,6 +2805,239 @@ def send_crew_sheet(update: Update, context: CallbackContext) -> None:
 
 
 # ------------------------------------------send_sheets-----------------------------------------------------------------
+
+
+# ------------------------------------------conv_resistanceRoll---------------------------------------------------------
+
+
+def resistance_roll(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation of the resistance roll.
+    Adds the dict "resistance_roll" in chat_data and stores the ID of the invoker and his active PC in it.
+    Finally, sends the goal request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if "active_PCs" in context.user_data and update.effective_message.chat_id in context.user_data["active_PCs"]:
+        placeholders = get_lang(context, resistance_roll.__name__)
+
+        if is_game_in_wrong_phase(update, context, placeholders["1"]):
+            return resistance_roll_end(update, context)
+
+        message = update.effective_message.reply_text(placeholders["0"])
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "message"], value=message)
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "invocation_message"],
+                                 value=update.message)
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "invoker"],
+                                 value=get_user_id(update))
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "pc"],
+                                 value=context.user_data["active_PCs"][update.effective_message.chat_id])
+        return 0
+
+
+def resistance_roll_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the goal's description in the chat_data and sends the master the keyboard with how the PC will deal with the
+    damage.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: he next state of the conversation.
+    """
+    if get_user_id(update) == context.chat_data["resistance_roll"]["invoker"]:
+        context.chat_data["resistance_roll"]["message"].delete()
+        placeholders = get_lang(context, resistance_roll_description.__name__)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "description"],
+                                 value=update.message.text)
+
+        message = context.chat_data["resistance_roll"]["invocation_message"].reply_text(placeholders["1"].format(
+            context.chat_data["resistance_roll"]["roll"]["pc"],
+            context.chat_data["resistance_roll"]["roll"]["description"]), parse_mode=ParseMode.HTML)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "message"], value=message)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "GM_question"],
+                                 value={"text": placeholders["0"], "reply_markup": custom_kb(
+                                     buttons=placeholders["keyboard"],
+                                     split_row=1,
+                                     inline=True,
+                                     callback_data=placeholders["callbacks"])})
+
+        update.message.delete()
+
+        return 1
+
+
+def resistance_roll_damage(update: Update, context: CallbackContext) -> int:
+    """
+    Stores how the PC will deal with the damage and sends the GM a keyboard with all the PC's attributes
+    and their ratings.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, resistance_roll_damage.__name__)
+    context.chat_data["resistance_roll"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "damage"], value=choice)
+
+    chat_id = update.effective_message.chat_id
+
+    attributes_ratings = controller.get_pc_attribute_rating(chat_id, context.chat_data["resistance_roll"]["invoker"],
+                                                            context.chat_data["resistance_roll"]["roll"]["pc"])
+
+    buttons = ["{}: {}".format(attribute[0], attribute[1]) for attribute in attributes_ratings]
+
+    context.chat_data["resistance_roll"]["message"] = context.chat_data["resistance_roll"][
+        "invocation_message"].reply_text(placeholders["0"],
+                                         parse_mode=ParseMode.HTML,
+                                         reply_markup=custom_kb(buttons, inline=True))
+
+    return 1
+
+
+def resistance_roll_attribute(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the attribute chosen by the GM in the chat_data and sends the user the bonus dice keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "attribute"], value=choice)
+
+    context.chat_data["resistance_roll"]["message"].delete()
+
+    add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "bonus_dice"], value=0)
+
+    dice = resistance_roll_calc_total_dice(context.chat_data["resistance_roll"]["roll"])
+
+    bonus_dice_lang = get_lang(context, "bonus_dice")
+
+    query_menu = context.chat_data["resistance_roll"]["invocation_message"].reply_text(
+        bonus_dice_lang["message"].format(
+            dice),
+        reply_markup=build_plus_minus_keyboard(
+            [bonus_dice_lang["button"].format(
+                context.chat_data["resistance_roll"]["roll"]["bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "query_menu"], value=query_menu)
+
+    return 2
+
+
+def resistance_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the outcome is stored in the chat_data and the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    placeholders = get_lang(context, action_roll_bonus_dice.__name__)
+
+    if get_user_id(update) != context.chat_data["resistance_roll"]["invoker"]:
+        return 2
+
+    query = update.callback_query
+    query.answer()
+
+    bonus_dice = context.chat_data["resistance_roll"]["roll"]["bonus_dice"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        tags = ["resistance_roll", "roll", "bonus_dice"]
+        bonus_dice += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, location="chat", tags=tags, value=bonus_dice)
+
+        update_bonus_dice_kb(context, tags,
+                             resistance_roll_calc_total_dice(context.chat_data["resistance_roll"]["roll"]))
+
+    elif choice == "DONE":
+        dice_to_roll = resistance_roll_calc_total_dice(context.chat_data["resistance_roll"]["roll"])
+        context.args = []
+        context.args.append(dice_to_roll)
+        context.args.append(["resistance_roll", "roll", "outcome"])
+
+        context.chat_data["resistance_roll"]["query_menu"].delete()
+
+        roll_dice(update, context)
+
+        context.chat_data["resistance_roll"]["message"] = \
+            context.chat_data["resistance_roll"]["invocation_message"].reply_text(
+                placeholders["0"], parse_mode=ParseMode.HTML)
+        return 0
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"], parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["extended"])
+
+    return 2
+
+
+def resistance_roll_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the final description of the resistance roll in the chat_data, calls the controller method to apply the roll's
+    effects and sends the notification for the PCs who suffered a new trauma after this action.
+    Finally, calls resistance_roll_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to resistance_roll_end
+    """
+    context.chat_data["resistance_roll"]["message"].delete()
+
+    placeholders = get_lang(context, resistance_roll_notes.__name__)
+    description = update.message.text
+
+    add_tag_in_telegram_data(context, location="chat", tags=["resistance_roll", "roll", "notes"], value=description)
+
+    trauma_victim = controller.commit_resistance_roll(update.effective_message.chat_id,
+                                                      get_user_id(update),
+                                                      context.chat_data["resistance_roll"]["roll"])
+
+    if trauma_victim:
+        update.effective_message.reply_text(placeholders["0"].format(trauma_victim[0], trauma_victim[1]),
+                                            parse_mode=ParseMode.HTML,
+                                            quote=False)
+
+    return resistance_roll_end(update, context)
+
+
+def resistance_roll_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the resistance_roll conversation and deletes all the saved information from the chat_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    if get_user_id(update) == context.chat_data["resistance_roll"]["invoker"]:
+        delete_conv_from_telegram_data(context, "resistance_roll", "chat")
+
+        return end_conv(update, context)
+
+
+# ------------------------------------------conv_resistanceRoll---------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

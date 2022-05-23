@@ -291,6 +291,46 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["resistanceRoll".casefold(), "rr".casefold()], resistance_roll)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, resistance_roll_description)],
+                1: [ConversationHandler(
+                    entry_points=[CommandHandler(["reply_resistance_roll".casefold()], master_reply)],
+                    states={
+                        0: [CallbackQueryHandler(resistance_roll_damage)],
+                        1: [CallbackQueryHandler(resistance_roll_attribute)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), resistance_roll_end)],
+                    name="master_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        2: 2,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                2: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(resistance_roll_bonus_dice)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, resistance_roll_notes)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), resistance_roll_end)],
+                    name="user_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        2: 2,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), resistance_roll_end)],
+            name="conv_resistanceRoll",
+            persistent=True,
+            per_user=False
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
