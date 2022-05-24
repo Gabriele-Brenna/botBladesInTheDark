@@ -1060,3 +1060,32 @@ def query_claims(name: str = None, prison: bool = None, canon: bool = None,
             claims[i] = Claim(**claims[i])
 
     return claims
+
+
+def query_traumas(name: str = None, pc_class: str = None) -> List[Tuple[str, str]]:
+    """
+    Retrieves the traumas from the data base.
+
+    :param name: the name of the trauma to search; if passed this method searches for its occurrence.
+    :param pc_class: the name of the class; if passed all the traumas of that class are retrieved.
+    :return: a list of tuple containing the traumas' name and description (in this order).
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+                SELECT Name, Description
+                FROM Trauma \n"""
+
+    if name is not None:
+        query += "WHERE Name = ?"
+        cursor.execute(query, (name, ))
+
+    elif pc_class is not None:
+        query += "WHERE Class = ?"
+        cursor.execute(query, (pc_class,))
+
+    else:
+        cursor.execute(query)
+
+    return cursor.fetchall()

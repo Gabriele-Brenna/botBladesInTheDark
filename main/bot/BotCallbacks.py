@@ -3075,6 +3075,82 @@ def add_stress(update: Update, context: CallbackContext) -> None:
                                             quote=False)
 
 
+# ------------------------------------------conv_addTrauma--------------------------------------------------------------
+
+
+def add_trauma(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation that handles the adding of a trauma.
+    Adds the dict "add_trauma" in user_data and stores the ID of the invoker in it.
+    Finally, sends the trauma request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_trauma.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return add_trauma_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return add_trauma_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    buttons = [trauma[0] for trauma in query_traumas(pc_class=controller.get_pc_class(chat_id,
+                                                                                      get_user_id(update), pc_name))]
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(buttons))
+
+    add_tag_in_telegram_data(context, ["add_trauma", "message"], message)
+    add_tag_in_telegram_data(context, ["add_trauma", "invocation_message"], update.message)
+
+    return 0
+
+
+def add_trauma_name(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method add_trauma_to_pc with the given trauma and
+    eventually sends the user a message if he reached the trauma limit, then calls add_trauma_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_trauma_end
+    """
+    placeholders = get_lang(context, add_trauma_name.__name__)
+    context.user_data["add_trauma"]["message"].delete()
+
+    pc_name = context.user_data["active_PCs"][update.effective_message.chat_id]
+    is_dead = controller.add_trauma_to_pc(update.effective_message.chat_id,
+                                          get_user_id(update), pc_name, update.message.text)
+
+    if is_dead:
+        auto_delete_message(context.user_data["add_trauma"]["invocation_message"].reply_text(
+            placeholders["0"].format(pc_name), parse_mode=ParseMode.HTML))
+
+    return add_trauma_end(update, context)
+
+
+def add_trauma_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "add_trauma")
+
+    return end_conv(update, context, True)
+
+
+# ------------------------------------------conv_addTrauma--------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

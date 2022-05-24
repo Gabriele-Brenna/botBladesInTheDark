@@ -333,6 +333,18 @@ def start_bot():
 
     dispatcher.add_handler(CommandHandler(["addStress", "stress".casefold()], add_stress))
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addTrauma", "trauma".casefold()], add_trauma)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, add_trauma_name)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_trauma_end)],
+            name="conv_addTrauma",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

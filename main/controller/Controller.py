@@ -555,5 +555,39 @@ class Controller:
 
         return trauma_victim
 
+    def get_pc_class(self, chat_id: int, user_id: int, pc_name: str) -> str:
+        """
+        Gets the class of the specified pc.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: the name of the class
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                return pc.__class__.__name__
+
+    def add_trauma_to_pc(self, chat_id: int, user_id: int, pc_name: str, trauma: str) -> bool:
+        """
+        Adds the given trauma to the selected pc of the user and updates the PCs in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :param trauma: the trauma to add.
+        :return: True if the pc has suffered 4 or more traumas, False otherwise
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        is_dead = False
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                is_dead = pc.add_trauma(trauma)
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+        return is_dead
+
     def __repr__(self) -> str:
         return str(self.games)
