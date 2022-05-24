@@ -475,5 +475,68 @@ class Controller:
 
         return co
 
+    def get_factions(self, game_id: int) -> List[str]:
+        def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
+            for elem in factions_list:
+                if elem.name.lower() == name.lower():
+                    return elem
+
+        game = self.get_game_by_id(game_id)
+
+        game_factions = game.factions
+        db_factions = query_factions()
+
+        # replacing the factions that already exist in the game
+        for i in range(len(db_factions)):
+            existing_faction = get_faction_by_name(db_factions[i].name, game_factions)
+            if existing_faction is not None:
+                db_factions[i] = existing_faction
+
+        factions = []
+        for faction in db_factions:
+            faction_string = ""
+            if faction.status > 0:
+                faction_string += "+{} \uD83D\uDD35 - ".format(faction.status)
+            elif faction.status == 0:
+                faction_string += "{} \u26AA\uFE0F - ".format(faction.status)
+            elif faction.status < 0:
+                faction_string += "{} \uD83D\uDD34 - ".format(faction.status)
+            faction_string += " {}: {}".format(faction.name, faction.tier)
+            factions.append(faction_string)
+
+        return factions
+
+    def get_npcs(self, game_id: int) -> List[str]:
+        def get_npcs_by_name_and_role(name: str, role: str, npcs_list: List[NPC]) -> NPC:
+            for elem in npcs_list:
+                if elem.name.lower() == name.lower() and elem.role.lower() == role.lower():
+                    return elem
+
+        game = self.get_game_by_id(game_id)
+
+        game_npcs = game.NPCs
+        db_npcs = query_npcs()
+
+        # replacing the factions that already exist in the game
+        for i in range(len(db_npcs)):
+            existing_npc = get_npcs_by_name_and_role(db_npcs[i].name, db_npcs[i].role, game_npcs)
+            if existing_npc is not None:
+                db_npcs[i] = existing_npc
+
+        npcs = []
+        for npc in db_npcs:
+            npc_string = ""
+            if npc.faction is not None:
+                try:
+                    npc_string += "[{}] - ".format(npc.faction.name)
+                except:
+                    npc_string += "[{}] - ".format(npc.faction)
+            else:
+                npc_string += "[ ] - "
+            npc_string += " {}, {}".format(npc.name, npc.role)
+            npcs.append(npc_string)
+
+        return npcs
+
     def __repr__(self) -> str:
         return str(self.games)

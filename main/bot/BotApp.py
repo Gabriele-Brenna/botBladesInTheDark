@@ -291,6 +291,38 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["score".casefold(), "newScore".casefold()], score)],
+            states={
+                0: [ConversationHandler(
+                    entry_points=[MessageHandler(Filters.text & ~Filters.command, score_category)],
+                    states={
+                        0: [CallbackQueryHandler(score_target)],
+                        1: [CallbackQueryHandler(score_target_selection)],
+                        2: [MessageHandler(Filters.text & ~Filters.command, score_plan_type)],
+                        3: [MessageHandler(Filters.text & ~Filters.command, score_plan_details)],
+                        4: [MessageHandler(Filters.text & ~Filters.command, score_title)],
+                        5: [CallbackQueryHandler(score_engagement)],
+                        6: [MessageHandler(Filters.text & ~Filters.command, score_notes)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), score_end)],
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END
+                    },
+                    name="conv_score_creator",
+                    persistent=True
+                )],
+                1: [MessageHandler(Filters.text & ~Filters.command, score_pc_load)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), score_end),
+                       CommandHandler("load".casefold(), score_load)],
+            name="conv_score",
+            per_user=False,
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

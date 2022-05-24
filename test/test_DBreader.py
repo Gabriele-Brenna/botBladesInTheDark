@@ -394,3 +394,5 @@ class TestDBReader(TestCase):
         self.assertEqual(6, len(query_claims(prison=True, canon=True)))
         self.assertTrue(len(query_claims()) >= 52)
         print(query_claims())
+
+    # TODO: test query_factions & query_npcs
