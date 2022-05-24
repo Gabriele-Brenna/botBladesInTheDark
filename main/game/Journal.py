@@ -112,7 +112,7 @@ class Journal:
             h2{
             	color: #e3ded9; padding-left: 1%;
             	border-bottom: 4px solid rgb(167, 85, 34);
-            	margin-right: 50%;
+            	margin-right: 30%;
             	border-bottom-style: groove;
             	margin-left: 1%;
 				font-family: 'Marker Felt';
@@ -270,12 +270,15 @@ class Journal:
 
         return div_tag
 
-    def create_score_tag(self, name: str, plan_type: str, details: str, pc_load: List, position: str, notes: str):
+    def create_score_tag(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
+                         position: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "score".
 
         :param name: name of the score
+        :param category: category of the score
         :param plan_type: type of the score's plan
+        :param target: target of the score
         :param details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
         :param position: position of the engagement roll
@@ -286,11 +289,15 @@ class Journal:
         div_tag = self.create_div_tag({"class": "score",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(placeholder["0"].format(name)))
+        div_tag.append(self.create_h2_tag(placeholder["0"].format(name, category)))
 
         div_tag.append(self.create_h3_tag(placeholder["1"]))
 
         div_tag.append(self.create_p_tag(plan_type))
+
+        div_tag.append(self.create_h3_tag(placeholder["8"]))
+
+        div_tag.append(self.create_p_tag(target))
 
         div_tag.append(self.create_h3_tag(placeholder["2"]))
 
@@ -668,11 +675,12 @@ class Journal:
 
         return div_tag
 
-    def create_resistance_roll_tag(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
-                                   stress: int = 0):
+    def create_resistance_roll_tag(self, pc: str, description: str, damage: str, attribute: str, roll: Union[str, int],
+                                   notes: str, stress: int = 0):
         """
         Method used to create and insert a div tag with class attribute set to "resistanceRoll".
 
+        :param damage: if the damage will be reduced or avoided
         :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
@@ -689,6 +697,8 @@ class Journal:
         div_tag.append(self.create_p_tag(placeholder["1"].format(
             pc, description)))
 
+        div_tag.append(self.create_p_tag(placeholder["5"].format(damage)))
+
         if stress > 0:
             div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
                                                                      placeholder["3"].format(stress))))
@@ -696,7 +706,7 @@ class Journal:
             div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll,
                                                                      placeholder["4"].format(-stress))))
         else:
-            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, "")))
+            div_tag.append(self.create_p_tag(placeholder["2"].format(pc, attribute, roll, placeholder["6"])))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -893,18 +903,22 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_score(self, name: str, plan_type: str, details: str, pc_load: List, position: str, notes: str):
-        tag = self.create_score_tag(name, plan_type, details, pc_load, position, notes)
+    def write_score(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
+                    position: str, notes: str):
         """
         Method used to write a score in the attribute journal representing the html file of the journal.
 
         :param name: name of the score
+        :param category: category of the score
         :param plan_type: type of the score's plan
+        :param target: the target of the score
         :param details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
         :param position: position of the engagement roll
         :param notes: extra notes
         """
+        tag = self.create_score_tag(name, category, plan_type, target, details, pc_load, position, notes)
+
         self.write_general(tag)
 
         self.score_tags.append(tag)
@@ -1065,19 +1079,20 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_resistance_roll(self, pc: str, description: str, attribute: str, roll: Union[str, int], notes: str,
-                              stress: int = 0):
+    def write_resistance_roll(self, pc: str, description: str, damage: str, attribute: str, outcome: Union[str, int],
+                              notes: str, stress: int = 0):
         """
         Method used to write a resistance roll in the attribute journal representing the html file of the journal.
 
+        :param damage: if the damage will be reduced or avoided
         :param notes: extra notes
         :param pc: who is doing the resistance roll
         :param description: why the user is doing the resistance roll
         :param attribute: what attribute is rolling
-        :param roll: roll of the dice
+        :param outcome: roll of the dice
         :param stress: amount of stress gained
         """
-        tag = self.create_resistance_roll_tag(pc, description, attribute, roll, notes, stress)
+        tag = self.create_resistance_roll_tag(pc, description, damage, attribute, outcome, notes, stress)
 
         self.write_general(tag)
 

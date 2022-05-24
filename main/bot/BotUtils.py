@@ -402,37 +402,35 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     context.user_data[command]["query_menu"] = query_menu
 
 
-def update_bonus_dice_kb(context: CallbackContext, command: str, tot_dice: int = None):
+def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: int, location: str = "chat"):
     """
     Utility method to update the InlineKeyboard of a bonus dice request.
     Edit the message with the current total number of dice and the kb button with the number of bonus dice selected.
 
-    :param tot_dice:
+    :param location: specifies the dict in the telegram data ("user", "chat" or "bot"). By default it's chat_data.
+    :param tags: list of tag to get the bonus dice.
+    :param tot_dice: total amount of dice to roll.
     :param context: instance of CallbackContext linked to the user.
-    :param command: is the command related to the bonus dice request.
     """
+
+    if location.casefold() == "user":
+        pointer = context.user_data
+    elif location.casefold() == "bot":
+        pointer = context.bot_data
+    else:
+        pointer = context.chat_data
+
+    for i in range(len(tags)):
+        pointer = pointer[tags[i]]
+
     bonus_dice_lang = get_lang(context, "bonus_dice")
-    if tot_dice is None:
-        tot_dice = action_roll_calc_total_dice(context.chat_data[command]["roll"])
 
-        context.chat_data[command]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
-                                                           reply_markup=build_plus_minus_keyboard(
-                                                               [bonus_dice_lang["button"].format(
-                                                                   context.chat_data[command]["roll"]["bonus_dice"])],
-                                                               done_button=True,
-                                                               back_button=False),
-                                                           parse_mode=ParseMode.HTML)
-        return
-
-    pc_name = context.chat_data["action_roll"]["group_action"][0][1]
-    context.chat_data[command]["query_menu"].edit_text(
-        bonus_dice_lang["message"].format(tot_dice),
-        reply_markup=build_plus_minus_keyboard(
-            [bonus_dice_lang["button"].format(
-                context.chat_data[command]["roll"]["participants"][pc_name]["bonus_dice"])],
-            done_button=True,
-            back_button=False),
-        parse_mode=ParseMode.HTML)
+    context.chat_data[tags[0]]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
+                                                       reply_markup=build_plus_minus_keyboard(
+                                                           [bonus_dice_lang["button"].format(pointer)],
+                                                           done_button=True,
+                                                           back_button=False),
+                                                       parse_mode=ParseMode.HTML)
 
 
 def action_roll_calc_total_dice(ar_info: dict) -> int:
@@ -458,6 +456,16 @@ def action_roll_calc_total_dice(ar_info: dict) -> int:
     total += ar_info["bonus_dice"]
 
     return total
+
+
+def resistance_roll_calc_total_dice(rr_info: dict) -> int:
+    """
+    Utility method to calculate the amount of dice that will be rolled for the resistance roll.
+
+    :param rr_info: the dictionary containing all the necessary resistance roll's information.
+    :return: the actual amount of dice.
+    """
+    return rr_info["bonus_dice"] + int(rr_info["attribute"].split(": ")[1])
 
 
 def group_action_calc_total_dice(update: Update, context: CallbackContext) -> int:
@@ -573,6 +581,11 @@ def end_conv(update: Update, context: CallbackContext, callback: bool = False) -
                                            reply_markup=ReplyKeyboardRemove())
     else:
         message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
+
+    try:
+        auto_delete_message(update.effective_message, 3.0)
+    except:
+        pass
     auto_delete_message(message, 3.0)
     return ConversationHandler.END
 
