@@ -35,11 +35,11 @@ class TestPC(TestCase):
         self.assertEqual(0, self.deadManWalking.stress_level)
 
     def test_add_trauma(self):
-        self.assertTrue(self.character.add_trauma("cold"))
-        self.assertTrue(self.character.add_trauma("reckless"))
+        self.assertFalse(self.character.add_trauma("cold"))
+        self.assertFalse(self.character.add_trauma("reckless"))
         self.assertEqual(["cold", "reckless"], self.character.traumas)
 
-        self.assertFalse(self.deadManWalking.add_trauma("unstable"))
+        self.assertTrue(self.deadManWalking.add_trauma("unstable"))
 
     def test_add_harm(self):
         self.assertEqual(3, self.character.add_harm(3, "Broken Leg"))

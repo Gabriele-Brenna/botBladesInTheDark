@@ -448,6 +448,23 @@
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
     },
 
+    "add_stress": {
+      "0": "<i>{}</i> stress added to <u>{}</u>",
+      "1": "<u>{}</u> suffered too much stress. <i>{}</i> trauma to add.\n/addTrauma",
+      "err": "You cannot add stress to your pc without being in a game... /join to take part in a game",
+      "err2": "You don't have any active pc... \n/join to take part in a game"
+    },
+
+    "add_trauma": {
+      "0": "Write the trauma",
+      "err": "You cannot add  trauma to your pc without being in a game... /join to take part in a game",
+      "err2": "You don't have any active pc... \n/join to take part in a game"
+    },
+
+    "add_trauma_name": {
+      "0": "<i>{}</i> suffered too much trauma... \n/migratePC or /die"
+    },
+
     "score": {
       "0": "Choose the score category",
       "err": "wrong phase",
