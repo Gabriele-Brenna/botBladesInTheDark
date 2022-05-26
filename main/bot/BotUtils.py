@@ -420,17 +420,18 @@ def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: in
     else:
         pointer = context.chat_data
 
+    bonus_dice = pointer
     for i in range(len(tags)):
-        pointer = pointer[tags[i]]
+        bonus_dice = bonus_dice[tags[i]]
 
     bonus_dice_lang = get_lang(context, "bonus_dice")
 
-    context.chat_data[tags[0]]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
-                                                       reply_markup=build_plus_minus_keyboard(
-                                                           [bonus_dice_lang["button"].format(pointer)],
-                                                           done_button=True,
-                                                           back_button=False),
-                                                       parse_mode=ParseMode.HTML)
+    pointer[tags[0]]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
+                                             reply_markup=build_plus_minus_keyboard(
+                                                 [bonus_dice_lang["button"].format(bonus_dice)],
+                                                 done_button=True,
+                                                 back_button=False),
+                                             parse_mode=ParseMode.HTML)
 
 
 def action_roll_calc_total_dice(ar_info: dict) -> int:

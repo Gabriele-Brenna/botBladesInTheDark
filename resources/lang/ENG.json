@@ -442,7 +442,42 @@
 
 	"resistance_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
-    }
+    },
+
+	"heat": {
+	  "0": "What was the nature of the operation?",
+	  "1": "You can't perform an resistance roll without being in a game... /join to take part in a game.",
+	  "keyboard": ["Smooth and quiet", "Contained", "Loud and chaotic", "Wild"],
+	  "callbacks": [["smooth and quiet, low exposure", "0"], ["contained, standard exposure", "2"], ["loud and chaotic, high exposure", "4"], ["wild, extreme exposure", "6"]]
+	},
+
+	"heat_score_nature": {
+	  "0": "Was it a high-profile or well-connected target?",
+	  "keyboard": ["Yes", "No"],
+	  "callbacks": [["True", "1"], ["False", "0"]]
+	},
+
+	"heat_target_profile": {
+	  "0": "Did the situation happened in a hostile turf?",
+	  "keyboard": ["Yes", "No"],
+	  "callbacks": [["True", "1"], ["False", "0"]]
+	},
+
+	"heat_turf_hostility": {
+	  "0": "Are you at war with another faction?",
+	  "keyboard": ["Yes", "No"],
+	  "callbacks": [["True", "1"], ["False", "0"]]
+	},
+
+	"heat_war_situation": {
+	  "0": "Was killing involved?",
+	  "keyboard": ["Yes", "No"],
+	  "callbacks": [["True", "2"], ["False", "0"]]
+	},
+
+	"heat_extra": {
+	  "0": "Your crew's wanted level is <i>{}</i>"
+	}
   },
 
   "Journal": {

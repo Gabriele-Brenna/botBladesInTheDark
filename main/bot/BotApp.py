@@ -331,6 +331,23 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["heat".casefold()], heat)],
+            states={
+                0: [CallbackQueryHandler(heat_score_nature)],
+                1: [CallbackQueryHandler(heat_target_profile)],
+                2: [CallbackQueryHandler(heat_turf_hostility)],
+                3: [CallbackQueryHandler(heat_war_situation)],
+                4: [CallbackQueryHandler(heat_killing)],
+                5: [CallbackQueryHandler(heat_extra)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), heat_end)],
+            name="conv_heat",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

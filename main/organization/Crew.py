@@ -88,17 +88,19 @@ class Crew(Organization, ISavable, IDrawable):
         if self.wanted_level > 4:
             self.wanted_level = 4
 
-    def add_heat(self, heat: int):
+    def add_heat(self, heat: int) -> int:
         """
         Increases the heat of the crew.
         If the amount is greater than 9 it will add one wanted level every time the limit of 9 heat is crossed.
 
         :param heat: is the amount of heat to add.
+        :return: the wanted level
         """
         self.heat += heat
         if self.heat >= 9:
             self.add_wanted_level(int(self.heat/9))
             self.heat %= 9
+        return self.wanted_level
 
     def clear_heat(self):
         """

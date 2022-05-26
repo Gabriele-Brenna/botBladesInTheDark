@@ -532,5 +532,17 @@ class Controller:
 
         return trauma_victim
 
+    def add_heat_to_crew(self, chat_id: int, user_id: int, heat: dict) -> int:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        wanted_level = game.crew.add_heat(heat["total_heat"])
+
+        insert_crew_json(game.identifier, save_to_json(game.crew))
+
+        game.journal.write_heat(**heat, wanted=wanted_level)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        return wanted_level
+
     def __repr__(self) -> str:
         return str(self.games)

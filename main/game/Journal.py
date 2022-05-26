@@ -973,21 +973,21 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_heat(self, execution: str, exposure: str, famous_target: bool, hostile: bool, war: bool,
-                   bodies: bool, heat: int, wanted: int):
+    def write_heat(self, score_nature: str, famous_target: bool, hostility: bool, war: bool,
+                   bodies: bool, total_heat: int, wanted: int):
         """
         Method used to write the payoff in the attribute journal representing the html file of the journal.
 
-        :param execution: how loud the score was executed
-        :param exposure: type of exposure received
+        :param score_nature: how loud the score was executed
         :param famous_target: True if the target was famous, False otherwise
-        :param hostile: True if the score was made in a hostile turf, False otherwise
+        :param hostility: True if the score was made in a hostile turf, False otherwise
         :param war: True if the crew is at war, False otherwise
         :param bodies: True if someone was killed, False otherwise
-        :param heat: amount of heat received
+        :param total_heat: amount of heat received
         :param wanted: amount of wanted level received
         """
-        tag = self.create_heat_tag(execution, exposure, famous_target, hostile, war, bodies, heat, wanted)
+        execution, exposure = score_nature.split(", ")
+        tag = self.create_heat_tag(execution, exposure, famous_target, hostility, war, bodies, total_heat, wanted)
 
         self.write_general(tag)
 

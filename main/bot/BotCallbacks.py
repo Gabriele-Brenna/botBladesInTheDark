@@ -2952,7 +2952,7 @@ def resistance_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation when the "DONE" button is pressed.
     """
-    placeholders = get_lang(context, action_roll_bonus_dice.__name__)
+    placeholders = get_lang(context, resistance_roll_bonus_dice.__name__)
 
     if get_user_id(update) != context.chat_data["resistance_roll"]["invoker"]:
         return 2
@@ -3038,6 +3038,225 @@ def resistance_roll_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_resistanceRoll---------------------------------------------------------
+
+
+# ------------------------------------------conv_heat-------------------------------------------------------------------
+
+
+def heat(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation of the heat.
+    Adds the dict "heat" in user_data and stores the ID of the invoker and his active PC in it.
+    Finally, sends the request for the nature of the score.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["1"]):
+        return heat_end(update, context)
+
+    add_tag_in_telegram_data(context, ["heat", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=2, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["heat", "message"], message)
+    add_tag_in_telegram_data(context, ["heat", "info", "total_heat"], value=0)
+
+    return 0
+
+
+def heat_score_nature(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the nature of the score chosen by the user in user_data, and asks the user for the target profile.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat_score_nature.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice, heat_to_add = query.data
+
+    add_tag_in_telegram_data(context, tags=["heat", "info", "score_nature"], value=choice)
+
+    context.user_data["heat"]["info"]["total_heat"] += int(heat_to_add)
+
+    context.user_data["heat"]["message"].delete()
+
+    message = context.user_data["heat"]["invocation_message"].reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["heat", "message"], message)
+
+    return 1
+
+
+def heat_target_profile(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the target's profile chosen by the user in the user_data, and asks the user for the turf hostility.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat_target_profile.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice, heat_to_add = query.data
+
+    add_tag_in_telegram_data(context, tags=["heat", "info", "famous_target"], value=bool(choice == "True"))
+    context.user_data["heat"]["message"].delete()
+
+    context.user_data["heat"]["info"]["total_heat"] += int(heat_to_add)
+
+    message = context.user_data["heat"]["invocation_message"].reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["heat", "message"], message)
+
+    return 2
+
+
+def heat_turf_hostility(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the turf hostility chosen by the user in user_data, and asks the user for the war situation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat_turf_hostility.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice, heat_to_add = query.data
+    add_tag_in_telegram_data(context, tags=["heat", "info", "hostility"], value=bool(choice == "True"))
+    context.user_data["heat"]["message"].delete()
+
+    context.user_data["heat"]["info"]["total_heat"] += int(heat_to_add)
+
+    message = context.user_data["heat"]["invocation_message"].reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["heat", "message"], message)
+
+    return 3
+
+
+def heat_war_situation(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the war situation chosen by the user in user_data, and asks the user if some killing was involved.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat_war_situation.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice, heat_to_add = query.data
+    add_tag_in_telegram_data(context, tags=["heat", "info", "war"], value=bool(choice == "True"))
+    context.user_data["heat"]["message"].delete()
+
+    context.user_data["heat"]["info"]["total_heat"] += int(heat_to_add)
+
+    message = context.user_data["heat"]["invocation_message"].reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["heat", "message"], message)
+
+    return 4
+
+
+def heat_killing(update: Update, context: CallbackContext) -> int:
+    """
+    Stores if some killing was involved in user_data, and asks the user if they want to change the total_heat.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    query = update.callback_query
+    query.answer()
+    choice, heat_to_add = query.data
+    add_tag_in_telegram_data(context, tags=["heat", "info", "bodies"], value=bool(choice == "True"))
+    context.user_data["heat"]["message"].delete()
+
+    context.user_data["heat"]["info"]["total_heat"] += int(heat_to_add)
+
+    bonus_dice_lang = get_lang(context, "bonus_dice")
+
+    query_menu = context.user_data["heat"]["invocation_message"].reply_text(
+        bonus_dice_lang["message"].format(context.user_data["heat"]["info"]["total_heat"]),
+        reply_markup=build_plus_minus_keyboard(
+            [bonus_dice_lang["button"].format(
+                context.user_data["heat"]["info"]["total_heat"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["heat", "query_menu"], query_menu)
+
+    return 5
+
+
+def heat_extra(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the final heat amount in the user_data, calls the controller method to apply the heat
+    and sends the notification for the wanted level of the crew.
+    Finally, calls heat_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, heat_extra.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    total_heat = context.user_data["heat"]["info"]["total_heat"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        tags = ["heat", "info", "total_heat"]
+        total_heat += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, tags=tags, value=total_heat)
+
+        update_bonus_dice_kb(context, tags, total_heat, location="user")
+
+    elif choice == "DONE":
+        wanted_level = controller.add_heat_to_crew(update.effective_message.chat_id, get_user_id(update),
+                                                   context.user_data["heat"]["info"])
+        auto_delete_message(context.user_data["heat"]["invocation_message"].reply_text(
+            placeholders["0"].format(wanted_level), parse_mode=ParseMode.HTML), 18)
+        return heat_end(update, context)
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"], parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["extended"])
+
+    return 5
+
+
+def heat_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the heat conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "heat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_heat-------------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
