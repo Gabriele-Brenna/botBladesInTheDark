@@ -57,7 +57,8 @@ class Score(ISavable):
         :return: dictionary of the object
         """
         temp = super().save_to_dict()
-        temp["target"] = self.target.name
+        temp["target"] = self.target.name if isinstance(self.target, NPC) or isinstance(self.target,
+                                                                                        Faction) else self.target
         return temp
 
     def __eq__(self, o: object) -> bool:

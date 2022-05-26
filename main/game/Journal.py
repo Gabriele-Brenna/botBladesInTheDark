@@ -23,7 +23,7 @@ class Journal:
         with open(path_finder("{}.json".format(lang.upper())), 'r') as f:
             self.lang = json.load(f)["Journal"]
         self.log = BeautifulSoup("", 'html.parser')
-        self.score_tags = []
+        self.score_tag = None
         self.write_heading()
 
     def edit_note(self, note: str, number: int = 1):
@@ -863,13 +863,12 @@ class Journal:
 
         :param tag: tag to write
         """
-        if self.score_tags:
-            temp = self.score_tags[len(self.score_tags) - 1]
-            temp_child = temp.find("div", {"class": "endScore"}, recursive=False)
+        if self.score_tag is not None:
+            temp_child = self.score_tag.find("div", {"class": "endScore"}, recursive=False)
             if temp_child is None:
-                temp.append(tag)
+                self.score_tag.append(tag)
             else:
-                temp.parent.append(tag)
+                self.score_tag.parent.append(tag)
         else:
             self.log.select_one("body").append(tag)
 
@@ -924,7 +923,7 @@ class Journal:
 
         self.write_general(tag)
 
-        self.score_tags.append(tag)
+        self.score_tag = tag
 
     def write_action(self, pc: str, goal: str, action: str, position: str, effect: str, outcome: Union[int, str],
                      notes: str, participants: List[dict] = None, cohort: str = None, assistants: List[str] = None,
@@ -961,7 +960,7 @@ class Journal:
 
         self.write_general(tag)
 
-        self.score_tags.pop(len(self.score_tags) - 1)
+        self.score_tag = self.score_tag.parent
 
     def write_payoff(self, amount: int, distributed: bool, notes: str):
         """
@@ -1042,15 +1041,15 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_add_claim(self, prison: bool, name: str, descrition: str):
+    def write_add_claim(self, prison: bool, name: str, description: str):
         """
         Method used to write add claim in the attribute journal representing the html file of the journal.
 
-        :param descrition: description of the claim
+        :param description: description of the claim
         :param prison: True if the new claim is a lair claim, False if it's a prison claim
         :param name: name of the new claim
         """
-        tag = self.create_add_claim_tag(prison, name+" ("+descrition+")")
+        tag = self.create_add_claim_tag(prison, name+" ("+description+")")
 
         self.write_general(tag)
 

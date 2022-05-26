@@ -7,6 +7,7 @@ from controller.DBreader import *
 from controller.DBwriter import *
 from game.Game import Game
 from game.Player import Player
+from game.Score import Score
 from organization.Cohort import Cohort
 from organization.Crew import Crew
 from utility.FilesLoader import load_games
@@ -437,8 +438,6 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(game.crew))
 
-        claim.pop("description")
-
         game.journal.write_add_claim(**claim)
 
         insert_journal(game.identifier, game.journal.get_log_string())
@@ -656,6 +655,7 @@ class Controller:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
         pc_load = []
+        participants = []
         for key in score["members"].keys():
             for elem in score["members"][key]:
                 pc = elem
@@ -663,9 +663,37 @@ class Controller:
 
                 game.get_player_by_id(key).get_character_by_name(pc).load = load
                 pc_load.append((pc, load))
+                participants.append(pc)
 
                 update_user_characters(key, game.identifier, save_to_json(game.get_player_by_id(key).characters))
         score.pop("members")
+
+        if score["target"]["type"] == "NPC":
+            name, role = score["target"]["name"].split(", ")
+            target = game.get_npc_by_name_and_role(name, role)
+            if target is None:
+                target = query_npcs(name=name, role=role)[0]
+                if target.faction is not None and isinstance(target.faction, str):
+                    npc_faction = game.get_faction_by_name(target.faction)
+                    if npc_faction is None:
+                        npc_faction = query_factions(target.faction)[0]
+                        game.factions.append(npc_faction)
+                    target.faction = npc_faction
+                game.NPCs.append(target)
+        elif score["target"]["type"] == "Faction":
+            faction_name = score["target"]["name"].split(": ")[0]
+            target = game.get_faction_by_name(faction_name)
+            if target is None:
+                target = query_factions(faction_name)[0]
+                game.factions.append(target)
+        else:
+            target = score["target"]["name"]
+
+        new_score = Score(score["title"], participants, target=target)
+        new_score.calc_target_tier()
+        game.scores.append(new_score)
+
+        insert_score_json(game.identifier, save_to_json(game.scores))
 
         score["target"] = score["target"]["name"]
 
