@@ -431,7 +431,7 @@ def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: in
 
     pointer[tags[0]]["query_menu"].edit_text(bonus_dice_lang[message_tag].format(tot_dice),
                                                        reply_markup=build_plus_minus_keyboard(
-                                                           [bonus_dice_lang[button_tag].format(pointer)],
+                                                           [bonus_dice_lang[button_tag].format(bonus_dice)],
                                                            done_button=True,
                                                            back_button=False),
                                                        parse_mode=ParseMode.HTML)
@@ -570,27 +570,25 @@ def invalid_state_choice(update: Update, context: CallbackContext, command: str,
     update.message.delete()
 
 
-def end_conv(update: Update, context: CallbackContext, callback: bool = False) -> int:
+def end_conv(update: Update, context: CallbackContext) -> int:
     """
     Handles the abort of a conversation.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
-    :param callback: bool that states if this method is called from a CallbackQueryHandler
     :return: ConversationHandler.END
     """
     placeholders = get_lang(context, end_conv.__name__)
 
-    if callback:
+    try:
+        message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
+    except:
         message = context.bot.send_message(chat_id=update.effective_message.chat_id, text=placeholders["0"],
                                            reply_markup=ReplyKeyboardRemove())
-    else:
-        message = update.effective_message.reply_text(placeholders["0"], reply_markup=ReplyKeyboardRemove())
 
-    try:
-        auto_delete_message(update.effective_message, 3.0)
-    except:
-        pass
+
+    auto_delete_message(update.effective_message, 3.0)
+
     auto_delete_message(message, 3.0)
     return ConversationHandler.END
 
@@ -640,6 +638,9 @@ def auto_delete_message(message: Message, timer: Union[float, str] = 5.0) -> Non
 
     def execute(m: Message, t: float) -> None:
         time.sleep(t)
-        m.delete()
+        try:
+            m.delete()
+        except:
+            pass
 
     Thread(target=execute, args=(message, timer)).start()

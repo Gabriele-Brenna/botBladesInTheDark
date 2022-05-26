@@ -2742,7 +2742,7 @@ def add_claim_name(update: Update, context: CallbackContext) -> int:
         if "$" in choice:
             choice = choice.split("$")[0]
             add_tag_in_telegram_data(context, ["add_claim", "claim", "name"], choice)
-            add_tag_in_telegram_data(context, ["add_claim", "claim", "name"], description)
+            add_tag_in_telegram_data(context, ["add_claim", "claim", "description"], description)
 
             controller.add_claim_to_game(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
                                          context.user_data["add_claim"]["claim"])
@@ -2771,7 +2771,7 @@ def add_claim_end(update: Update, context: CallbackContext) -> int:
     """
     delete_conv_from_telegram_data(context, "add_claim")
 
-    return end_conv(update, context, True)
+    return end_conv(update, context)
 
 
 # ------------------------------------------conv_addClaim---------------------------------------------------------------
@@ -3258,7 +3258,7 @@ def score_end(update: Update, context: CallbackContext) -> int:
     """
     delete_conv_from_telegram_data(context, "score", "chat")
 
-    return end_conv(update, context, True)
+    return end_conv(update, context)
 
 
 # ------------------------------------------conv_score------------------------------------------------------------------
@@ -3632,7 +3632,7 @@ def add_trauma_end(update: Update, context: CallbackContext) -> int:
     """
     delete_conv_from_telegram_data(context, "add_trauma")
 
-    return end_conv(update, context, True)
+    return end_conv(update, context)
 
 
 # ------------------------------------------conv_addTrauma--------------------------------------------------------------
@@ -3788,9 +3788,9 @@ def heat_killing(update: Update, context: CallbackContext) -> int:
     bonus_dice_lang = get_lang(context, "bonus_dice")
 
     query_menu = context.user_data["heat"]["invocation_message"].reply_text(
-        bonus_dice_lang["message"].format(context.user_data["heat"]["info"]["total_heat"]),
+        bonus_dice_lang["heat"].format(context.user_data["heat"]["info"]["total_heat"]),
         reply_markup=build_plus_minus_keyboard(
-            [bonus_dice_lang["button"].format(
+            [bonus_dice_lang["heat_button"].format(
                 context.user_data["heat"]["info"]["total_heat"])],
             done_button=True,
             back_button=False),
@@ -3824,7 +3824,7 @@ def heat_extra(update: Update, context: CallbackContext) -> int:
         total_heat += int(choice.split(" ")[2])
         add_tag_in_telegram_data(context, tags=tags, value=total_heat)
 
-        update_bonus_dice_kb(context, tags, total_heat, location="user")
+        update_bonus_dice_kb(context, tags, total_heat, location="user", message_tag="heat", button_tag="heat_button")
 
     elif choice == "DONE":
         wanted_level = controller.add_heat_to_crew(update.effective_message.chat_id, get_user_id(update),
@@ -3835,7 +3835,7 @@ def heat_extra(update: Update, context: CallbackContext) -> int:
 
     else:
         bonus_dice_lang = get_lang(context, "bonus_dice")
-        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"], parse_mode=ParseMode.HTML),
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["heat_description"], parse_mode=ParseMode.HTML),
                             bonus_dice_lang["extended"])
 
     return 5

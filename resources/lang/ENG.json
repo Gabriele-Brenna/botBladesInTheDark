@@ -254,7 +254,11 @@
 
       "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
       "engagement": "Engagement \uD83C\uDFB2: {}",
-      "engagement_extended" : "Select the number of dice you want to roll. Consider the details of your plan."
+      "engagement_extended" : "Select the number of dice you want to roll. Consider the details of your plan.",
+
+      "heat": "Select the amount of heat to add or remove.",
+      "heat_button": "Heat \u2668\uFE0F: {}",
+      "heat_description": "Change the amount of heat your crew will receive. Consider your abilities/crew's abilities."
     },
 
     "group_action_cohort": {

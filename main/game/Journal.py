@@ -1042,14 +1042,15 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_add_claim(self, prison: bool, claim_name: str):
+    def write_add_claim(self, prison: bool, name: str, descrition: str):
         """
         Method used to write add claim in the attribute journal representing the html file of the journal.
 
+        :param descrition: description of the claim
         :param prison: True if the new claim is a lair claim, False if it's a prison claim
-        :param claim_name: name of the new claim
+        :param name: name of the new claim
         """
-        tag = self.create_add_claim_tag(prison, claim_name)
+        tag = self.create_add_claim_tag(prison, name+" ("+descrition+")")
 
         self.write_general(tag)
 
