@@ -2776,6 +2776,493 @@ def add_claim_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_addClaim---------------------------------------------------------------
 
+# ------------------------------------------conv_score------------------------------------------------------------------
+
+def score(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user's game is in the right phase and starts the conversation to create a new score.
+    Adds the dict "score" in chat_data and stores the ID of the invoker.
+    Finally, it sends the score category request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, score.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 3):
+        return score_end(update, context)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "invoker"], value=get_user_id(update))
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "invocation_message"], value=update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        placeholders["keyboard"], split_row=1))
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+    user_id = get_user_id(update)
+
+    context.chat_data["score"].setdefault("players", []).append((user_id,
+                                                                context.user_data["active_PCs"][update.effective_message.chat_id]))
+    context.chat_data["score"].setdefault("score_info", {}).setdefault(
+        "members", {}).setdefault(
+        user_id, {})[context.user_data["active_PCs"][update.effective_message.chat_id]] = 3
+
+    return 0
+
+
+def score_category(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the score's category in the chat_data and sends the keyboard with the request of the target's type.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if get_user_id(update) == context.chat_data["score"]["invoker"]:
+        context.chat_data["score"]["message"].delete()
+
+        placeholders = get_lang(context, score_category.__name__)
+
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "category"],
+                                 value=update.message.text)
+
+        message = context.chat_data["score"]["invocation_message"].reply_text(
+            placeholders["0"],
+            reply_markup=custom_kb(placeholders["keyboard"],
+                                   inline=True,
+                                   callback_data=placeholders["callbacks"]))
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+        update.message.delete()
+
+        return 0
+
+
+def score_target(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the target's type. If NPC or Faction is selected, it requests the list of NPCs or Factions
+    to the Controller to build an InlineKeyboard.
+    In any case the target request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, score_target.__name__)
+    chat_id = update.effective_message.chat_id
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    if choice == "NPC":
+        npcs = controller.get_npcs(query_game_of_user(chat_id, get_user_id(update)))
+
+        buttons_list = []
+        buttons = []
+        for i in range(len(npcs)):
+            buttons.append(npcs[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "buttons_list"], value=buttons_list)
+
+        context.chat_data["score"]["query_menu"] = context.chat_data["score"]["invocation_message"].reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=build_multi_page_kb(buttons_list[0]))
+    elif choice == "Faction":
+        factions = controller.get_factions(query_game_of_user(chat_id, get_user_id(update)))
+
+        buttons_list = []
+        buttons = []
+        for i in range(len(factions)):
+            buttons.append(factions[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "buttons_list"], value=buttons_list)
+
+        context.chat_data["score"]["query_menu"] = context.chat_data["score"]["invocation_message"].reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=build_multi_page_kb(buttons_list[0]))
+    elif choice == "Other":
+        context.chat_data["score"]["message"].delete()
+        context.chat_data["score"]["message"] = context.chat_data["score"]["invocation_message"].reply_text(
+            placeholders["1"],
+            parse_mode=ParseMode.HTML)
+        return 2
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "query_menu_index"], value=0)
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "target", "type"], value=choice)
+
+    context.chat_data["score"]["message"].delete()
+    return 1
+
+
+def score_target_custom(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about a custom target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, score_target_selection.__name__)
+    context.chat_data["score"]["message"].delete()
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "target", "name"],
+                             value=update.message.text)
+    message = context.chat_data["score"]["invocation_message"].reply_text(text=placeholders["1"],
+                                                                          parse_mode=ParseMode.HTML,
+                                                                          reply_markup=custom_kb(
+                                                                              placeholders["keyboard"]),
+                                                                          )
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+    update.message.delete()
+    return 3
+
+
+def score_target_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, score_target_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.chat_data["score"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.chat_data["score"]["buttons_list"]):
+            index = 0
+        context.chat_data["score"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.chat_data["score"]["buttons_list"]):
+            index = 0
+
+        context.chat_data["score"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        name = name.split(" - ")[1]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "target", "name"], value=name)
+            message = context.chat_data["score"]["invocation_message"].reply_text(text=placeholders["1"],
+                                                                                  parse_mode=ParseMode.HTML,
+                                                                                  reply_markup=custom_kb(
+                                                                                      placeholders["keyboard"]))
+            add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+            context.chat_data["score"]["query_menu"].delete()
+            return 3
+        else:
+            print(name)
+            description = ""
+            if context.chat_data["score"]["score_info"]["target"]["type"] == "NPC":
+                npc_name = name.split(", ")[0]
+                npc_role = name.split(", ")[1]
+                description = query_npcs(name=npc_name,
+                                         role=npc_role, as_dict=True)[0]["description"]
+            elif context.chat_data["score"]["score_info"]["target"]["type"] == "Faction":
+                faction_name = name.split(": ")[0]
+                description = query_factions(name=faction_name, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 1
+
+    context.chat_data["score"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.chat_data["score"]["buttons_list"][context.chat_data["score"]["query_menu_index"]]))
+    return 1
+
+
+def score_plan_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the plan type in the chat_data.
+    Sends the score's plan details request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    context.chat_data["score"]["message"].delete()
+
+    placeholders = get_lang(context, score_plan_type.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "plan_type"],
+                             value=update.message.text)
+
+    try:
+        text = placeholders[update.message.text]
+    except KeyError:
+        text = placeholders["Other"]
+    message = context.chat_data["score"]["invocation_message"].reply_text(text, parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+    update.message.delete()
+
+    return 4
+
+
+def score_plan_details(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the plan's details the chat_data.
+    Sends the score's title request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    context.chat_data["score"]["message"].delete()
+
+    placeholders = get_lang(context, score_plan_details.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "plan_details"],
+                             value=update.message.text)
+
+    message = context.chat_data["score"]["invocation_message"].reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+    update.message.delete()
+
+    return 5
+
+
+def score_title(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the title of the score in the chat_data.
+    Sends the load request in the game's chat.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    context.chat_data["score"]["message"].delete()
+    placeholders = get_lang(context, score_title.__name__)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "title"],
+                             value=update.message.text)
+
+    message = context.chat_data["score"]["invocation_message"].reply_text(placeholders["0"].format(
+        context.chat_data["score"]["players"][0][1]),
+        parse_mode=ParseMode.HTML,
+        reply_markup=custom_kb(
+            placeholders["keyboard"],
+            selective=False))
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+    update.message.delete()
+
+    return 6
+
+
+def score_engagement(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the total number of dice for the engagement roll.
+    When the DONE button is pressed, it calls the roll_dice method to get the result and sends the final notes request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if get_user_id(update) == context.chat_data["score"]["invoker"]:
+        placeholders = get_lang(context, score_engagement.__name__)
+
+        query = update.callback_query
+        query.answer()
+
+        bonus_dice = context.chat_data["score"]["dice"]
+
+        choice = query.data
+        if "+" in choice or "-" in choice:
+            bonus_dice += int(choice.split(" ")[2])
+            add_tag_in_telegram_data(context, location="chat",
+                                     tags=["score", "dice"], value=bonus_dice)
+
+            update_bonus_dice_kb(context, ["score", "dice"], tot_dice=bonus_dice, message_tag="score",
+                                 button_tag="engagement")
+
+        elif choice == "DONE":
+            dice_to_roll = context.chat_data["score"]["dice"]
+            context.args = []
+            context.args.append(dice_to_roll)
+            context.args.append(["score", "score_info", "outcome"])
+
+            context.chat_data["score"]["query_menu"].delete()
+
+            roll_dice(update, context)
+
+            context.chat_data["score"]["message"] = \
+                context.chat_data["score"]["invocation_message"].reply_text(
+                    placeholders["0"], parse_mode=ParseMode.HTML)
+            return 1
+
+        else:
+            bonus_dice_lang = get_lang(context, "bonus_dice")
+            auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["score"], parse_mode=ParseMode.HTML),
+                                bonus_dice_lang["engagement_extended"])
+
+        return 0
+
+
+def score_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the final description of the score in the chat_data, calls the controller method to apply the roll's
+    effects and sends the notification for the PCs who suffered a new trauma after this action.
+    Finally, calls action_roll_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to score_end
+    """
+    context.chat_data["score"]["message"].delete()
+
+    description = update.message.text
+
+    add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "notes"], value=description)
+
+    controller.add_new_score(update.effective_message.chat_id,
+                             get_user_id(update), context.chat_data["score"]["score_info"])
+
+    return score_end(update, context)
+
+
+def score_pcs_loads(update: Update, context: CallbackContext) -> int:
+    """
+    Listens for the first user in the chat who has to select the load for the score.
+    Stores the received value in the chat_data, pops the user from the temporary list and if the list in not empty
+    sends the same message for the next user. Otherwise, the conversation is moved to the engagement roll state.
+
+    :param update:
+    :param context:
+    :return:
+    """
+    user_id = get_user_id(update)
+
+    if user_id == context.chat_data["score"]["players"][0][0]:
+        placeholders = get_lang(context, score_pcs_loads.__name__)
+
+        load = update.message.text
+        try:
+            load = int(load)
+        except ValueError:
+            update.message.reply_text(placeholders["nan"].format(context.args[0]),
+                                      parse_mode=ParseMode.HTML)
+            return 1
+
+        context.chat_data["score"]["score_info"]["members"][user_id][context.chat_data["score"]["players"][0][1]] = load
+        context.chat_data["score"]["players"].pop(0)
+
+        if not context.chat_data["score"]["players"]:
+            bonus_dice_lang = get_lang(context, "bonus_dice")
+            add_tag_in_telegram_data(context, location="chat", tags=["score", "dice"], value=1)
+            query_menu = context.chat_data["score"]["invocation_message"].reply_text(bonus_dice_lang["score"].format(
+                1),
+                reply_markup=build_plus_minus_keyboard(
+                    [bonus_dice_lang["engagement"].format(
+                        context.chat_data["score"]["dice"])],
+                    done_button=True,
+                    back_button=False),
+                parse_mode=ParseMode.HTML)
+
+            add_tag_in_telegram_data(context, location="chat", tags=["score", "query_menu"], value=query_menu)
+            return 2
+
+        next_player = context.chat_data["score"]["players"][0]
+
+        message = context.chat_data["score"]["invocation_message"].reply_text(placeholders["0"].format(
+            next_player[1]),
+            parse_mode=ParseMode.HTML,
+            reply_markup=custom_kb(
+                placeholders["keyboard"],
+                selective=False))
+
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "message"], value=message)
+
+        return 1
+
+
+def score_load(update: Update, context: CallbackContext):
+    """
+    Stores the information of the user who decided to join the score in the chat_data.
+    Adds to the temporary list of users the user's id
+
+    :param update:
+    :param context:
+    :return:
+    """
+    placeholders = get_lang(context, score_load.__name__)
+
+    user_id = get_user_id(update)
+    chat_id = update.effective_message.chat_id
+    invoker_id = context.chat_data["score"]["invoker"]
+
+    if user_id != invoker_id:
+        if query_game_of_user(chat_id, user_id) == query_game_of_user(chat_id, invoker_id):
+            if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
+
+                new_member = context.user_data["active_PCs"][chat_id]
+
+                if "members" in context.chat_data["score"]["score_info"]:
+                    if user_id in context.chat_data["score"]["score_info"]["members"]:
+                        if new_member in context.chat_data["score"]["score_info"][user_id]:
+                            auto_delete_message(update.message.reply_text(
+                                placeholders["1"], parse_mode=ParseMode.HTML), 10)
+
+                            return
+
+                # default load is 3
+                context.chat_data["score"].setdefault("players", []).append((user_id, new_member))
+                context.chat_data["score"].setdefault("score_info", {}).setdefault(
+                    "members", {}).setdefault(user_id, {})[new_member] = 3
+
+                auto_delete_message(
+                    update.message.reply_text(placeholders["0"].format(context.user_data["active_PCs"][chat_id]),
+                                              parse_mode=ParseMode.HTML), 18)
+                return
+
+    auto_delete_message(
+        update.message.reply_text(placeholders["2"], parse_mode=ParseMode.HTML), 18)
+
+
+def score_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "score", "chat")
+
+    return end_conv(update, context, True)
+
+
+# ------------------------------------------conv_score------------------------------------------------------------------
+
 # ------------------------------------------send_sheets-----------------------------------------------------------------
 
 def send_character_sheet(update: Update, context: CallbackContext) -> None:
@@ -3038,6 +3525,117 @@ def resistance_roll_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_resistanceRoll---------------------------------------------------------
+
+
+def add_stress(update: Update, context: CallbackContext) -> None:
+    """
+    Adds the given stress to the active pc of the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, add_stress.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return
+
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return
+
+    try:
+        stress = int(context.args[0])
+    except (ValueError, IndexError, AttributeError):
+        stress = 1
+
+    pc_name = context.user_data["active_PCs"][update.effective_message.chat_id]
+    trauma_victim = controller.add_stress_to_pc(update.effective_message.chat_id, get_user_id(update), pc_name, stress)
+
+    auto_delete_message(update.message.reply_text(placeholders["0"].format(stress, pc_name),
+                                                  parse_mode=ParseMode.HTML), 18)
+
+    if trauma_victim:
+        update.effective_message.reply_text(placeholders["1"].format(trauma_victim[0], trauma_victim[1]),
+                                            parse_mode=ParseMode.HTML,
+                                            quote=False)
+
+
+# ------------------------------------------conv_addTrauma--------------------------------------------------------------
+
+
+def add_trauma(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation that handles the adding of a trauma.
+    Adds the dict "add_trauma" in user_data and stores the ID of the invoker in it.
+    Finally, sends the trauma request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_trauma.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return add_trauma_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return add_trauma_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    buttons = [trauma[0] for trauma in query_traumas(pc_class=controller.get_pc_class(chat_id,
+                                                                                      get_user_id(update), pc_name))]
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(buttons))
+
+    add_tag_in_telegram_data(context, ["add_trauma", "message"], message)
+    add_tag_in_telegram_data(context, ["add_trauma", "invocation_message"], update.message)
+
+    return 0
+
+
+def add_trauma_name(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method add_trauma_to_pc with the given trauma and
+    eventually sends the user a message if he reached the trauma limit, then calls add_trauma_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_trauma_end
+    """
+    placeholders = get_lang(context, add_trauma_name.__name__)
+    context.user_data["add_trauma"]["message"].delete()
+
+    pc_name = context.user_data["active_PCs"][update.effective_message.chat_id]
+    is_dead = controller.add_trauma_to_pc(update.effective_message.chat_id,
+                                          get_user_id(update), pc_name, update.message.text)
+
+    if is_dead:
+        auto_delete_message(context.user_data["add_trauma"]["invocation_message"].reply_text(
+            placeholders["0"].format(pc_name), parse_mode=ParseMode.HTML))
+
+    return add_trauma_end(update, context)
+
+
+def add_trauma_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "add_trauma")
+
+    return end_conv(update, context, True)
+
+
+# ------------------------------------------conv_addTrauma--------------------------------------------------------------
 
 
 # ------------------------------------------conv_heat-------------------------------------------------------------------

@@ -250,7 +250,11 @@
     "bonus_dice": {
       "message": "Add or remove your bonus dice. By now you have {} \uD83C\uDFB2",
       "button": "Bonus \uD83C\uDFB2: {}",
-      "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get."
+      "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get.",
+
+      "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
+      "engagement": "Engagement \uD83C\uDFB2: {}",
+      "engagement_extended" : "Select the number of dice you want to roll. Consider the details of your plan."
     },
 
     "group_action_cohort": {
@@ -434,14 +438,97 @@
 
 	"resistance_roll_damage": {
 	  "0": "Select the attribute to roll"
-	},
+    },
 
-	"resistance_roll_bonus_dice": {
+    "resistance_roll_bonus_dice": {
       "0": "Describe the final outcome of your roll."
     },
 
 	"resistance_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
+    },
+
+    "add_stress": {
+      "0": "<i>{}</i> stress added to <u>{}</u>",
+      "1": "<u>{}</u> suffered too much stress. <i>{}</i> trauma to add.\n/addTrauma",
+      "err": "You cannot add stress to your pc without being in a game... /join to take part in a game",
+      "err2": "You don't have any active pc... \n/join to take part in a game"
+    },
+
+    "add_trauma": {
+      "0": "Write the trauma",
+      "err": "You cannot add  trauma to your pc without being in a game... /join to take part in a game",
+      "err2": "You don't have any active pc... \n/join to take part in a game"
+    },
+
+    "add_trauma_name": {
+      "0": "<i>{}</i> suffered too much trauma... \n/migratePC or /die"
+    },
+
+    "score": {
+      "0": "Choose the score category",
+      "err": "wrong phase",
+
+      "keyboard": ["Criminal Activity", "Seizing a Claim", "Special Mission"]
+    },
+
+    "score_category": {
+      "0": "Choose the type of your target:",
+
+      "keyboard": ["NPC", "Faction", "Other"],
+      "callbacks": ["NPC", "Faction", "Other"]
+    },
+
+    "score_target": {
+      "0": "Select your target",
+      "1": "Who or what is your target"
+    },
+
+    "score_target_selection": {
+      "0": "Select your target",
+      "1": "What's the <i>type</i> of your plan?",
+
+      "404": "Description not found",
+      "keyboard": ["Assault", "Deception", "Stealth", "Occult", "Social", "Transport"]
+    },
+
+    "score_plan_type": {
+      "Other": "Describe the details of your plan.",
+      "Assault": "Describe the details of your plan. Focus on <i>the point of attack</i>",
+      "Deception": "Describe the details of your plan. Focus on <i>the method of deception</i>",
+      "Stealth": "Describe the details of your plan. Focus on <i>the point of infiltration</i>",
+      "Occult": "Describe the details of your plan. Focus on <i>the arcane method</i>",
+      "Social": "Describe the details of your plan. Focus on <i>the social connection</i>",
+      "Transport": "Describe the details of your plan. Focus on <i>The route & means</i>"
+    },
+
+    "score_plan_details": {
+      "0": "Choose the code name (or the title) of this score."
+    },
+
+    "score_title": {
+      "0": "<i>{}</i>, select the total load you will carry during the score:",
+
+      "keyboard": ["3", "5", "6"]
+    },
+
+    "score_load": {
+      "0": "{}",
+      "1": "{}",
+      "2": "{}"
+
+
+    },
+
+    "score_pcs_loads": {
+      "0": "<i>{}</i>, select the total load you will carry during the score:",
+
+      "keyboard": ["3", "5", "6"],
+      "nan": "<i>{}</i> is invalid. It must be a positive number."
+    },
+
+    "score_engagement": {
+      "0": "Describe the engagement of the score."
     },
 
 	"heat": {
@@ -505,7 +592,7 @@
 	  "4": "PC",
 	  "5": "Load",
 	  "6": "ENGAGEMENT",
-	  "7": "The engagement roll determines that you are in a {} position.",
+	  "7": "The engagement roll determines that {}.",
 	  "8": "TARGET"
 	},
 	"write_action": {
@@ -659,6 +746,13 @@
           "4,5": "You do it, but there's a consequence.",
           "1,2,3": "Things go badly."
         }
+      },
+
+      "engagement": {
+        "CRIT": "you've already overcome the first obstacle and you're in a <i>controlled</i> position",
+        "6": "you are in a <i>controlled</i> position when the action starts",
+        "4,5": "you are in a <i>risky</i> position when the action starts",
+        "1,2,3": "you are in a <i>desperate</i> position when the action starts"
       }
     }
   }

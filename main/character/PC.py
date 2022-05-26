@@ -76,6 +76,8 @@ class PC(Character, ISavable, IDrawable):
         :return: number of traumas (how many times the stress limit has been exceeded)
         """
         self.stress_level += stress
+        if self.stress_level < 0:
+            self.stress_level = 0
         if self.stress_level >= self.stress_limit:
             temp = int(self.stress_level / self.stress_limit)
             self.stress_level %= self.stress_limit
@@ -97,15 +99,13 @@ class PC(Character, ISavable, IDrawable):
 
     def add_trauma(self, trauma: str) -> bool:
         """
-        Add the specified trauma if there are less than 4 in traumas' list.
+        Adds the specified trauma to the pc and return True if the pc suffered too much traumas.
 
         :param trauma: description of the new trauma
-        :return: True if the trauma has been added
+        :return: True if the trauma is the fourth or more.
         """
-        if len(self.traumas) < 4:
-            self.traumas.append(trauma)
-            return True
-        return False
+        self.traumas.append(trauma)
+        return len(self.traumas) >= 4
 
     def add_harm(self, level: int, description: str) -> int:
         """

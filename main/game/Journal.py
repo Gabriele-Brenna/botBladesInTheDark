@@ -1,6 +1,6 @@
 import json
 import math
-from typing import List, Union, Literal
+from typing import List, Union, Literal, Tuple
 
 from bs4.element import Doctype
 from bs4 import *
@@ -270,18 +270,18 @@ class Journal:
 
         return div_tag
 
-    def create_score_tag(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
-                         position: str, notes: str):
+    def create_score_tag(self, title: str, category: str, plan_type: str, target: str, plan_details: str,
+                         pc_load: List[Tuple[str, int]], outcome: Union[str, int], notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "score".
 
-        :param name: name of the score
+        :param title: name of the score
         :param category: category of the score
         :param plan_type: type of the score's plan
         :param target: target of the score
-        :param details: details of the plan
+        :param plan_details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
-        :param position: position of the engagement roll
+        :param outcome: position of the engagement roll
         :param notes: extra notes
         :return: the div Tag
         """
@@ -289,7 +289,7 @@ class Journal:
         div_tag = self.create_div_tag({"class": "score",
                                        "style": "margin-left: {}%".format(self.get_indentation())})
 
-        div_tag.append(self.create_h2_tag(placeholder["0"].format(name, category)))
+        div_tag.append(self.create_h2_tag(placeholder["0"].format(title, category)))
 
         div_tag.append(self.create_h3_tag(placeholder["1"]))
 
@@ -301,7 +301,7 @@ class Journal:
 
         div_tag.append(self.create_h3_tag(placeholder["2"]))
 
-        div_tag.append(self.create_p_tag(details))
+        div_tag.append(self.create_p_tag(plan_details))
 
         div_tag.append(self.create_h3_tag(placeholder["3"]))
 
@@ -329,7 +329,10 @@ class Journal:
 
         div_tag.append(self.create_h3_tag(placeholder["6"]))
 
-        div_tag.append(self.create_p_tag(placeholder["7"].format(position)))
+        lang_result = self.get_lang("results")["engagement"]
+        for key in lang_result.keys():
+            if str(outcome) in key:
+                div_tag.append(self.create_p_tag(placeholder["7"].format(lang_result[key])))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -903,21 +906,21 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_score(self, name: str, category: str, plan_type: str, target: str, details: str, pc_load: List,
-                    position: str, notes: str):
+    def write_score(self, title: str, category: str, plan_type: str, target: str, plan_details: str,
+                    pc_load: List[Tuple[str, int]], outcome: Union[str, int], notes: str):
         """
         Method used to write a score in the attribute journal representing the html file of the journal.
 
-        :param name: name of the score
+        :param title: name of the score
         :param category: category of the score
         :param plan_type: type of the score's plan
         :param target: the target of the score
-        :param details: details of the plan
+        :param plan_details: details of the plan
         :param pc_load: list of tuples made of name of the pc and their load
-        :param position: position of the engagement roll
+        :param outcome: position of the engagement roll
         :param notes: extra notes
         """
-        tag = self.create_score_tag(name, category, plan_type, target, details, pc_load, position, notes)
+        tag = self.create_score_tag(title, category, plan_type, target, plan_details, pc_load, outcome, notes)
 
         self.write_general(tag)
 

@@ -331,6 +331,66 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["addStress", "stress".casefold()], add_stress))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addTrauma", "trauma".casefold()], add_trauma)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, add_trauma_name)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_trauma_end)],
+            name="conv_addTrauma",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["score".casefold(), "newScore".casefold()], score)],
+            states={
+                0: [ConversationHandler(
+                    entry_points=[MessageHandler(Filters.text & ~Filters.command, score_category)],
+                    states={
+                        0: [CallbackQueryHandler(score_target)],
+                        1: [CallbackQueryHandler(score_target_selection)],
+                        2: [MessageHandler(Filters.text & ~Filters.command, score_target_custom)],
+                        3: [MessageHandler(Filters.text & ~Filters.command, score_plan_type)],
+                        4: [MessageHandler(Filters.text & ~Filters.command, score_plan_details)],
+                        5: [MessageHandler(Filters.text & ~Filters.command, score_title)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), score_end)],
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END,
+                        6: 1
+                    },
+                    name="conv_score_creator1",
+                    persistent=True
+                )],
+                1: [MessageHandler(Filters.text & ~Filters.command, score_pcs_loads)],
+                2: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(score_engagement)],
+                    states={
+                        0: [CallbackQueryHandler(score_engagement)],
+                        1: [MessageHandler(Filters.text & ~Filters.command, score_notes)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), score_end)],
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END
+                    },
+                    name="conv_score_creator2",
+                    persistent=True
+
+                )]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), score_end),
+                       CommandHandler("load".casefold(), score_load)],
+            name="conv_score",
+            per_user=False,
+            persistent=True
+        )
+    )
+
     dispatcher.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler(["heat".casefold()], heat)],

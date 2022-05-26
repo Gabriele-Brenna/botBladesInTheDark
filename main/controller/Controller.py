@@ -517,7 +517,7 @@ class Controller:
             stress = -1
 
         for pc in game.get_pcs_list(user_id):
-            if pc.name == resistance_roll["pc"]:
+            if pc.name.lower() == resistance_roll["pc"].lower():
                 traumas = pc.add_stress(stress)
                 if traumas != 0:
                     trauma_victim = (pc.name, traumas)
@@ -531,6 +531,149 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         return trauma_victim
+
+    def add_stress_to_pc(self, chat_id: int, user_id: int, pc_name: str, stress: int) -> Tuple[str, int]:
+        """
+        Adds the given stress to the selected pc of the user and updates the PCs in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :param stress: the amount of stress to add.
+        :return: a list of tuples with the name of the attribute and the attribute's rating in this order.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        trauma_victim = ()
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                traumas = pc.add_stress(stress)
+                if traumas != 0:
+                    trauma_victim = (pc.name, traumas)
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        return trauma_victim
+
+    def get_pc_class(self, chat_id: int, user_id: int, pc_name: str) -> str:
+        """
+        Gets the class of the specified pc.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: the name of the class
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                return pc.__class__.__name__
+
+    def add_trauma_to_pc(self, chat_id: int, user_id: int, pc_name: str, trauma: str) -> bool:
+        """
+        Adds the given trauma to the selected pc of the user and updates the PCs in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :param trauma: the trauma to add.
+        :return: True if the pc has suffered 4 or more traumas, False otherwise
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        is_dead = False
+        for pc in game.get_pcs_list(user_id):
+            if pc.name.lower() == pc_name.lower():
+                is_dead = pc.add_trauma(trauma)
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+        return is_dead
+
+    def get_factions(self, game_id: int) -> List[str]:
+        def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
+            for elem in factions_list:
+                if elem.name.lower() == name.lower():
+                    return elem
+
+        game = self.get_game_by_id(game_id)
+
+        game_factions = game.factions
+        db_factions = query_factions()
+
+        # replacing the factions that already exist in the game
+        for i in range(len(db_factions)):
+            existing_faction = get_faction_by_name(db_factions[i].name, game_factions)
+            if existing_faction is not None:
+                db_factions[i] = existing_faction
+
+        factions = []
+        for faction in db_factions:
+            faction_string = ""
+            if faction.status > 0:
+                faction_string += "+{} \uD83D\uDD35 - ".format(faction.status)
+            elif faction.status == 0:
+                faction_string += "{} \u26AA\uFE0F - ".format(faction.status)
+            elif faction.status < 0:
+                faction_string += "{} \uD83D\uDD34 - ".format(faction.status)
+            faction_string += "{}: {}".format(faction.name, faction.tier)
+            factions.append(faction_string)
+
+        return factions
+
+    def get_npcs(self, game_id: int) -> List[str]:
+        def get_npcs_by_name_and_role(name: str, role: str, npcs_list: List[NPC]) -> NPC:
+            for elem in npcs_list:
+                if elem.name.lower() == name.lower() and elem.role.lower() == role.lower():
+                    return elem
+
+        game = self.get_game_by_id(game_id)
+
+        game_npcs = game.NPCs
+        db_npcs = query_npcs()
+
+        # replacing the factions that already exist in the game
+        for i in range(len(db_npcs)):
+            existing_npc = get_npcs_by_name_and_role(db_npcs[i].name, db_npcs[i].role, game_npcs)
+            if existing_npc is not None:
+                db_npcs[i] = existing_npc
+
+        npcs = []
+        for npc in db_npcs:
+            npc_string = ""
+            if npc.faction is not None:
+                try:
+                    npc_string += "[{}] - ".format(npc.faction.name)
+                except:
+                    npc_string += "[{}] - ".format(npc.faction)
+            else:
+                npc_string += "[ ] - "
+            npc_string += "{}, {}".format(npc.name, npc.role)
+            npcs.append(npc_string)
+
+        return npcs
+
+    def add_new_score(self, chat_id: int, user_id: int, score: dict):
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        pc_load = []
+        for key in score["members"].keys():
+            for elem in score["members"][key]:
+                pc = elem
+                load = score["members"][key][elem]
+
+                game.get_player_by_id(key).get_character_by_name(pc).load = load
+                pc_load.append((pc, load))
+
+                update_user_characters(key, game.identifier, save_to_json(game.get_player_by_id(key).characters))
+        score.pop("members")
+
+        score["target"] = score["target"]["name"]
+
+        # journal
+        game.journal.write_score(**score, pc_load=pc_load)
+        # game.journal.indentation += 1
+
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def add_heat_to_crew(self, chat_id: int, user_id: int, heat: dict) -> int:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))

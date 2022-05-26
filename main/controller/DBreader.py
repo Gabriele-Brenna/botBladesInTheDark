@@ -8,6 +8,7 @@ from character.Vice import Vice
 from component.SpecialAbility import SpecialAbility
 from controller.DBmanager import *
 from organization.Claim import Claim
+from organization.Faction import Faction
 
 
 def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
@@ -1060,3 +1061,204 @@ def query_claims(name: str = None, prison: bool = None, canon: bool = None,
             claims[i] = Claim(**claims[i])
 
     return claims
+
+
+def query_traumas(name: str = None, pc_class: str = None) -> List[Tuple[str, str]]:
+    """
+    Retrieves the traumas from the data base.
+
+    :param name: the name of the trauma to search; if passed this method searches for its occurrence.
+    :param pc_class: the name of the class; if passed all the traumas of that class are retrieved.
+    :return: a list of tuple containing the traumas' name and description (in this order).
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+                SELECT Name, Description
+                FROM Trauma \n"""
+
+    if name is not None:
+        query += "WHERE Name = ?"
+        cursor.execute(query, (name, ))
+
+    elif pc_class is not None:
+        query += "WHERE Class = ?"
+        cursor.execute(query, (pc_class,))
+
+    else:
+        cursor.execute(query)
+
+    return cursor.fetchall()
+
+
+def query_factions(name: str = None, category: str = None, tier: int = None, hold: bool = None,
+                   as_dict: bool = False) -> Union[List[Faction], List[dict]]:
+    """
+    Retrieves a list of Faction from the DB. If name is passed this method searches for its occurrence.
+    Otherwise, if category is passed, the targets are all the factions of this specific group.
+
+    :param name: is the target faction's name.
+    :param category: is the group of the target factions.
+    :param tier: is the tier of the target factions
+    :param hold: is the hold situation of the target factions.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of Claim.
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+            SELECT Name, Description, Tier, Hold
+            FROM Faction \n"""
+
+    if name is not None:
+        query += "WHERE Name = ?"
+
+        cursor.execute(query, (name,))
+    else:
+        if category is not None and tier is not None and hold is not None:
+            query += "WHERE Category = ? AND Tier = ? AND hold is ?"
+
+            cursor.execute(query, (category, tier, hold))
+        elif category is not None and tier is not None:
+            query += "WHERE Category = ? AND Tier = ?"
+
+            cursor.execute(query, (category, tier))
+        elif tier is not None and hold is not None:
+            query += "WHERE Tier = ? AND hold is ?"
+
+            cursor.execute(query, (tier, hold))
+        elif category is not None and hold is not None:
+            query += "WHERE Category = ? AND hold is ?"
+
+            cursor.execute(query, (category, hold))
+        elif category is not None:
+            query += "WHERE Category = ?"
+
+            cursor.execute(query, (category,))
+        elif tier is not None:
+            query += "WHERE Tier = ?"
+
+            cursor.execute(query, (tier,))
+        elif hold is not None:
+            query += "WHERE Hold is ?"
+
+            cursor.execute(query, (hold,))
+        else:
+            cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    factions = []
+    for elem in rows:
+        factions.append({"name": elem[0], "description": elem[1], "tier": elem[2], "hold": elem[3]})
+
+    if not as_dict:
+        for i in range(len(factions)):
+            factions[i].pop("description")
+            factions[i] = Faction(**factions[i])
+
+    return factions
+
+
+def query_npcs(npc_id: int = None, name: str = None, role: str = None, faction: str = None, canon: bool = None,
+               as_dict: bool = False) -> Union[List[NPC], List[dict]]:
+    """
+    Retrieves a list of NPC from the DB. If npc_id is passed this method searches for its occurrence, else
+    all the other parameters are used to found the matching NPCs.
+    The NPC's attribute faction is passed as string and not as a Faction object.
+
+    :param npc_id: represents the id of the NPC.
+    :param name: represents the name of the NPC.
+    :param role: represents the role of the NPC.
+    :param faction: represents the faction of the NPC.
+    :param canon: True if the target NPCs are canon, False if not-canon.
+    :param as_dict: if True the result objects will be returned as dictionaries.
+    :return: a list of NPC or a list of Dictionaries
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    query = """
+                SELECT Name, Role, Faction, Description
+                FROM NPC \n"""
+
+    if npc_id is not None:
+        query += "WHERE NpcID = ?"
+
+        cursor.execute(query, (npc_id,))
+    elif name is not None and role is not None and faction is not None and canon is not None:
+        query += "WHERE Name = ? AND Role = ? AND Faction = ? AND Canon is ?"
+
+        cursor.execute(query, (name, role, faction, canon))
+    elif name is not None and role is not None and faction is not None:
+        query += "WHERE Name = ? AND Role = ? AND Faction = ?"
+
+        cursor.execute(query, (name, role, faction))
+    elif name is not None and role is not None and canon is not None:
+        query += "WHERE Name = ? AND Role = ? AND Canon is ?"
+
+        cursor.execute(query, (name, role, canon))
+    elif name is not None and faction is not None and canon is not None:
+        query += "WHERE Name = ? AND Faction = ? AND Canon is ?"
+
+        cursor.execute(query, (name, faction, canon))
+    elif name is not None and role is not None and canon is not None:
+        query += "WHERE Name = ? AND Role = ? AND Canon is ?"
+
+        cursor.execute(query, (name, role, canon))
+    elif name is not None and role is not None:
+        query += "WHERE Name = ? AND Role = ?"
+
+        cursor.execute(query, (name, role))
+    elif name is not None and faction is not None:
+        query += "WHERE Name = ? AND Faction = ?"
+
+        cursor.execute(query, (name, faction))
+    elif name is not None and canon is not None:
+        query += "WHERE Name = ? AND Canon = ?"
+
+        cursor.execute(query, (name, canon))
+    elif role is not None and faction is not None:
+        query += "WHERE Role = ? AND Faction = ?"
+
+        cursor.execute(query, (role, faction))
+    elif role is not None and canon is not None:
+        query += "WHERE Role = ? AND Canon is ?"
+
+        cursor.execute(query, (role, canon))
+    elif faction is not None and canon is not None:
+        query += "WHERE Faction = ? AND Canon is ?"
+
+        cursor.execute(query, (faction, canon))
+    elif name is not None:
+        query += "WHERE Name = ?"
+
+        cursor.execute(query, (name, ))
+    elif role is not None:
+        query += "WHERE Role = ?"
+
+        cursor.execute(query, (role, ))
+    elif faction is not None:
+        query += "WHERE Faction = ?"
+
+        cursor.execute(query, (faction, ))
+    elif canon is not None:
+        query += "WHERE Canon is ?"
+
+        cursor.execute(query, (canon, ))
+    else:
+        cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    npcs = []
+    for elem in rows:
+        npcs.append({"name": elem[0], "role": elem[1], "faction": elem[2], "description": elem[3]})
+
+    if not as_dict:
+        for i in range(len(npcs)):
+            npcs[i] = NPC(**npcs[i])
+
+    return npcs
