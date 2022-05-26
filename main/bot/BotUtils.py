@@ -402,14 +402,17 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     context.user_data[command]["query_menu"] = query_menu
 
 
-def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: int, location: str = "chat"):
+def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: int, location: str = "chat",
+                         message_tag: str = "message", button_tag: str = "button"):
     """
     Utility method to update the InlineKeyboard of a bonus dice request.
-    Edit the message with the current total number of dice and the kb button with the number of bonus dice selected.
+    Edits the message with the current total number of dice and the kb button with the number of bonus dice selected.
 
     :param location: specifies the dict in the telegram data ("user", "chat" or "bot"). By default it's chat_data.
     :param tags: list of tag to get the bonus dice.
     :param tot_dice: total amount of dice to roll.
+    :param message_tag: is the tag of the dict to use for the message text.
+    :param button_tag: is the tag of the dict to use for the button text.
     :param context: instance of CallbackContext linked to the user.
     """
 
@@ -425,9 +428,9 @@ def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: in
 
     bonus_dice_lang = get_lang(context, "bonus_dice")
 
-    context.chat_data[tags[0]]["query_menu"].edit_text(bonus_dice_lang["message"].format(tot_dice),
+    context.chat_data[tags[0]]["query_menu"].edit_text(bonus_dice_lang[message_tag].format(tot_dice),
                                                        reply_markup=build_plus_minus_keyboard(
-                                                           [bonus_dice_lang["button"].format(pointer)],
+                                                           [bonus_dice_lang[button_tag].format(pointer)],
                                                            done_button=True,
                                                            back_button=False),
                                                        parse_mode=ParseMode.HTML)

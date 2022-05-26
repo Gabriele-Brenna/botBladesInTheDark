@@ -558,7 +558,7 @@ class Controller:
                 faction_string += "{} \u26AA\uFE0F - ".format(faction.status)
             elif faction.status < 0:
                 faction_string += "{} \uD83D\uDD34 - ".format(faction.status)
-            faction_string += " {}: {}".format(faction.name, faction.tier)
+            faction_string += "{}: {}".format(faction.name, faction.tier)
             factions.append(faction_string)
 
         return factions
@@ -590,10 +590,33 @@ class Controller:
                     npc_string += "[{}] - ".format(npc.faction)
             else:
                 npc_string += "[ ] - "
-            npc_string += " {}, {}".format(npc.name, npc.role)
+            npc_string += "{}, {}".format(npc.name, npc.role)
             npcs.append(npc_string)
 
         return npcs
+
+    def add_new_score(self, chat_id: int, user_id: int, score: dict):
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        pc_load = []
+        for key in score["members"].keys():
+            for elem in score["members"][key]:
+                pc = elem
+                load = score["members"][key][elem]
+
+                game.get_player_by_id(key).get_character_by_name(pc).load = load
+                pc_load.append((pc, load))
+
+                update_user_characters(key, game.identifier, save_to_json(game.get_player_by_id(key).characters))
+        score.pop("members")
+
+        score["target"] = score["target"]["name"]
+
+        # journal
+        game.journal.write_score(**score, pc_load=pc_load)
+        # game.journal.indentation += 1
+
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)

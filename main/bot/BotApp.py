@@ -340,20 +340,34 @@ def start_bot():
                     states={
                         0: [CallbackQueryHandler(score_target)],
                         1: [CallbackQueryHandler(score_target_selection)],
-                        2: [MessageHandler(Filters.text & ~Filters.command, score_plan_type)],
-                        3: [MessageHandler(Filters.text & ~Filters.command, score_plan_details)],
-                        4: [MessageHandler(Filters.text & ~Filters.command, score_title)],
-                        5: [CallbackQueryHandler(score_engagement)],
-                        6: [MessageHandler(Filters.text & ~Filters.command, score_notes)]
+                        2: [MessageHandler(Filters.text & ~Filters.command, score_target_custom)],
+                        3: [MessageHandler(Filters.text & ~Filters.command, score_plan_type)],
+                        4: [MessageHandler(Filters.text & ~Filters.command, score_plan_details)],
+                        5: [MessageHandler(Filters.text & ~Filters.command, score_title)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), score_end)],
+                    map_to_parent={
+                        ConversationHandler.END: ConversationHandler.END,
+                        6: 1
+                    },
+                    name="conv_score_creator1",
+                    persistent=True
+                )],
+                1: [MessageHandler(Filters.text & ~Filters.command, score_pcs_loads)],
+                2: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(score_engagement)],
+                    states={
+                        0: [CallbackQueryHandler(score_engagement)],
+                        1: [MessageHandler(Filters.text & ~Filters.command, score_notes)]
                     },
                     fallbacks=[CommandHandler("cancel".casefold(), score_end)],
                     map_to_parent={
                         ConversationHandler.END: ConversationHandler.END
                     },
-                    name="conv_score_creator",
+                    name="conv_score_creator2",
                     persistent=True
-                )],
-                1: [MessageHandler(Filters.text & ~Filters.command, score_pc_load)]
+
+                )]
             },
             fallbacks=[CommandHandler("cancel".casefold(), score_end),
                        CommandHandler("load".casefold(), score_load)],
