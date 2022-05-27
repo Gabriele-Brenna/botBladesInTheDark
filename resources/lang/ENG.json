@@ -574,6 +574,37 @@
 	  "0": "Your crew's wanted level is <i>{}</i>"
 	},
 
+    "entanglement": {
+      "err": "You can't use entanglement without being in a game... /join to take part in a game.",
+      "0,1,2,3": {
+        "1,2,3": "Gang Trouble or The Usual Suspects",
+        "4,5": "Rivals or Unquiet Dead",
+        "6, CRIT": "Cooperation"
+      },
+      "4,5": {
+        "1,2,3": "Gang Trouble or Questioning",
+        "4,5": "Reprisals or Unquiet Dead",
+        "6, CRIT": "Show of Force"
+      },
+      "6": {
+        "1,2,3": "Flipped or Interrogation",
+        "4,5": "Demonic Notice or Show of Force",
+        "6, CRIT": "Arrest"
+      },
+      "public": "{} is deciding an entanglement in <a href=\"{}\">private chat</a>",
+      "private": "Write the name of the entanglement or simply click the suggested one (from the game's rules)"
+    },
+
+    "entanglement_name": {
+      "0": "Describe briefly what happen with the entanglement"
+    },
+
+    "entanglement_description": {
+      "public": "<u>{}</u> made a new entanglement: <i>{}</i>",
+      "secret": "<u>{}</u> made a new secret entanglement..."
+    }
+	},
+
     "end_score": {
       "0": "What's the <i>outcome</i> of the score?",
       "1": "You can't end a score without being in a game... /join to take part in a game.",

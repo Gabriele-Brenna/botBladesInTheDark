@@ -1919,13 +1919,9 @@ def action_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
 
     elif choice == "DONE":
         dice_to_roll = action_roll_calc_total_dice(context.chat_data["action_roll"]["roll"])
-        context.args = []
-        context.args.append(dice_to_roll)
-        context.args.append(["action_roll", "roll", "outcome"])
-
         context.chat_data["action_roll"]["query_menu"].delete()
 
-        roll_dice(update, context)
+        roll_dice(update, context, dice_to_roll, ["action_roll", "roll", "outcome"])
 
         if "participants" in context.chat_data["action_roll"]["roll"]:
             max_outcome = context.chat_data["action_roll"]["roll"]["outcome"]
@@ -1989,13 +1985,10 @@ def group_action_bonus_dice(update: Update, context: CallbackContext) -> int:
 
     elif choice == "DONE":
         dice_to_roll = group_action_calc_total_dice(update, context)
-        context.args = []
-        context.args.append(dice_to_roll)
-        context.args.append(["action_roll", "roll", "participants", pc_name, "outcome"])
 
         context.chat_data["action_roll"]["query_menu"].delete()
 
-        roll_dice(update, context)
+        roll_dice(update, context, dice_to_roll, ["action_roll", "roll", "participants", pc_name, "outcome"])
 
         context.chat_data["action_roll"]["group_action"].pop(0)
         if not context.chat_data["action_roll"]["group_action"]:
@@ -2146,29 +2139,39 @@ def change_state_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_changeState------------------------------------------------------------
 
 
-def roll_dice(update: Update, context: CallbackContext) -> None:
+def roll_dice(update: Update, context: CallbackContext, dice_to_roll: int = None,
+              tags: List["str"] = None, location: str = "chat", chat_id: int = None) -> None:
     """
     Rolls the specified amount of dice and interprets the result, according to BitD rules.
     If no parameters are passed after "/roll", only one die is rolled.
 
+    :param chat_id: if specified the messages are sent to the selected chat.
+    :param dice_to_roll: the number of dice to roll
+    :param tags: the list of tags that states where the outcome should be saved
+    :param location: specifies the dict in the telegram data ("user", "chat" or "bot"). By default it's user_data.
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
     """
     dice = 1
-    if context.args:
+    if dice_to_roll is not None:
+        dice = dice_to_roll
+    elif context.args:
         try:
             dice = int(context.args[0])
         except ValueError:
-            update.message.reply_text(get_lang(context, roll_dice.__name__)["nan"].format(context.args[0]),
-                                      parse_mode=ParseMode.HTML)
+            context.bot.send_message(chat_id, get_lang(context, roll_dice.__name__)["nan"].format(context.args[0]),
+                                     parse_mode=ParseMode.HTML)
             return
 
     result, rolls = DiceRoller.roll_dice(dice)
 
+    if chat_id is None:
+        chat_id = update.effective_message.chat_id
+
     def execute(r: List[int]) -> None:
         for i in range(len(r)):
-            auto_delete_message(update.effective_message.reply_sticker(sticker=dice_stickers[str(r[i])],
-                                                                       quote=False), (len(r) - i) * 3 + 3)
+            auto_delete_message(context.bot.send_sticker(chat_id, sticker=dice_stickers[str(r[i])]),
+                                (len(r) - i) * 3 + 3)
             time.sleep(3)
         time.sleep(3)
 
@@ -2177,16 +2180,11 @@ def roll_dice(update: Update, context: CallbackContext) -> None:
         t.start()
         t.join()
 
-    update.effective_message.reply_text(get_lang(context, roll_dice.__name__)[str(result)], parse_mode=ParseMode.HTML,
-                                        quote=False)
-    update.effective_message.reply_sticker(sticker=dice_stickers[str(result)], quote=False)
+    context.bot.send_message(chat_id, get_lang(context, roll_dice.__name__)[str(result)], parse_mode=ParseMode.HTML)
+    context.bot.send_sticker(chat_id, sticker=dice_stickers[str(result)])
 
-    try:
-        add_tag_in_telegram_data(context, tags=list(context.args[1]), location="chat", value=result)
-    except IndexError:
-        pass
-    except:
-        traceback.print_exc()
+    if tags is not None:
+        add_tag_in_telegram_data(context, tags=tags, location=location, value=result)
 
 
 def send_journal(update: Update, context: CallbackContext) -> None:
@@ -3108,13 +3106,10 @@ def score_engagement(update: Update, context: CallbackContext) -> int:
 
         elif choice == "DONE":
             dice_to_roll = context.chat_data["score"]["dice"]
-            context.args = []
-            context.args.append(dice_to_roll)
-            context.args.append(["score", "score_info", "outcome"])
 
             context.chat_data["score"]["query_menu"].delete()
 
-            roll_dice(update, context)
+            roll_dice(update, context, dice_to_roll, ["score", "score_info", "outcome"])
 
             context.chat_data["score"]["message"] = \
                 context.chat_data["score"]["invocation_message"].reply_text(
@@ -3463,13 +3458,10 @@ def resistance_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
 
     elif choice == "DONE":
         dice_to_roll = resistance_roll_calc_total_dice(context.chat_data["resistance_roll"]["roll"])
-        context.args = []
-        context.args.append(dice_to_roll)
-        context.args.append(["resistance_roll", "roll", "outcome"])
 
         context.chat_data["resistance_roll"]["query_menu"].delete()
 
-        roll_dice(update, context)
+        roll_dice(update, context, dice_to_roll, ["resistance_roll", "roll", "outcome"])
 
         context.chat_data["resistance_roll"]["message"] = \
             context.chat_data["resistance_roll"]["invocation_message"].reply_text(
@@ -4005,6 +3997,137 @@ def end_score_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_endScore---------------------------------------------------------------
+
+
+# ------------------------------------------conv_entanglement-----------------------------------------------------------
+
+
+def entanglement(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the entanglement
+    throws the amount of dice following the game's rules and asks the user the name for the entanglement.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, entanglement.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 2):
+        return entanglement_end(update, context)
+
+    add_tag_in_telegram_data(context, ["entanglement", "invocation_message"], update.message)
+
+    context.user_data["entanglement"].setdefault("info", {}).setdefault("secret", False)
+
+    game_id = query_game_of_user(update.message.chat_id, get_user_id(update))
+
+    heat_value = controller.get_crew_heat(game_id)
+    wanted_level = controller.get_crew_wanted_level(game_id)
+
+    url = helpers.create_deep_linked_url(context.bot.username)
+
+    add_tag_in_telegram_data(context, ["entanglement", "chat_id"], update.message.chat_id)
+
+    if update.message.chat.type != "private":
+        auto_delete_message(update.effective_chat.send_message(
+            placeholders["public"].format(query_users_names(get_user_id(update))[0], url),
+            reply_to_message_id=update.message.message_id,
+            parse_mode=ParseMode.HTML), 18)
+
+    roll_dice(update, context, wanted_level, ["entanglement", "outcome"], "user", get_user_id(update))
+    entanglement_placeholder = placeholders["6"]
+    for key in placeholders:
+        if str(heat_value) in key:
+            entanglement_placeholder = placeholders[key]
+    for key in entanglement_placeholder:
+        if str(context.user_data["entanglement"]["outcome"]) in key:
+            entanglement_placeholder = entanglement_placeholder[key]
+
+    message = context.bot.send_message(chat_id=get_user_id(update), text=placeholders["private"],
+                                       reply_markup=custom_kb([entanglement_placeholder]))
+
+    add_tag_in_telegram_data(context, ["entanglement", "message"], message)
+
+    return 0
+
+
+def secret_entanglement(update: Update, context: CallbackContext) -> int:
+    """
+    Sets the secret tag in the entanglement info to True, then calls entanglement().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    add_tag_in_telegram_data(context, ["entanglement", "info", "secret"], True)
+    return entanglement(update, context)
+
+
+def entanglement_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the name of the entanglement in the user_data and advances the conversation to
+    the next state that regards the entanglement's description.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+        """
+    placeholders = get_lang(context, entanglement_name.__name__)
+
+    context.user_data["entanglement"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["entanglement", "info", "name"], update.message.text)
+
+    message = context.bot.send_message(chat_id=get_user_id(update), text=placeholders["0"])
+    add_tag_in_telegram_data(context, ["entanglement", "message"], message)
+
+    update.message.delete()
+
+    return 1
+
+
+def entanglement_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the description of the entanglement in the user_data and calls the controller method commit_entanglement,
+    then calls entanglement_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, entanglement_description.__name__)
+
+    context.user_data["entanglement"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["entanglement", "info", "description"], update.message.text)
+
+    chat_id = context.user_data["entanglement"]["chat_id"]
+
+    user_name = query_users_names(get_user_id(update))[0]
+
+    if context.user_data["entanglement"]["info"]["secret"]:
+        context.bot.send_message(chat_id, placeholders["secret"].format(user_name), ParseMode.HTML)
+    else:
+        context.bot.send_message(chat_id, placeholders["public"].format(user_name, update.message.text), ParseMode.HTML)
+
+    controller.commit_entanglement(
+        query_game_of_user(chat_id, get_user_id(update)), context.user_data["entanglement"]["info"])
+
+    return entanglement_end(update, context)
+
+
+def entanglement_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the heat conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "entanglement")
+
+    return end_conv(update, context)
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
