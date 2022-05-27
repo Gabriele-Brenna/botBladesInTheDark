@@ -168,6 +168,16 @@ class Game:
             if player.player_id == user_id:
                 return player
 
+    def get_faction_by_name(self, name: str) -> Faction:
+        for elem in self.factions:
+            if elem.name.lower() == name.lower():
+                return elem
+
+    def get_npc_by_name_and_role(self, name: str, role: str) -> NPC:
+        for npc in self.NPCs:
+            if npc.name.lower() == name.lower() and npc.role.lower() == role.lower():
+                return npc
+
     def __eq__(self, o: object) -> bool:
         return isinstance(o, self.__class__) and o.__dict__ == self.__dict__
 

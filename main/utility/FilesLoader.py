@@ -154,7 +154,7 @@ def setup(game: Game) -> None:
 
     if db_game["Score_JSON"] is not None:
         temp = copy.deepcopy(game.factions)
-        temp.append(game.NPCs)
+        temp += game.NPCs
         scores = scores_from_json(db_game["Score_JSON"])
         for score in scores:
             score.target = find_obj(score.target, temp)
@@ -165,6 +165,9 @@ def setup(game: Game) -> None:
 
     if db_game["Journal"] is not None:
         game.journal.log = BeautifulSoup(db_game["Journal"], 'html.parser')
+        scores = game.journal.log.find_all("div", attrs={"class": "score"}, recursive=True)
+        game.journal.score_tag = scores[len(scores)-1]
+        game.journal.indentation = len(game.scores)
 
     if db_game["State"] is not None:
         game.state = db_game["State"]

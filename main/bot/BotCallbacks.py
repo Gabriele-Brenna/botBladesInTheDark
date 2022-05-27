@@ -2896,6 +2896,7 @@ def score_target(update: Update, context: CallbackContext) -> int:
         context.chat_data["score"]["message"] = context.chat_data["score"]["invocation_message"].reply_text(
             placeholders["1"],
             parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, location="chat", tags=["score", "score_info", "target", "type"], value=choice)
         return 2
 
     add_tag_in_telegram_data(context, location="chat", tags=["score", "query_menu_index"], value=0)
