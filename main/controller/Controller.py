@@ -589,6 +589,15 @@ class Controller:
         return is_dead
 
     def get_factions(self, game_id: int) -> List[str]:
+        """
+        Gets the list with all the Faction for the specified game. Loads all the faction from the DB and checks, for
+        every faction, if it's already present in the game's factions list. If present the faction of the game replaces
+        the faction from the DB.
+
+        :param game_id: represents the ID of the game.
+        :return: a list of strings, each one composed by the actual status the players have with the faction, the name
+            of the faction and the faction's tier level.
+        """
         def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
             for elem in factions_list:
                 if elem.name.lower() == name.lower():
@@ -620,6 +629,15 @@ class Controller:
         return factions
 
     def get_npcs(self, game_id: int) -> List[str]:
+        """
+        Gets the list with all the NPCs for the specified game. Loads all the NPCs from the DB and checks, for
+        every NPC, if it's already present in the game's NPCs list. If present the NPC of the game replaces
+        the NPC from the DB.
+
+        :param game_id: represents the ID of the game.
+        :return: a list of strings, each one composed by the NPC's Faction's name (if it has a faction), the name
+            of the NPC and its role.
+        """
         def get_npcs_by_name_and_role(name: str, role: str, npcs_list: List[NPC]) -> NPC:
             for elem in npcs_list:
                 if elem.name.lower() == name.lower() and elem.role.lower() == role.lower():
@@ -652,6 +670,13 @@ class Controller:
         return npcs
 
     def add_new_score(self, chat_id: int, user_id: int, score: dict):
+        """
+        Adds a new score to the specified game's list. Calls the method to write the game's journal and updates the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param score: dictionary containing all the score's information.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
         pc_load = []
@@ -714,6 +739,66 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         return wanted_level
+
+    def exists_score(self, chat_id: int, user_id: int) -> bool:
+        """
+        Checks if the game of the user has an active score.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :return: True if the game has at least one score, False otherwise.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        if game.scores:
+            return True
+        return False
+
+    def get_last_score_rep(self, chat_id: int, user_id: int):
+        """
+        Gets the Rep that the crew should earn from the last added score.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :return: the amount of Rep.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        if len(game.scores) > 1:
+            score = game.scores[-1]
+        else:
+            score = game.scores[0]
+
+        return game.crew.calc_rep(score.target_tier)
+
+    def end_score(self, chat_id: int, user_id: int, end_score: dict) -> int:
+        """
+        Close the last added score by removing it from the game's scores list.
+        Calls the method to write the game's journal and updates the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param end_score: dictionary containing all the information of the score's closure.
+        :return: the number of coin the players may spend to increase their crew's tier if they completed the Rep
+                progress bar.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        if len(game.scores) > 1:
+            game.scores.pop(-1)
+        else:
+            game.scores.pop(0)
+
+        coin_to_pay = game.crew.add_rep(end_score["rep"])
+
+        insert_score_json(game.identifier, save_to_json(game.scores))
+        insert_crew_json(game.identifier, save_to_json(game.crew))
+
+        end_score.pop("rep")
+        game.journal.write_end_score(**end_score)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        return coin_to_pay
 
     def __repr__(self) -> str:
         return str(self.games)

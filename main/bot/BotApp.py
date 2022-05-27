@@ -408,6 +408,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["endScore".casefold(), "scoreEnd".casefold()], end_score)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, end_score_outcome)],
+                1: [MessageHandler(Filters.text & ~Filters.command, end_score_notes)],
+                2: [CallbackQueryHandler(end_score_rep)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_score_end)],
+            name="conv_end_score",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

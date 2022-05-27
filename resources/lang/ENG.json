@@ -258,7 +258,11 @@
 
       "heat": "Select the amount of heat to add or remove.",
       "heat_button": "Heat \u2668\uFE0F: {}",
-      "heat_description": "Change the amount of heat your crew will receive. Consider your abilities/crew's abilities."
+      "heat_description": "Change the amount of heat your crew will receive. Consider your abilities/crew's abilities.",
+
+      "rep": "Select the amount of rep to add to your crew.",
+      "rep_button": "Rep : {}",
+      "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it."
     },
 
     "group_action_cohort": {
@@ -537,7 +541,7 @@
 
 	"heat": {
 	  "0": "What was the nature of the operation?",
-	  "1": "You can't perform an resistance roll without being in a game... /join to take part in a game.",
+	  "1": "You can't handle heat without being in a game... /join to take part in a game.",
 	  "keyboard": ["Smooth and quiet", "Contained", "Loud and chaotic", "Wild"],
 	  "callbacks": [["smooth and quiet, low exposure", "0"], ["contained, standard exposure", "2"], ["loud and chaotic, high exposure", "4"], ["wild, extreme exposure", "6"]]
 	},
@@ -568,7 +572,23 @@
 
 	"heat_extra": {
 	  "0": "Your crew's wanted level is <i>{}</i>"
-	}
+	},
+
+    "end_score": {
+      "0": "What's the <i>outcome</i> of the score?",
+      "1": "You can't end a score without being in a game... /join to take part in a game.",
+      "2": "In order to end a score, you should create one first... \n/score",
+
+      "keyboard": ["Success", "Failure", "Withdraw"]
+    },
+
+    "end_score_outcome": {
+      "0": "Describe the outcome of the score."
+    },
+
+    "end_score_rep": {
+      "0": "Good news. Your crew can be upgraded.\nYou may spend <i><b>{}</b></i> coins to increase the crew's tier by one.\n/increaseCrewTier"
+    }
   },
 
   "Journal": {
