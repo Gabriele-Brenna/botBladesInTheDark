@@ -687,5 +687,40 @@ class Controller:
 
         return wanted_level
 
+    def get_crew_wanted_level(self, game_id: int):
+        """
+        Gets the crew's wanted level of the selected game.
+
+        :param game_id: the game's id.
+        """
+        return self.get_game_by_id(game_id).crew.wanted_level
+
+    def get_crew_heat(self, game_id: int):
+        """
+        Gets the crew's heat of the selected game.
+
+        :param game_id: the game's id.
+        """
+
+        return self.get_game_by_id(game_id).crew.heat
+
+    def commit_entanglement(self, game_id: int, entanglement: dict):
+        """
+        Writes in the journal of the specified game the new entanglement and updates the database.
+
+        :param game_id: the game's id.
+        :param entanglement:  dictionary containing all the necessary information about the entanglement.
+        """
+        game = self.get_game_by_id(game_id)
+
+        secret = entanglement.pop("secret")
+
+        if secret:
+            game.journal.write_secret_entanglement(**entanglement)
+        else:
+            game.journal.write_entanglement(**entanglement)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
     def __repr__(self) -> str:
         return str(self.games)

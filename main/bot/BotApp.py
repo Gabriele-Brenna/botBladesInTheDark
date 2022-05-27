@@ -408,6 +408,22 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["entanglement".casefold(), "ent".casefold()], entanglement),
+                          CommandHandler(["secretEntanglement".casefold(), "secretEnt".casefold()],
+                                         secret_entanglement)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, entanglement_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, entanglement_description)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), entanglement_end)],
+            name="conv_entanglement",
+            persistent=True,
+            per_chat=False
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
