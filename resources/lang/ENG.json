@@ -602,8 +602,7 @@
     "entanglement_description": {
       "public": "<u>{}</u> made a new entanglement: <i>{}</i>",
       "secret": "<u>{}</u> made a new secret entanglement..."
-    }
-	},
+    },
 
     "end_score": {
       "0": "What's the <i>outcome</i> of the score?",
