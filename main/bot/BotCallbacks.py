@@ -4072,7 +4072,7 @@ def entanglement_name(update: Update, context: CallbackContext) -> int:
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
     :return: next conversation's state.
-        """
+    """
     placeholders = get_lang(context, entanglement_name.__name__)
 
     context.user_data["entanglement"]["message"].delete()
@@ -4119,7 +4119,7 @@ def entanglement_description(update: Update, context: CallbackContext) -> int:
 
 def entanglement_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the heat conversation and deletes all the saved information from the user_data.
+    Ends the entanglement conversation and deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -4128,6 +4128,147 @@ def entanglement_end(update: Update, context: CallbackContext) -> int:
     delete_conv_from_telegram_data(context, "entanglement")
 
     return end_conv(update, context)
+
+
+# ------------------------------------------conv_entanglement-----------------------------------------------------------
+
+
+# ------------------------------------------conv_payoff-----------------------------------------------------------------
+
+
+def payoff(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the payoff,
+    and asks the user the amount of coin earned.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, payoff.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 2):
+        return entanglement_end(update, context)
+
+    add_tag_in_telegram_data(context, ["payoff", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
+    add_tag_in_telegram_data(context, ["payoff", "message"], message)
+
+    return 0
+
+
+def payoff_amount(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the amount of coin in the user_data and advances the conversation to the
+    next state that regards how to store the earnings sending the user an inline keyboard with the available options.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, payoff_amount.__name__)
+    context.user_data["payoff"]["message"].delete()
+
+    coins = update.message.text
+    try:
+        coins = int(coins)
+    except:
+        placeholders = get_lang(context, payoff.__name__)
+        message = context.user_data["payoff"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
+        add_tag_in_telegram_data(context, ["payoff", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["payoff", "info", "amount"], coins)
+
+    can_divvy, can_store_in_vault = \
+        controller.can_store_coins(query_game_of_user(update.message.chat_id, get_user_id(update)), coins)
+
+    buttons = placeholders["keyboard"].copy()
+    callbacks = placeholders["callbacks"].copy()
+
+    if not can_store_in_vault:
+        buttons.pop(1)
+        callbacks.pop(1)
+    if not can_divvy:
+        buttons.pop(0)
+        callbacks.pop(0)
+
+    message = context.user_data["payoff"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(buttons, inline=True, split_row=1, callback_data=callbacks))
+    add_tag_in_telegram_data(context, ["payoff", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def payoff_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the handling method for the coins in the user_data and advances the conversation to the
+    next state that regards the payoff notes.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, payoff_choice.__name__)
+    context.user_data["payoff"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    # Divvy
+    if choice == 1:
+        add_tag_in_telegram_data(context, ["payoff", "info", "distributed"], True)
+    # Vault
+    elif choice == 2:
+        add_tag_in_telegram_data(context, ["payoff", "info", "distributed"], False)
+    # Do it later
+    else:
+        auto_delete_message(context.user_data["payoff"]["invocation_message"].reply_text(
+            placeholders["0"].format(context.user_data["payoff"]["info"]["amount"])), 15)
+
+    message = context.user_data["payoff"]["invocation_message"].reply_text(placeholders["1"])
+    add_tag_in_telegram_data(context, ["payoff", "message"], message)
+    return 2
+
+
+def payoff_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the notes in the user_data and calls the controller method commit_payoff, then
+    calls payoff_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: payoff_end.
+    """
+    context.user_data["payoff"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["payoff", "info", "notes"], update.message.text)
+
+    controller.commit_payoff(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                             context.user_data["payoff"]["info"])
+
+    return payoff_end(update, context)
+
+
+def payoff_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the payoff conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "entanglement")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_payoff-----------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

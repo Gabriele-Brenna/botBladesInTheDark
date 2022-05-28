@@ -166,7 +166,10 @@ def setup(game: Game) -> None:
     if db_game["Journal"] is not None:
         game.journal.log = BeautifulSoup(db_game["Journal"], 'html.parser')
         scores = game.journal.log.find_all("div", attrs={"class": "score"}, recursive=True)
-        game.journal.score_tag = scores[len(scores)-1]
+        if scores is not None and len(scores) > 0:
+            game.journal.score_tag = scores[len(scores) - 1]
+        else:
+            game.journal.score_tag = None
         game.journal.indentation = len(game.scores)
 
     if db_game["State"] is not None:

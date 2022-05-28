@@ -598,6 +598,7 @@ class Controller:
         :return: a list of strings, each one composed by the actual status the players have with the faction, the name
             of the faction and the faction's tier level.
         """
+
         def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
             for elem in factions_list:
                 if elem.name.lower() == name.lower():
@@ -638,6 +639,7 @@ class Controller:
         :return: a list of strings, each one composed by the NPC's Faction's name (if it has a faction), the name
             of the NPC and its role.
         """
+
         def get_npcs_by_name_and_role(name: str, role: str, npcs_list: List[NPC]) -> NPC:
             for elem in npcs_list:
                 if elem.name.lower() == name.lower() and elem.role.lower() == role.lower():
@@ -834,6 +836,70 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         return coin_to_pay
+
+    def can_store_coins(self, game_id: int, coins: int) -> Tuple[bool, bool]:
+        """
+        Checks which method are available to handle the earned coins for the specified game.
+
+        :param game_id: the game's id.
+        :param coins: the number of coin to store.
+        :return: a tuple of boolean value: the first one is True when the members can divvy the amount of coins among
+            them, the second one is True when the coins can be stored in the crew's vault.
+        """
+        game = self.get_game_by_id(game_id)
+
+        number_of_crew_members = len(game.get_owners_list())
+
+        coin_per_member = int(coins / number_of_crew_members)
+        exceed = coins % number_of_crew_members
+
+        can_store_in_vault = True
+        can_divvy = True
+        for pc in game.get_owners_list():
+            if not pc.can_store_coins(coin_per_member):
+                can_divvy = False
+                break
+
+        if can_divvy and not game.crew.can_store(exceed):
+            can_divvy = False
+            can_store_in_vault = False
+
+        if can_store_in_vault and not game.crew.can_store(coins):
+            can_store_in_vault = False
+
+        return can_divvy, can_store_in_vault
+
+    def commit_payoff(self, game_id: int, payoff: dict):
+        """
+        Stores the coins earned with the selected method, writes in the journal of the specified game the new payoff and
+        updates the database.
+
+        :param game_id: the game's id.
+        :param payoff:  dictionary containing all the necessary information about the payoff.
+        """
+        game = self.get_game_by_id(game_id)
+
+        coins = payoff["amount"]
+
+        if "distributed" in payoff:
+            if payoff["distributed"]:
+                number_of_crew_members = len(game.get_owners_list())
+                coin_per_member = int(coins / number_of_crew_members)
+                exceed = coins % number_of_crew_members
+
+                for owner in game.get_owners_list():
+                    owner.store_coins(coin_per_member)
+                game.crew.add_coin(exceed)
+
+                for user in game.users:
+                    update_user_characters(user.player_id, game_id, save_to_json(user.characters))
+            else:
+                game.crew.add_coin(coins)
+
+            insert_crew_json(game_id, save_to_json(game.crew))
+
+        game.journal.write_payoff(**payoff)
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)

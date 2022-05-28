@@ -438,6 +438,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["payoff".casefold(), "payment".casefold()], payoff)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, payoff_amount)],
+                1: [CallbackQueryHandler(payoff_choice)],
+                2: [MessageHandler(Filters.text & ~Filters.command, payoff_notes)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), payoff_end)],
+            name="conv_payoff",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

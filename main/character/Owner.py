@@ -43,6 +43,12 @@ class Owner(PC):
         """
         return self.stash + coins <= 40
 
+    def can_store_coins(self, coins: int) -> bool:
+        free_purse_space = 4 - self.coin
+        free_stash_space = 40 - self.stash
+
+        return coins <= (free_stash_space + free_purse_space)
+
     def add_coins(self, coins: int) -> bool:
         """
         Adds a given amount of coins to the Owner.
@@ -66,6 +72,16 @@ class Owner(PC):
             self.stash += coins
             return True
         return False
+
+    def store_coins(self, coins: int) -> bool:
+        if not self.can_store_coins(coins):
+            return False
+
+        for i in range(coins):
+            if not self.add_coins(1):
+                self.stash_coins(1)
+
+        return True
 
     @abstractmethod
     def migrate(self, mc: super.__class__):

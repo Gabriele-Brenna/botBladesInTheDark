@@ -1,6 +1,7 @@
 from typing import List
 
 from character.Item import Item
+from character.Owner import Owner
 from character.PC import PC
 from component.Clock import Clock
 from controller.DBreader import query_last_game_id
@@ -162,6 +163,26 @@ class Game:
             elif user_id is None:
                 pcs += player.characters
         return pcs
+
+    def get_owners_list(self, user_id: int = None) -> List[Owner]:
+        """
+        Gets the list of all the PCs that are Owner of all users that participate in this game
+        or only the specified user's list.
+
+        :param user_id: represents the id of the target user.
+        :return: a list of PCs. (Empty list if no PCs are in the game)
+        """
+        owners = []
+        for player in self.users:
+            if user_id is not None and player.player_id == user_id:
+                for pc in player.characters:
+                    if isinstance(pc, Owner):
+                        owners += player.characters
+            elif user_id is None:
+                for pc in player.characters:
+                    if isinstance(pc, Owner):
+                        owners += player.characters
+        return owners
 
     def get_player_by_id(self, user_id: int) -> Player:
         for player in self.users:

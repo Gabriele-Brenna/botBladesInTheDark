@@ -618,6 +618,23 @@
 
     "end_score_rep": {
       "0": "Good news. Your crew can be upgraded.\nYou may spend <i><b>{}</b></i> coins to increase the crew's tier by one.\n/increaseCrewTier"
+    },
+
+    "payoff": {
+      "err": "You can't handle a payoff without being in a game... /join to take part in a game.",
+      "0": "How much coins did the crew earned ?",
+      "keyboard": [2,4,6,8,10]
+    },
+
+    "payoff_amount": {
+      "0": "Select how to manage your earnings",
+      "keyboard": ["Divvy it up","Store in vault","Decide later"],
+      "callbacks": [1,2,3]
+    },
+
+    "payoff_choice": {
+      "0": "Remember to add your {} coins later",
+      "1": "Describe the payoff"
     }
   },
 
