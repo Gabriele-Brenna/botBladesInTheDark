@@ -450,9 +450,12 @@ class Journal:
 
         div_tag.append(self.create_h4_tag(placeholder["1"]))
 
-        div_tag.append(self.create_p_tag(placeholder["2"].format(
-            amount, placeholder[str(3 + int(distributed))]
-        )))
+        if distributed is not None:
+            div_tag.append(self.create_p_tag(placeholder["2"].format(
+                amount, placeholder[str(3 + int(distributed))]
+            )))
+        else:
+            div_tag.append(self.create_p_tag(placeholder["2"].format(amount, placeholder["5"])))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -778,6 +781,24 @@ class Journal:
 
         return div_tag
 
+    def create_armor_use_tag(self, pc: str, armor_type: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "armor".
+
+        :param pc: who uses the armor
+        :param armor_type: type of the armor
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_armor_use.__name__)
+
+        div_tag = self.create_div_tag({"class": "armor"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, armor_type)))
+
+        return div_tag
+
     def get_indentation(self) -> int:
         """
         Method used to get the percentage indentation based on the value of the attribute indentation
@@ -962,7 +983,7 @@ class Journal:
 
         self.score_tag = self.score_tag.parent
 
-    def write_payoff(self, amount: int, distributed: bool, notes: str):
+    def write_payoff(self, amount: int, notes: str, distributed: bool = None):
         """
         Method used to write the payoff in the attribute journal representing the html file of the journal.
 
@@ -1108,6 +1129,16 @@ class Journal:
         :param old_clock: old clock used to compare with the new one to know with sentence to use in the paragraph
         """
         tag = self.create_clock(pc, new_clock, old_clock)
+
+        self.write_general(tag)
+
+    def write_armor_use(self, pc: str, armor_type: str):
+        """
+        Method used to write the use of an armor in the attribute journal representing the html file of the journal.
+        :param pc: who uses the armor
+        :param armor_type: type of the armor used
+        """
+        tag = self.create_armor_use_tag(pc, armor_type)
 
         self.write_general(tag)
 
