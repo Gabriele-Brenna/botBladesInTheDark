@@ -4271,6 +4271,85 @@ def payoff_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_payoff-----------------------------------------------------------------
 
 
+# ------------------------------------------conv_entanglement-----------------------------------------------------------
+
+
+# ------------------------------------------conv_armor_use--------------------------------------------------------------
+
+
+def armor_use(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the armor use
+    and asks the user for the type of armor.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if "active_PCs" in context.user_data and update.effective_message.chat_id in context.user_data["active_PCs"]:
+        placeholders = get_lang(context, armor_use.__name__)
+
+        if is_game_in_wrong_phase(update, context, placeholders["1"]):
+            return end_score_end(update, context)
+
+        add_tag_in_telegram_data(context, ["armor_use", "invocation_message"], update.message)
+
+        add_tag_in_telegram_data(context, ["armor_use", "info", "pc"],
+                                 context.user_data["active_PCs"][update.effective_message.chat_id])
+
+        message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+            placeholders["keyboard"], inline=True, split_row=1))
+        add_tag_in_telegram_data(context, ["armor_use", "message"], message)
+
+        return 0
+
+
+def armor_use_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the type of the armor in the user_data and calls the controller method commit_armor_use,
+    then calls armor_use_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, armor_use_type.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    context.user_data["armor_use"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["armor_use", "info", "armor_type"], choice)
+
+    message = context.user_data["armor_use"]["invocation_message"].reply_text(placeholders["0"].format(
+        context.user_data["armor_use"]["info"]["pc"], context.user_data["armor_use"]["info"]["armor_type"]
+    ), parse_mode=ParseMode.HTML)
+    auto_delete_message(message, 8.0)
+
+    controller.commit_armor_use(update.effective_message.chat_id, get_user_id(update),
+                                context.user_data["armor_use"]["info"])
+
+    return armor_use_end(update, context)
+
+
+def armor_use_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the armor use conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "armor_use")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_armor_use--------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

@@ -901,5 +901,23 @@ class Controller:
         game.journal.write_payoff(**payoff)
         insert_journal(game.identifier, game.journal.get_log_string())
 
+    def commit_armor_use(self, chat_id: int, user_id: int, armor_use: dict):
+        """
+        Calls use_armor method of the user's pc, commit the changes made to the journal and updates the database.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param armor_use: dictionary containing all the information about the use of the armor.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        game.get_player_by_id(user_id).get_character_by_name(armor_use["pc"]).use_armor(armor_use["armor_type"])
+
+        game.journal.write_armor_use(**armor_use)
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
     def __repr__(self) -> str:
         return str(self.games)

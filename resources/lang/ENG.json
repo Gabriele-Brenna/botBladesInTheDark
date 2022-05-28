@@ -635,6 +635,16 @@
     "payoff_choice": {
       "0": "Remember to add your {} coins later",
       "1": "Describe the payoff"
+    },
+
+    "armor_use": {
+      "0": "Decide which type of armor you want to use:",
+      "1": "You can't use an armor without being in a game... /join to take part in a game.",
+      "keyboard": ["Standard", "Heavy", "Special"]
+    },
+
+    "armor_use_type": {
+      "0": "<i>{}</i> used their {} armor."
     }
   },
 
@@ -688,8 +698,9 @@
 	  "0": "PAYOFF",
 	  "1": "LOOT",
 	  "2": "The crew earned {} coins {}",
-	  "3": "stored in lair's vault",
-	  "4": "redistributed among members"
+	  "3": "stored in lair's vault.",
+	  "4": "redistributed among members.",
+      "5": "and the crew members will decide later how to distribute them."
 	},
 	"write_heat": {
 	  "0": "HEAT",
@@ -791,6 +802,10 @@
 	  "2": "{} ticked the clock '{}' by {} segments",
 	  "3": "{} completed the clock '{}'"
 	},
+    "write_armor_use": {
+      "0": "ARMOR USE",
+      "1": "<b><i>{}</i></b> used his <i>{}</i> armor"
+    },
     "results": {
       "action": {
         "controlled": {
