@@ -4263,7 +4263,7 @@ def payoff_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END
     """
-    delete_conv_from_telegram_data(context, "entanglement")
+    delete_conv_from_telegram_data(context, "payoff")
 
     return end_conv(update, context)
 
