@@ -430,11 +430,11 @@ def update_bonus_dice_kb(context: CallbackContext, tags: List[str], tot_dice: in
     bonus_dice_lang = get_lang(context, "bonus_dice")
 
     pointer[tags[0]]["query_menu"].edit_text(bonus_dice_lang[message_tag].format(tot_dice),
-                                                       reply_markup=build_plus_minus_keyboard(
-                                                           [bonus_dice_lang[button_tag].format(bonus_dice)],
-                                                           done_button=True,
-                                                           back_button=False),
-                                                       parse_mode=ParseMode.HTML)
+                                             reply_markup=build_plus_minus_keyboard(
+                                                 [bonus_dice_lang[button_tag].format(bonus_dice)],
+                                                 done_button=True,
+                                                 back_button=False),
+                                             parse_mode=ParseMode.HTML)
 
 
 def action_roll_calc_total_dice(ar_info: dict) -> int:
@@ -585,7 +585,6 @@ def end_conv(update: Update, context: CallbackContext) -> int:
     except:
         message = context.bot.send_message(chat_id=update.effective_message.chat_id, text=placeholders["0"],
                                            reply_markup=ReplyKeyboardRemove())
-
 
     auto_delete_message(update.effective_message, 3.0)
 
