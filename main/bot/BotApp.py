@@ -476,6 +476,21 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(
+                ["vaultCapacity".casefold(), "setVaultCapacity".casefold(), "setVault".casefold(), "vault".casefold()],
+                vault_capacity
+            )],
+            states={
+                0: [CallbackQueryHandler(vault_capacity_kb)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), vault_capacity_end)],
+            name="conv_vault_capacity",
+            persistent=True
+        )
+    )
+
     dispatcher.add_handler(CommandHandler(["upgradeCrew".casefold(), "addCrewTier".casefold(),
                                            "upCrew".casefold()], upgrade_crew))
 

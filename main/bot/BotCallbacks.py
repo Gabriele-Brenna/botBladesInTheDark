@@ -4346,6 +4346,95 @@ def armor_use_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_armor_use--------------------------------------------------------------
 
+# ------------------------------------------conv_vault_capacity---------------------------------------------------------
+
+def vault_capacity(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that regards the vault's capacity.
+    Sends the InlineKeyboard with the current capacity of the vault.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, vault_capacity.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return vault_capacity_end(update, context)
+
+    add_tag_in_telegram_data(context, ["vault_capacity", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["vault_capacity", "capacity"],
+                             controller.get_vault_capacity_of_crew(
+                                 query_game_of_user(update.effective_message.chat_id, get_user_id(update))))
+
+    placeholders = get_lang(context, "bonus_dice")
+    query_menu = update.message.reply_text(placeholders["vault_capacity_message"],
+                                           reply_markup=build_plus_minus_keyboard(
+        [placeholders["vault_capacity_button"].format(context.user_data["vault_capacity"]["capacity"])],
+                                               inline=True,
+                                           back_button=False,
+                                           done_button=True))
+    add_tag_in_telegram_data(context, ["vault_capacity", "query_menu"], query_menu)
+
+    return 0
+
+
+def vault_capacity_kb(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the vault capacity.
+    Calls the controller method modify_vault_capacity() when DONE button is pressed.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, vault_capacity_end() otherwise.
+    """
+
+    placeholders = get_lang(context, "bonus_dice")
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    capacity = context.user_data["vault_capacity"]["capacity"]
+
+    if "+" in choice or "-" in choice:
+        capacity += int(choice.split(" ")[1])
+        if capacity < 0:
+            capacity = 0
+        add_tag_in_telegram_data(context, ["vault_capacity", "capacity"], value=capacity)
+
+        update_bonus_dice_kb(context, location="user", tags=["vault_capacity", "capacity"],
+                             tot_dice=context.user_data["vault_capacity"]["capacity"],
+                             message_tag="vault_capacity_message",
+                             button_tag="vault_capacity_button")
+
+    elif choice == "DONE":
+        controller.modify_vault_capacity(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                         context.user_data["vault_capacity"]["capacity"])
+        return vault_capacity_end(update, context)
+
+    else:
+        auto_delete_message(update.effective_message.reply_text(placeholders["vault_capacity_rules"], parse_mode=ParseMode.HTML),
+                            placeholders["vault_capacity_rules"])
+
+    return 0
+
+
+def vault_capacity_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the vault capacity conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "armor_use")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_vault_capacity---------------------------------------------------------
 
 # ------------------------------------------conv_add_coin---------------------------------------------------------------
 
@@ -4415,7 +4504,7 @@ def add_coin_amount(update: Update, context: CallbackContext) -> int:
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.:
-    :return: this state if the DONE button haas not been pressed, add_coin_end otherwise.
+    :return: this state if the DONE button has not been pressed, add_coin_end otherwise.
     """
 
     placeholders = get_lang(context, add_coin_amount.__name__)
@@ -4435,7 +4524,9 @@ def add_coin_amount(update: Update, context: CallbackContext) -> int:
         choice = choice.split(" ")
 
         if controller.check_add_coin(chat_id, get_user_id(update), pc_name, choice[0].lower(), int(choice[1]) +
-                                     context.user_data["add_coin"]["info"][choice[0].lower()]):
+                                                                                               context.user_data[
+                                                                                                   "add_coin"]["info"][
+                                                                                                   choice[0].lower()]):
 
             add_coin_info[choice[0].lower()] += int(choice[1])
         else:
