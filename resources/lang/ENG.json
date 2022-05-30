@@ -283,15 +283,22 @@
       "message": "Add or remove your bonus dice. By now you have {} \uD83C\uDFB2",
       "button": "Bonus \uD83C\uDFB2: {}",
       "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get.",
+
       "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
       "engagement": "Engagement \uD83C\uDFB2: {}",
       "engagement_extended": "Select the number of dice you want to roll. Consider the details of your plan.",
+
       "heat": "Select the amount of heat to add or remove.",
       "heat_button": "Heat \u2668\uFE0F: {}",
       "heat_description": "Change the amount of heat your crew will receive. Consider your abilities/crew's abilities.",
+
       "rep": "Select the amount of rep to add to your crew.",
       "rep_button": "Rep : {}",
-      "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it."
+      "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it.",
+
+      "vault_capacity_message": "Select the total capacity of your crew's vault:",
+      "vault_capacity_button": "Capacity: {}",
+      "vault_capacity_rules": "By the game rules, the default capacity of the crew's vault is 4.\nIf your crew has the <i>Vault</i> Upgrade, the capacity can be increased to 8 (level 1) or to 16 (level 2).\nIf you have something that can give you more space or something that reduces it, mark the value of your vault's capacity."
     },
     "group_action_cohort": {
       "0": "Select the cohort you want to lead",
@@ -793,6 +800,10 @@
       "coins": "you can't have more than 4 coins",
       "stash": "you can't have more than 40 coins in your stash",
       "vault": "you can't have more than {} coins in your vault"
+    },
+
+    "vault_capacity": {
+      "err": "You can't modify the vault capacity of the crew without being in a game... /join to join a game."
     }
 
   },

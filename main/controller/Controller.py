@@ -999,5 +999,22 @@ class Controller:
 
         return game.crew.vault_capacity
 
+    def modify_vault_capacity(self, game_id: int, new_capacity: int):
+        """
+        Modifies the vault capacity of the specified game's crew by replacing the old value with the passed one.
+
+        :param game_id: the game's id.
+        :param new_capacity: is the new value of the vault's capacity.
+        """
+        game = self.get_game_by_id(game_id)
+
+        crew = game.crew
+        crew.vault_capacity = new_capacity
+
+        if crew.coins > new_capacity:
+            crew.coins = new_capacity
+
+        insert_crew_json(game.identifier, save_to_json(crew))
+
     def __repr__(self) -> str:
         return str(self.games)
