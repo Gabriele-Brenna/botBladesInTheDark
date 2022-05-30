@@ -32,7 +32,7 @@ class Owner(PC):
         :param coins: is the amount of coins
         :return: True if the coin can be added, False otherwise
         """
-        return self.coin + coins <= 4
+        return 0 <= self.coin + coins <= 4
 
     def can_stash_coins(self, coins: int) -> bool:
         """
@@ -41,7 +41,7 @@ class Owner(PC):
         :param coins: is the amount of coins
         :return: True if the coin can be added, False otherwise
         """
-        return self.stash + coins <= 40
+        return 0 <= self.stash + coins <= 40
 
     def can_store_coins(self, coins: int) -> bool:
         free_purse_space = 4 - self.coin

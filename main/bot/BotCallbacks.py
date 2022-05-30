@@ -4347,6 +4347,137 @@ def armor_use_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_armor_use--------------------------------------------------------------
 
 
+# ------------------------------------------conv_add_coin---------------------------------------------------------------
+
+
+def add_coin(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the coins
+    and sends the user the inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_coin.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_coin_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_coin", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["add_coin", "info", "coins"], 0)
+    add_tag_in_telegram_data(context, ["add_coin", "info", "stash"], 0)
+    add_tag_in_telegram_data(context, ["add_coin", "info", "vault"], 0)
+
+    query_menu = update.message.reply_text(placeholders["0"],
+                                           reply_markup=build_plus_minus_keyboard(
+                                               build_add_coin_buttons(update, context),
+                                               back_button=False, done_button=True))
+
+    add_tag_in_telegram_data(context, ["add_coin", "query_menu"], query_menu)
+
+    return 0
+
+
+def build_add_coin_buttons(update: Update, context: CallbackContext) -> List[str]:
+    """
+    Builds the button for the inline keyboard used to add coins.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the list of buttons' label.
+    """
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    coins, stash, vault = controller.get_player_coins(chat_id, get_user_id(update), pc_name)
+
+    buttons = []
+    if coins is not None and stash is not None:
+        coins += context.user_data["add_coin"]["info"]["coins"]
+        stash += context.user_data["add_coin"]["info"]["stash"]
+        buttons.append("Coins: {}".format(coins))
+        buttons.append("Stash: {}".format(stash))
+    vault += context.user_data["add_coin"]["info"]["vault"]
+    buttons.append("Vault: {}".format(vault))
+
+    return buttons
+
+
+def add_coin_amount(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the coins.
+    Calls the controller method commit_add_coin() when DONE button is pressed.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button haas not been pressed, add_coin_end otherwise.
+    """
+
+    placeholders = get_lang(context, add_coin_amount.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_coin_info = context.user_data["add_coin"]["info"]
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    if "+" in choice or "-" in choice:
+
+        choice = choice.split(" ")
+
+        if controller.check_add_coin(chat_id, get_user_id(update), pc_name, choice[0].lower(), int(choice[1]) +
+                                     context.user_data["add_coin"]["info"][choice[0].lower()]):
+
+            add_coin_info[choice[0].lower()] += int(choice[1])
+        else:
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders["0"]))
+
+        placeholders = get_lang(context, add_coin.__name__)
+        context.user_data["add_coin"]["query_menu"].edit_text(placeholders["0"],
+                                                              reply_markup=build_plus_minus_keyboard(
+                                                                  build_add_coin_buttons(update, context),
+                                                                  back_button=False,
+                                                                  done_button=True))
+        return 0
+    elif choice == "DONE":
+        controller.commit_add_coin(chat_id, get_user_id(update), pc_name, add_coin_info)
+        return add_coin_end(update, context)
+    else:
+        if choice.split(": ")[0].lower() == "vault":
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders["vault"].format(
+                    controller.get_vault_capacity_of_crew(query_game_of_user(chat_id, get_user_id(update))))), 3)
+        else:
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders[choice.split(": ")[0].lower()]), 3)
+        return 0
+
+
+def add_coin_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the armor use conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_coin")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_add_coin---------------------------------------------------------------
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

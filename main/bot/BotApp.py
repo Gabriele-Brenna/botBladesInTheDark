@@ -464,6 +464,18 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["coin".casefold(), "addCoin".casefold()], add_coin)],
+            states={
+                0: [CallbackQueryHandler(add_coin_amount)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_coin_end)],
+            name="conv_add_coin",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

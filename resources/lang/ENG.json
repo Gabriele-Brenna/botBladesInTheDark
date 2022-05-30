@@ -1,16 +1,14 @@
 {
   "Bot": {
-
     "start": {
       "0": "Welcome to the Blades in the Dark's telegram Bot by : Niccolo\u0301 Bergamaschi, Gabriele Brenna and Leandro Bognanni.",
       "1": "License {} : This work is based on Blades in the Dark (found at http://www.bladesinthedark.com/), product of One Seven Design, developed and authored by John Harper, and licensed for our use under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).",
       "2": "Create a group chat with your friends and invite them all to \n/login.\n After the registration you can start playing.\n If you have any questions, pls use \n/help"
     },
-
-    "greet_chat_members":  {
-      "0": "Scoundrel {} was bragged to Doskvol by {}", "1": "{} executed {} for his crimes"
+    "greet_chat_members": {
+      "0": "Scoundrel {} was bragged to Doskvol by {}",
+      "1": "{} executed {} for his crimes"
     },
-
     "help_msg": {
       "default": {
         "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E), type \n/help followed by the name of the command",
@@ -26,44 +24,44 @@
         "roll": "You can roll a specified pool of dice (for instance: /roll 6 will roll 6d6). You will see all your dice rolling in the form of stickers, then the final result according to Blades in the Dark rules (The highest result, CRIT or the lowest result if you rolled a pool of '0' dice)."
       }
     },
-
     "start_login": {
       "0": "You are approaching Doskvol, to register: <a href=\"{}\">[\uD83D\uDD10  CLICK HERE  \uD83D\uDD10]</a> "
     },
-
     "user_is_registered": {
       "0": "You cannot use this command. Please /login"
     },
-
     "login": {
       "0": "Please, enter your Nickname:",
       "1": "You are already registered\nWrite your new username or /cancel"
     },
-
     "login_receive_username": {
       "0": "Username saved",
       "1": "Something went wrong..."
     },
-
     "end_conv": {
       "0": "Conversation end."
     },
-
     "create_pc": {
       "0": "{} is starting the creation of a PC in <a href=\"{}\">private chat</a>",
       "1": "Complete the description of your PC by selecting the buttons below.\n /done when you are satisfied of your brand new scoundrel.\n /cancel if you have changed your mind.",
-      "keyboard" : ["Name", "Alias", "Look", "Heritage", "Background", "Notes",  "Class", "Vice"]
+      "keyboard": [
+        "Name",
+        "Alias",
+        "Look",
+        "Heritage",
+        "Background",
+        "Notes",
+        "Class",
+        "Vice"
+      ]
     },
-
     "create_pc_class": {
       "0": "This class doesn't exist yet...",
       "1": "Select an existing class.\n/data for more info."
     },
-
     "create_pc_name": {
       "0": "⚠ You already have a PC named <u>{}</u>, if you don't change name, it will be overwritten. ⚠"
     },
-
     "create_pc_state_switcher": {
       "0": "What's your name?",
       "1": "What would you like to be called?",
@@ -73,100 +71,114 @@
       "5": "Describe the unique features of yours.",
       "6": "Select your class.",
       "7": "The life of a criminal is stressful... you must have a vice to relief yourself.",
-
-      "keyboards": [[], [], [], ["Akoros","The Dagger Isles", "Iruvia", "Severos", "Skovlan","Tycheros"], ["Academic", "Labour", "Law Trade", "Military", "Noble", "Underworld"], []]
+      "keyboards": [
+        [],
+        [],
+        [],
+        [
+          "Akoros",
+          "The Dagger Isles",
+          "Iruvia",
+          "Severos",
+          "Skovlan",
+          "Tycheros"
+        ],
+        [
+          "Academic",
+          "Labour",
+          "Law Trade",
+          "Military",
+          "Noble",
+          "Underworld"
+        ],
+        []
+      ]
     },
-
     "create_pc_vice_name": {
       "0": "Describe briefly your vice"
     },
-
     "create_pc_vice_description": {
       "0": "How do you manage to obtain what you seek? Tell who your purveyor is or where you go to satisfy your needs."
     },
-
     "create_pc_vice_purveyor": {
       "0": "Describe briefly your vice"
     },
-
     "create_pc_end": {
       "0": "⚠ Cannot save a partially described PC. Please fill all the fields."
     },
-
     "create_game": {
       "0": "Insert the name of the game"
     },
-
     "create_game_title": {
       "0": "Game <u>{}</u> created successfully with id: {}",
       "1": "A Game named <u>{}</u> already exists in this chat, please enter a different title"
     },
-
     "join": {
       "0": "Write the name of the game you want to join",
       "1": "There are no games for this chat to join in...\n/createGame to create a new one."
     },
-
     "join_game_name": {
       "0": "Game <u>{}</u> does not exist...\nYou can create a new game with /createGame ",
       "1": "Write the name of the PC you want to start playing with or 'as Master' to join as the GM of the game.",
       "2": "You already joined the game <u>{}</u> in this chat. You can join only a game per chat"
     },
-
     "join_add_player": {
       "0": "<i>{}</i> joined the game <i>{}</i> as Master.",
       "err": "You must join with a PC of yours or as Master!"
     },
-
     "join_complete_pc": {
       "0": "{} is completing the creation of <i>{}</i> in <a href=\"{}\">private chat</a>",
       "1": "Complete your PC by selecting the buttons below.\n /done when you are satisfied.\n /cancel if you have changed your mind.",
-      "keyboard": ["Ability", "Action dots", "Friend", "Enemy"]
+      "keyboard": [
+        "Ability",
+        "Action dots",
+        "Friend",
+        "Enemy"
+      ]
     },
-
     "join_complete_pc_state_switcher": {
       "0": "Write the name of your initial Special Ability.",
       "1": "You have 4 action dots to assign. The initial action dots of your class are already present (if you want you can change them too)",
       "2": "Doskvol is a dark place, but even here you will find some friends. Who is your ally?",
       "3": "You are not a saint, so a lot of people will struggle against you. Who is your rival?"
     },
-
     "join_complete_pc_ability": {
       "0": "This special ability doesn't exist yet...",
       "1": "Select an existing ability.\n/data for more info."
     },
-
     "join_complete_pc_friend": {
       "0": "This NPC doesn't belong to your strange friends pool...",
       "1": "Select another NPC.\n/data for more info."
     },
-
     "join_complete_pc_enemy": {
       "0": "This NPC doesn't belong to your strange friends pool...",
       "1": "Select another NPC.\n/data for more info."
     },
-
     "join_complete_pc_dots": {
       "0": "Add or remove the action dots of your choice.\n{} points left.",
       "1": "You have {} action dots left "
     },
-
     "join_end": {
       "0": "<i>{}</i> is joining the game <i>{}</i> with <i>{}</i>.",
       "1": "You must complete all the fields in order to complete your pc and join the game"
     },
-
     "create_crew": {
       "0": "Choose which Type of crew you'd like to be",
       "1": "You can't create a crew without being in a game... /join to take part in a game"
     },
-
     "create_crew_type": {
       "0": "This crew doesn't exist yet... Enter another one",
       "1": "Complete the description of your Crew by selecting the buttons below.\n /done when you all are satisfied.\n /cancel if you have changed your mind.",
-      "keyboard" : ["Name", "Reputation", "Notes", "Lair", "Upgrades", "Special ability", "Contact"]
+      "keyboard": [
+        "Name",
+        "Reputation",
+        "Notes",
+        "Lair",
+        "Upgrades",
+        "Special ability",
+        "Contact"
+      ]
     },
-
     "create_crew_state_switcher": {
       "0": "Choose the name of your crew",
       "1": "Decide a reputation for your crew",
@@ -175,67 +187,88 @@
       "4": "Select a pair of upgrades for your crew",
       "5": "Pick a special ability for your crew",
       "6": "Select a contact for your crew",
-
-      "keyboards": [[], ["Ambitious","Brutal","Daring","Honorable","Professional","Savvy","Subtle","Strange"], [], ["Six Towers", "Brightstone", "Charterhall", "Nightmarket", "Coalridge", "Dunslough", "Charhollow", "Barrowcleft", "Silkshore", "The Docks", "Crow's Foot", "Whitecrown"]]
+      "keyboards": [
+        [],
+        [
+          "Ambitious",
+          "Brutal",
+          "Daring",
+          "Honorable",
+          "Professional",
+          "Savvy",
+          "Subtle",
+          "Strange"
+        ],
+        [],
+        [
+          "Six Towers",
+          "Brightstone",
+          "Charterhall",
+          "Nightmarket",
+          "Coalridge",
+          "Dunslough",
+          "Charhollow",
+          "Barrowcleft",
+          "Silkshore",
+          "The Docks",
+          "Crow's Foot",
+          "Whitecrown"
+        ]
+      ]
     },
-
     "create_crew_lair_location": {
       "0": "Write a description of your Lair"
     },
-
     "create_crew_ability": {
       "0": "This special ability doesn't exist yet...",
       "1": "Select an existing ability.\n/data for more info."
     },
-
-    "create_crew_contact" : {
+    "create_crew_contact": {
       "0": "This NPC doesn't belong to your crew contacts pool...",
       "1": "Select another NPC.\n/data for more info."
     },
-
     "create_crew_upgrades": {
       "0": "Add or remove the upgrades of your choice.\n{} points left.",
       "1": "You have {} upgrades left "
     },
-
     "create_crew_end": {
       "0": "The crew <u>{}</u> added to the game.",
       "1": "You must complete all the fields in order to complete your crew"
     },
-
     "change_state": {
       "0": "We are ready to start the session. Select the initial state of your game",
       "1": "You are now in <i>Free Play</i>, if you change phase all your score will be considered finished as well as your downtime activities...\n If you want to do something more this is the right time to do it",
       "2": "You are in the <i>Score Phase</i>, if you change phase all your score will be considered finished.",
       "3": "You are in the <i>Downtime Phase</i>, if you change phase all your downtime activities will be considered finished.",
-
       "err1": "You can't change state without being in a game... /join to take part in a game",
       "err2": "You mut have a crew, a GM and at least a PC in the game in order to start playing.",
-
-      "keyboard": ["FREE PLAY", "SCORE PHASE", "DOWNTIME"],
-      "callback": ["Free Play$1", "Score Phase$2", "Downtime phase$3"]
+      "keyboard": [
+        "FREE PLAY",
+        "SCORE PHASE",
+        "DOWNTIME"
+      ],
+      "callback": [
+        "Free Play$1",
+        "Score Phase$2",
+        "Downtime phase$3"
+      ]
     },
-
     "is_game_in_wrong_phase": {
       "0": "You can't do <i>{}</i> in <i><b>INIT</b></i> phase",
       "1": "You can't do <i>{}</i> in <i><b>FREE PLAY</b></i> phase",
       "2": "You can't do <i>{}</i> in <i><b>SCORE PHASE</b></i>",
       "3": "You can't do <i>{}</i> in <i><b>DOWNTIME PHASE</b></i>"
     },
-
     "change_state_choice": {
       "0": "State changed to : <i>{}</i>"
     },
-
     "pc_selection": {
       "0": "Select the PC",
       "1": "You can't change your active PC without being in a game in this chat... /join to take part in a game."
     },
-
     "pc_selection_choice": {
       "0": "Your active PC in game {} is now {}."
     },
-
     "roll_dice": {
       "nan": "What is <i>{}</i>? It should be a number...",
       "1": "You rolled \u0031\u20E3",
@@ -246,260 +279,291 @@
       "6": "You rolled \u0036\u20E3",
       "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
     },
-
     "bonus_dice": {
       "message": "Add or remove your bonus dice. By now you have {} \uD83C\uDFB2",
       "button": "Bonus \uD83C\uDFB2: {}",
       "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get.",
-
       "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
       "engagement": "Engagement \uD83C\uDFB2: {}",
-      "engagement_extended" : "Select the number of dice you want to roll. Consider the details of your plan.",
-
+      "engagement_extended": "Select the number of dice you want to roll. Consider the details of your plan.",
       "heat": "Select the amount of heat to add or remove.",
       "heat_button": "Heat \u2668\uFE0F: {}",
       "heat_description": "Change the amount of heat your crew will receive. Consider your abilities/crew's abilities.",
-
       "rep": "Select the amount of rep to add to your crew.",
       "rep_button": "Rep : {}",
       "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it."
     },
-
     "group_action_cohort": {
       "0": "Select the cohort you want to lead",
       "1": "You can't perform a group action without being in a game... /join to take part in a game."
     },
-
     "group_action": {
       "0": "\u26A0\uFE0F <i><b>{}</b></i> is starting a group action: <i>{}</i>. If anyone wants to join\n/unite"
     },
-
     "action_roll": {
       "0": "Write the <i>goal</i> of your action.\nWhat's the concrete outcome you want to achieve?",
       "1": "You can't perform an action roll without being in a game... /join to take part in a game."
     },
-
     "action_roll_goal": {
       "0": "Select the action you want to roll."
     },
-
     "action_roll_rating": {
       "0": "The <b>GM</b> has to set some information: <i><b>{}</b></i> is trying to <i>{}</i> using <i>{}</i>\n/reply_action_roll",
       "1": "What's the position for this roll?",
-      "keyboard": ["Controlled", "Risky", "Desperate"]
+      "keyboard": [
+        "Controlled",
+        "Risky",
+        "Desperate"
+      ]
     },
-
     "action_roll_position": {
       "0": "Select the effect level.",
-      "keyboard": ["Limited", "Standard", "Great"]
+      "keyboard": [
+        "Limited",
+        "Standard",
+        "Great"
+      ]
     },
-
     "action_roll_effect": {
       "0": "\u26A0\uFE0F <i><b>{}</b></i> is trying to <i>{}</i>. If anyone wants to help\n/assist",
       "1": "Every action can have consequences, if you feel yourself in trouble you can always...",
       "2": "<i>{}</i> even if you are not leading the action, you can still suffer its consequences, if you feel yourself in trouble you can always...",
       "3": "No one joined you in the group action... looks like you are alone this time",
-      "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
-      "callbacks": [1, 2, 3]
+      "keyboard": [
+        "Push Yourself",
+        "Accept a Devil's Bargain",
+        "No Thanks..."
+      ],
+      "callbacks": [
+        1,
+        2,
+        3
+      ]
     },
-
     "action_roll_assistance": {
       "0": "<i>{}</i> is ready to help!",
       "1": "You cannot help again...",
       "2": "You cannot help now...\nYou should /join the same game with at least one character"
     },
-
     "group_action_participate": {
       "0": "<i>{}</i> will participate in the group action!",
       "1": "You are already part of the group action...",
       "2": "You cannot take part in a group action now...\nYou should /join the same game with at least one character"
     },
-
     "group_action_bonus_dice": {
       "0": "Every action can have consequences, if you feel yourself in trouble you can always...",
       "1": "<i>{}</i> even if you are not leading the action, you can still suffer its consequences, if you feel yourself in trouble you can always...",
-
-      "keyboard": ["Push Yourself", "Accept a Devil's Bargain", "No Thanks..."],
-      "callbacks": [1, 2, 3]
+      "keyboard": [
+        "Push Yourself",
+        "Accept a Devil's Bargain",
+        "No Thanks..."
+      ],
+      "callbacks": [
+        1,
+        2,
+        3
+      ]
     },
-
     "action_roll_bargains": {
       "0": "Describe your Devil's Bargain:"
     },
-
     "action_roll_bonus_dice": {
       "0": "Describe the final outcome of your roll.",
       "1": "The group action outcome is: <b>{}</b>"
     },
-
     "action_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
     },
-
     "send_journal": {
       "0": "You can't have a journal without being in a game... /join to take part in a game",
       "1": "Enjoy the diary of your deeds in Doskvol so far !"
     },
-
     "send_map": {
       "0": "You can't have a map without being in a game... /join to take part in a game",
       "1": "Here is the map of the City. Use it to plan your movements in Doskvol."
     },
-
     "add_cohort": {
       "0": "Select which cohort you want",
       "err": "You cannot create a cohort without being in a game... /join to take part in a game",
-      "keyboard": ["Gang", "Expert"]
+      "keyboard": [
+        "Gang",
+        "Expert"
+      ]
     },
-
     "add_cohort_choice": {
       "0": "Which type of cohort you want ?",
-      "keyboardTrue": ["Doctor", "Investigator", "Occultist", "Assassin", "Spy"],
-      "keyboardFalse": ["Adepts", "Rooks", "Rovers", "Skulks", "Thugs"]
+      "keyboardTrue": [
+        "Doctor",
+        "Investigator",
+        "Occultist",
+        "Assassin",
+        "Spy"
+      ],
+      "keyboardFalse": [
+        "Adepts",
+        "Rooks",
+        "Rovers",
+        "Skulks",
+        "Thugs"
+      ]
     },
-
     "add_cohort_type": {
       "0": "Write how many edges & flaws your cohort will have (from 0 to 4)"
     },
-
     "add_cohort_edgflaw_num": {
       "0": "Choose one edge for your cohort",
       "1": "<i>{}</i> is invalid, it should be a number from 0 to 4..."
     },
-
     "add_cohort_edges": {
       "0": "Choose another edge",
       "1": "Choose one flaws for your cohort",
-
-      "keyboard": ["Fearsome", "Independent", "Loyal", "Tenacious"]
+      "keyboard": [
+        "Fearsome",
+        "Independent",
+        "Loyal",
+        "Tenacious"
+      ]
     },
-
     "add_cohort_flaws": {
       "0": "Choose another flaw",
-      "keyboard": ["Principled", "Savage", "Unreliable", "Wild"]
+      "keyboard": [
+        "Principled",
+        "Savage",
+        "Unreliable",
+        "Wild"
+      ]
     },
-
     "create_clock": {
       "0": "Write the name of the clock",
       "err": "You cannot create a clock without being in a game... /join to take part in a game"
     },
-
     "create_clock_name": {
       "0": "Chose how many segments the clock should be divided into",
-      "keyboard": [4, 6, 8]
+      "keyboard": [
+        4,
+        6,
+        8
+      ]
     },
-
     "create_clock_segments": {
       "0": "\uD83D\uDD50 <u>{}</u> created a new clock (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51",
       "1": "<i>{}</i> is invalid, it should be a number from 2 to 36..."
     },
-
     "tick_clock": {
       "0": "Choose which clock you want to advance",
       "err": "You cannot tick a clock without being in a game... /join to take part in a game",
       "err2": "You dont' have any clock... /createClock to make one"
     },
-
     "tick_clock_choice": {
       "0": "How many ticks need to be added ?"
     },
-
     "tick_clock_progress": {
       "0": "<u>{}</u> has made an advancement for the clock: '<i>{}</i>' \nprogress: {}/{}",
       "1": "<u>{}</u> completed the clock: '<i>{}</i>'",
       "err": ""
     },
-
     "add_claim": {
       "err": "You cannot add a claim without being in a game... /join to take part in a game",
       "0": "Select the type of your new claim",
-      "keyboard": ["Lair", "Prison"],
-      "callbacks": ["False", "True"]
+      "keyboard": [
+        "Lair",
+        "Prison"
+      ],
+      "callbacks": [
+        "False",
+        "True"
+      ]
     },
-
     "add_claim_type": {
       "0": "Select the claim you want."
     },
-
     "send_character_sheet": {
       "0": "You don't have an active PC in this chat... /join to take part in a game",
       "1": "Here is your character's sheet"
     },
-
     "send_crew_sheet": {
       "0": "You don't have a crew in this game... /createCrew to make a new one.",
       "1": "Here is your crew's sheet",
       "err": "You can't see a crew sheet without being in a game... /join to take part in a game"
     },
-
-	"resistance_roll": {
-	  "0": "What are you trying to resist to?",
-	  "1": "You can't perform an resistance roll without being in a game... /join to take part in a game."
-	},
-
-	"resistance_roll_description": {
-	  "0": "Select what the outcome will be",
-	  "1": "The <b>GM</b> has to set some information: <i><b>{}</b></i> is trying to resist to <i>{}</i>\n/reply_resistance_roll",
-	  "keyboard": ["Damage reduced", "Damage avoided"],
-	  "callbacks": ["reduced", "avoided"]
-	},
-
-	"resistance_roll_damage": {
-	  "0": "Select the attribute to roll"
+    "resistance_roll": {
+      "0": "What are you trying to resist to?",
+      "1": "You can't perform an resistance roll without being in a game... /join to take part in a game."
     },
-
+    "resistance_roll_description": {
+      "0": "Select what the outcome will be",
+      "1": "The <b>GM</b> has to set some information: <i><b>{}</b></i> is trying to resist to <i>{}</i>\n/reply_resistance_roll",
+      "keyboard": [
+        "Damage reduced",
+        "Damage avoided"
+      ],
+      "callbacks": [
+        "reduced",
+        "avoided"
+      ]
+    },
+    "resistance_roll_damage": {
+      "0": "Select the attribute to roll"
+    },
     "resistance_roll_bonus_dice": {
       "0": "Describe the final outcome of your roll."
     },
-
-	"resistance_roll_notes": {
+    "resistance_roll_notes": {
       "0": "{} suffered too much stress. {} trauma to add.\n/addTrauma"
     },
-
     "add_stress": {
       "0": "<i>{}</i> stress added to <u>{}</u>",
       "1": "<u>{}</u> suffered too much stress. <i>{}</i> trauma to add.\n/addTrauma",
       "err": "You cannot add stress to your pc without being in a game... /join to take part in a game",
       "err2": "You don't have any active pc... \n/join to take part in a game"
     },
-
     "add_trauma": {
       "0": "Write the trauma",
       "err": "You cannot add  trauma to your pc without being in a game... /join to take part in a game",
       "err2": "You don't have any active pc... \n/join to take part in a game"
     },
-
     "add_trauma_name": {
       "0": "<i>{}</i> suffered too much trauma... \n/migratePC or /die"
     },
-
     "score": {
       "0": "Choose the score category",
       "err": "wrong phase",
-
-      "keyboard": ["Criminal Activity", "Seizing a Claim", "Special Mission"]
+      "keyboard": [
+        "Criminal Activity",
+        "Seizing a Claim",
+        "Special Mission"
+      ]
     },
-
     "score_category": {
       "0": "Choose the type of your target:",
-
-      "keyboard": ["NPC", "Faction", "Other"],
-      "callbacks": ["NPC", "Faction", "Other"]
+      "keyboard": [
+        "NPC",
+        "Faction",
+        "Other"
+      ],
+      "callbacks": [
+        "NPC",
+        "Faction",
+        "Other"
+      ]
     },
-
     "score_target": {
       "0": "Select your target",
       "1": "Who or what is your target"
     },
-
     "score_target_selection": {
       "0": "Select your target",
       "1": "What's the <i>type</i> of your plan?",
-
       "404": "Description not found",
-      "keyboard": ["Assault", "Deception", "Stealth", "Occult", "Social", "Transport"]
+      "keyboard": [
+        "Assault",
+        "Deception",
+        "Stealth",
+        "Occult",
+        "Social",
+        "Transport"
+      ]
     },
-
     "score_plan_type": {
       "Other": "Describe the details of your plan.",
       "Assault": "Describe the details of your plan. Focus on <i>the point of attack</i>",
@@ -509,71 +573,133 @@
       "Social": "Describe the details of your plan. Focus on <i>the social connection</i>",
       "Transport": "Describe the details of your plan. Focus on <i>The route & means</i>"
     },
-
     "score_plan_details": {
       "0": "Choose the code name (or the title) of this score."
     },
-
     "score_title": {
       "0": "<i>{}</i>, select the total load you will carry during the score:",
-
-      "keyboard": ["3", "5", "6"]
+      "keyboard": [
+        "3",
+        "5",
+        "6"
+      ]
     },
-
     "score_load": {
       "0": "{}",
       "1": "{}",
       "2": "{}"
-
-
     },
-
     "score_pcs_loads": {
       "0": "<i>{}</i>, select the total load you will carry during the score:",
-
-      "keyboard": ["3", "5", "6"],
+      "keyboard": [
+        "3",
+        "5",
+        "6"
+      ],
       "nan": "<i>{}</i> is invalid. It must be a positive number."
     },
-
     "score_engagement": {
       "0": "Describe the engagement of the score."
     },
-
-	"heat": {
-	  "0": "What was the nature of the operation?",
-	  "1": "You can't handle heat without being in a game... /join to take part in a game.",
-	  "keyboard": ["Smooth and quiet", "Contained", "Loud and chaotic", "Wild"],
-	  "callbacks": [["smooth and quiet, low exposure", "0"], ["contained, standard exposure", "2"], ["loud and chaotic, high exposure", "4"], ["wild, extreme exposure", "6"]]
-	},
-
-	"heat_score_nature": {
-	  "0": "Was it a high-profile or well-connected target?",
-	  "keyboard": ["Yes", "No"],
-	  "callbacks": [["True", "1"], ["False", "0"]]
-	},
-
-	"heat_target_profile": {
-	  "0": "Did the situation happened in a hostile turf?",
-	  "keyboard": ["Yes", "No"],
-	  "callbacks": [["True", "1"], ["False", "0"]]
-	},
-
-	"heat_turf_hostility": {
-	  "0": "Are you at war with another faction?",
-	  "keyboard": ["Yes", "No"],
-	  "callbacks": [["True", "1"], ["False", "0"]]
-	},
-
-	"heat_war_situation": {
-	  "0": "Was killing involved?",
-	  "keyboard": ["Yes", "No"],
-	  "callbacks": [["True", "2"], ["False", "0"]]
-	},
-
-	"heat_extra": {
-	  "0": "Your crew's wanted level is <i>{}</i>"
-	},
-
+    "heat": {
+      "0": "What was the nature of the operation?",
+      "1": "You can't handle heat without being in a game... /join to take part in a game.",
+      "keyboard": [
+        "Smooth and quiet",
+        "Contained",
+        "Loud and chaotic",
+        "Wild"
+      ],
+      "callbacks": [
+        [
+          "smooth and quiet, low exposure",
+          "0"
+        ],
+        [
+          "contained, standard exposure",
+          "2"
+        ],
+        [
+          "loud and chaotic, high exposure",
+          "4"
+        ],
+        [
+          "wild, extreme exposure",
+          "6"
+        ]
+      ]
+    },
+    "heat_score_nature": {
+      "0": "Was it a high-profile or well-connected target?",
+      "keyboard": [
+        "Yes",
+        "No"
+      ],
+      "callbacks": [
+        [
+          "True",
+          "1"
+        ],
+        [
+          "False",
+          "0"
+        ]
+      ]
+    },
+    "heat_target_profile": {
+      "0": "Did the situation happened in a hostile turf?",
+      "keyboard": [
+        "Yes",
+        "No"
+      ],
+      "callbacks": [
+        [
+          "True",
+          "1"
+        ],
+        [
+          "False",
+          "0"
+        ]
+      ]
+    },
+    "heat_turf_hostility": {
+      "0": "Are you at war with another faction?",
+      "keyboard": [
+        "Yes",
+        "No"
+      ],
+      "callbacks": [
+        [
+          "True",
+          "1"
+        ],
+        [
+          "False",
+          "0"
+        ]
+      ]
+    },
+    "heat_war_situation": {
+      "0": "Was killing involved?",
+      "keyboard": [
+        "Yes",
+        "No"
+      ],
+      "callbacks": [
+        [
+          "True",
+          "2"
+        ],
+        [
+          "False",
+          "0"
+        ]
+      ]
+    },
+    "heat_extra": {
+      "0": "Your crew's wanted level is <i>{}</i>"
+    },
     "entanglement": {
       "err": "You can't use entanglement without being in a game... /join to take part in a game.",
       "0,1,2,3": {
@@ -594,58 +720,81 @@
       "public": "{} is deciding an entanglement in <a href=\"{}\">private chat</a>",
       "private": "Write the name of the entanglement or simply click the suggested one (from the game's rules)"
     },
-
     "entanglement_name": {
       "0": "Describe briefly what happen with the entanglement"
     },
-
     "entanglement_description": {
       "public": "<u>{}</u> made a new entanglement: <i>{}</i>",
       "secret": "<u>{}</u> made a new secret entanglement..."
     },
-
     "end_score": {
       "0": "What's the <i>outcome</i> of the score?",
       "1": "You can't end a score without being in a game... /join to take part in a game.",
       "2": "In order to end a score, you should create one first... \n/score",
-
-      "keyboard": ["Success", "Failure", "Withdraw"]
+      "keyboard": [
+        "Success",
+        "Failure",
+        "Withdraw"
+      ]
     },
-
     "end_score_outcome": {
       "0": "Describe the outcome of the score."
     },
-
     "end_score_rep": {
       "0": "Good news. Your crew can be upgraded.\nYou may spend <i><b>{}</b></i> coins to increase the crew's tier by one.\n/increaseCrewTier"
     },
-
     "payoff": {
       "err": "You can't handle a payoff without being in a game... /join to take part in a game.",
       "0": "How much coins did the crew earned ?",
-      "keyboard": [2,4,6,8,10]
+      "keyboard": [
+        2,
+        4,
+        6,
+        8,
+        10
+      ]
     },
-
     "payoff_amount": {
       "0": "Select how to manage your earnings",
-      "keyboard": ["Divvy it up","Store in vault","Decide later"],
-      "callbacks": [1,2,3]
+      "keyboard": [
+        "Divvy it up",
+        "Store in vault",
+        "Decide later"
+      ],
+      "callbacks": [
+        1,
+        2,
+        3
+      ]
     },
-
     "payoff_choice": {
-      "0": "Remember to add your {} coins later",
+      "0": "Remember to add your {} /coins later",
       "1": "Describe the payoff"
     },
-
     "armor_use": {
       "0": "Decide which type of armor you want to use:",
       "1": "You can't use an armor without being in a game... /join to take part in a game.",
-      "keyboard": ["Standard", "Heavy", "Special"]
+      "keyboard": [
+        "Standard",
+        "Heavy",
+        "Special"
+      ]
     },
-
     "armor_use_type": {
       "0": "<i>{}</i> used their {} armor."
+    },
+    "add_coin": {
+      "err": "You can't add coins without being in a game... /join to take part in a game.",
+      "0": "Add or remove the coins clicking the buttons"
+    },
+
+    "add_coin_amount": {
+      "0": "Can't add more coins here",
+      "coins": "you can't have more than 4 coins",
+      "stash": "you can't have more than 40 coins in your stash",
+      "vault": "you can't have more than {} coins in your vault"
     }
+
   },
 
   "Journal": {
