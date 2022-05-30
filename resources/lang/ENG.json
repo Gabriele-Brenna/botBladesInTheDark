@@ -793,6 +793,12 @@
       "coins": "you can't have more than 4 coins",
       "stash": "you can't have more than 40 coins in your stash",
       "vault": "you can't have more than {} coins in your vault"
+    },
+
+    "upgrade_crew": {
+      "err": "You can't add coins without being in a game... /join to take part in a game.",
+      "True": "Your hold have become <i><b>strong</b></i>, but your tier remains: <i>{}</i>",
+      "False": "Your tier increased to <i>{}</i>, but your hold is now <i><b>weak</b></i>"
     }
 
   },

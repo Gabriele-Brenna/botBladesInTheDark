@@ -476,6 +476,9 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["upgradeCrew".casefold(), "addCrewTier".casefold(),
+                                           "upCrew".casefold()], upgrade_crew))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

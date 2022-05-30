@@ -999,5 +999,19 @@ class Controller:
 
         return game.crew.vault_capacity
 
+    def upgrade_crew(self, game_id: int) -> Tuple[bool, int]:
+        """
+        Upgrades the crew increasing the tier by 1 or changing its hold.
+
+        :param game_id: the game's id.
+        :return: a tuple with the actual hold and the crew's tier.
+        """
+        game = self.get_game_by_id(game_id)
+
+        if not game.crew.add_tier():
+            game.crew.change_hold()
+        insert_crew_json(game.identifier, save_to_json(game.crew))
+        return game.crew.hold, game.crew.tier
+
     def __repr__(self) -> str:
         return str(self.games)
