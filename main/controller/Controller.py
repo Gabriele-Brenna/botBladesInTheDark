@@ -2,6 +2,7 @@ import copy
 import threading
 
 from character.Human import Human
+from character.Owner import Owner
 from component.Clock import Clock
 from controller.DBreader import *
 from controller.DBwriter import *
@@ -920,6 +921,140 @@ class Controller:
         update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def get_player_coins(self, chat_id: int, user_id: int, pc_name: str) -> \
+            Union[Tuple[None, None, int], Tuple[int, int, int]]:
+        """
+        Gets the coins that compete with the selected user.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :return: a Tuple with the coins of the pc (None if the active pc is not an Owner),
+            the coins of the pc's stash (None if the active pc is not an Owner)
+            and the coins from the crew vault (in this order).
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        crew = game.crew
+
+        if pc_name is None:
+            return None, None, crew.coins
+
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+
+        if not isinstance(pc, Owner):
+            return None, None, crew.coins
+
+        return pc.coin, pc.stash, crew.coins
+
+    def check_add_coin(self, chat_id: int, user_id: int, pc_name: str, where: str, coins: int) -> bool:
+        """
+        Checks if the selected pc can add the specified amount of coins.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param where: specifies where the coins should be stored (coins - stash - vault)
+        :param coins: the amount of coins to add
+        :return: True if the coins can be added in the selected location, False otherwise
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        crew = game.crew
+
+        if where == "vault":
+            return crew.can_store(coins)
+
+        elif pc_name is not None:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            if isinstance(pc, Owner):
+                if where == "coins":
+                    return pc.can_have_coins(coins)
+                else:
+                    return pc.can_stash_coins(coins)
+
+        return False
+
+    def commit_add_coin(self, chat_id: int, user_id: int, pc_name: str, add_coin: dict):
+        """
+        Adds (or remove) the selected amount of coins from the crew and/or the pc and updates the database.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param add_coin: dictionary with the information used to modify the coins
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        crew = game.crew
+        crew.add_coin(add_coin["vault"])
+
+        if pc_name is not None:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            if isinstance(pc, Owner):
+                pc.add_coins(add_coin["coins"])
+                pc.stash_coins(add_coin["stash"])
+                update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+        insert_crew_json(game.identifier, save_to_json(crew))
+
+    def get_vault_capacity_of_crew(self, game_id: int) -> int:
+        game = self.get_game_by_id(game_id)
+
+        return game.crew.vault_capacity
+
+    def modify_vault_capacity(self, game_id: int, new_capacity: int):
+        """
+        Modifies the vault capacity of the specified game's crew by replacing the old value with the passed one.
+
+        :param game_id: the game's id.
+        :param new_capacity: is the new value of the vault's capacity.
+        """
+        game = self.get_game_by_id(game_id)
+
+        crew = game.crew
+        crew.vault_capacity = new_capacity
+
+        if crew.coins > new_capacity:
+            crew.coins = new_capacity
+
+        insert_crew_json(game.identifier, save_to_json(crew))
+
+    def upgrade_crew(self, game_id: int) -> Tuple[bool, int]:
+        """
+        Upgrades the crew increasing the tier by 1 or changing its hold.
+
+        :param game_id: the game's id.
+        :return: a tuple with the actual hold and the crew's tier.
+        """
+        game = self.get_game_by_id(game_id)
+
+        if not game.crew.add_tier():
+            game.crew.change_hold()
+        insert_crew_json(game.identifier, save_to_json(game.crew))
+        return game.crew.hold, game.crew.tier
+
+    def update_factions_status(self, game_id: int, factions: dict):
+        """
+        Updates the game's factions' status. If the factions passed are not in the game list, their instances
+        retrieved from the DB and added with the passed value.
+
+        :param game_id: the game's id.
+        :param factions: dictionary thet contains all the factions' names and their status to update.
+        """
+        def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
+            for elem in factions_list:
+                if elem.name.lower() == name.lower():
+                    return elem
+        game = self.get_game_by_id(game_id)
+
+        for key in factions.keys():
+            faction = get_faction_by_name(key, game.factions)
+            if faction is None:
+                game.factions.append(query_factions(name=key)[0])
+                faction = get_faction_by_name(key, game.factions)
+
+            faction.status = factions[key]
+
+        insert_faction_json(game.identifier, save_to_json(game.factions))
 
     def get_pc_class(self, chat_id: int, user_id: int, pc_name: str) -> str:
         """

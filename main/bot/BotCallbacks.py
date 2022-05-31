@@ -1497,10 +1497,11 @@ def action_roll_goal(update: Update, context: CallbackContext):
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "goal"],
                                  value=update.message.text)
 
-        auto_delete_message(context.chat_data["action_roll"]["invocation_message"].reply_text(
-            text=get_lang(context, group_action.__name__)["0"].format(
-                context.chat_data["action_roll"]["roll"]["pc"], update.message.text),
-            parse_mode=ParseMode.HTML), 25)
+        if "group_action" in context.chat_data["action_roll"]:
+            auto_delete_message(context.chat_data["action_roll"]["invocation_message"].reply_text(
+                text=get_lang(context, group_action.__name__)["0"].format(
+                    context.chat_data["action_roll"]["roll"]["pc"], update.message.text),
+                parse_mode=ParseMode.HTML), 25)
 
         chat_id = update.message.chat_id
         action_ratings = controller.get_pc_actions_ratings(get_user_id(update),
@@ -4366,6 +4367,428 @@ def armor_use_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_armor_use--------------------------------------------------------------
 
+# ------------------------------------------conv_vault_capacity---------------------------------------------------------
+
+def vault_capacity(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that regards the vault's capacity.
+    Sends the InlineKeyboard with the current capacity of the vault.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, vault_capacity.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return vault_capacity_end(update, context)
+
+    add_tag_in_telegram_data(context, ["vault_capacity", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["vault_capacity", "capacity"],
+                             controller.get_vault_capacity_of_crew(
+                                 query_game_of_user(update.effective_message.chat_id, get_user_id(update))))
+
+    placeholders = get_lang(context, "bonus_dice")
+    query_menu = update.message.reply_text(placeholders["vault_capacity_message"],
+                                           reply_markup=build_plus_minus_keyboard(
+                                               [placeholders["vault_capacity_button"].format(
+                                                   context.user_data["vault_capacity"]["capacity"])],
+                                               inline=True,
+                                               back_button=False,
+                                               done_button=True))
+    add_tag_in_telegram_data(context, ["vault_capacity", "query_menu"], query_menu)
+
+    return 0
+
+
+def vault_capacity_kb(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the vault capacity.
+    Calls the controller method modify_vault_capacity() when DONE button is pressed.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, vault_capacity_end() otherwise.
+    """
+
+    placeholders = get_lang(context, "bonus_dice")
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    capacity = context.user_data["vault_capacity"]["capacity"]
+
+    if "+" in choice or "-" in choice:
+        capacity += int(choice.split(" ")[1])
+        if capacity < 0:
+            capacity = 0
+        add_tag_in_telegram_data(context, ["vault_capacity", "capacity"], value=capacity)
+
+        update_bonus_dice_kb(context, location="user", tags=["vault_capacity", "capacity"],
+                             tot_dice=context.user_data["vault_capacity"]["capacity"],
+                             message_tag="vault_capacity_message",
+                             button_tag="vault_capacity_button")
+
+    elif choice == "DONE":
+        controller.modify_vault_capacity(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                         context.user_data["vault_capacity"]["capacity"])
+        return vault_capacity_end(update, context)
+
+    else:
+        auto_delete_message(
+            update.effective_message.reply_text(placeholders["vault_capacity_rules"], parse_mode=ParseMode.HTML),
+            placeholders["vault_capacity_rules"])
+
+    return 0
+
+
+def vault_capacity_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the vault capacity conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "vault_capacity")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_vault_capacity---------------------------------------------------------
+
+# ------------------------------------------conv_add_coin---------------------------------------------------------------
+
+
+def add_coin(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the coins
+    and sends the user the inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_coin.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_coin_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_coin", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["add_coin", "info", "coins"], 0)
+    add_tag_in_telegram_data(context, ["add_coin", "info", "stash"], 0)
+    add_tag_in_telegram_data(context, ["add_coin", "info", "vault"], 0)
+
+    query_menu = update.message.reply_text(placeholders["0"],
+                                           reply_markup=build_plus_minus_keyboard(
+                                               build_add_coin_buttons(update, context),
+                                               back_button=False, done_button=True))
+
+    add_tag_in_telegram_data(context, ["add_coin", "query_menu"], query_menu)
+
+    return 0
+
+
+def build_add_coin_buttons(update: Update, context: CallbackContext) -> List[str]:
+    """
+    Builds the button for the inline keyboard used to add coins.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the list of buttons' label.
+    """
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    coins, stash, vault = controller.get_player_coins(chat_id, get_user_id(update), pc_name)
+
+    buttons = []
+    if coins is not None and stash is not None:
+        coins += context.user_data["add_coin"]["info"]["coins"]
+        stash += context.user_data["add_coin"]["info"]["stash"]
+        buttons.append("Coins: {}".format(coins))
+        buttons.append("Stash: {}".format(stash))
+    vault += context.user_data["add_coin"]["info"]["vault"]
+    buttons.append("Vault: {}".format(vault))
+
+    return buttons
+
+
+def add_coin_amount(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the coins.
+    Calls the controller method commit_add_coin() when DONE button is pressed.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, add_coin_end otherwise.
+    """
+
+    placeholders = get_lang(context, add_coin_amount.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_coin_info = context.user_data["add_coin"]["info"]
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    if "+" in choice or "-" in choice:
+
+        choice = choice.split(" ")
+
+        if controller.check_add_coin(chat_id, get_user_id(update), pc_name, choice[0].lower(), int(choice[1]) +
+                                                                                               context.user_data[
+                                                                                                   "add_coin"]["info"][
+                                                                                                   choice[0].lower()]):
+
+            add_coin_info[choice[0].lower()] += int(choice[1])
+        else:
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders["0"]))
+
+        placeholders = get_lang(context, add_coin.__name__)
+        context.user_data["add_coin"]["query_menu"].edit_text(placeholders["0"],
+                                                              reply_markup=build_plus_minus_keyboard(
+                                                                  build_add_coin_buttons(update, context),
+                                                                  back_button=False,
+                                                                  done_button=True))
+        return 0
+    elif choice == "DONE":
+        controller.commit_add_coin(chat_id, get_user_id(update), pc_name, add_coin_info)
+        return add_coin_end(update, context)
+    else:
+        if choice.split(": ")[0].lower() == "vault":
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders["vault"].format(
+                    controller.get_vault_capacity_of_crew(query_game_of_user(chat_id, get_user_id(update))))), 3)
+        else:
+            auto_delete_message(context.user_data["add_coin"]["invocation_message"].reply_text(
+                placeholders[choice.split(": ")[0].lower()]), 3)
+        return 0
+
+
+def add_coin_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the armor use conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_coin")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_add_coin---------------------------------------------------------------
+
+
+def upgrade_crew(update: Update, context: CallbackContext) -> None:
+    """
+    Handles the upgrade of the crew, increasing its tier or changing its hold.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, upgrade_crew.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return
+
+    hold, tier = controller.upgrade_crew(query_game_of_user(update.message.chat_id, get_user_id(update)))
+
+    auto_delete_message(update.message.reply_text(placeholders[str(hold)].format(tier), parse_mode=ParseMode.HTML))
+
+
+# ------------------------------------------conv_factions_status--------------------------------------------------------
+
+def factions_status(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that regards the factions' status.
+    Sends the InlineKeyboard with the factions and their current status.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, factions_status.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return factions_status_end(update, context)
+
+    add_tag_in_telegram_data(context, ["factions_status", "invocation_message"], update.message)
+
+    factions = controller.get_factions(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+
+    buttons_list = []
+    buttons = []
+    for i in range(len(factions)):
+        buttons.append(factions[i])
+        if (i + 1) % 8 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+    add_tag_in_telegram_data(context, tags=["factions_status", "buttons_list"], value=buttons_list)
+    add_tag_in_telegram_data(context, tags=["factions_status", "query_menu_index"], value=0)
+
+    context.user_data["factions_status"]["query_menu"] = context.user_data["factions_status"][
+        "invocation_message"].reply_text(
+        placeholders["0"],
+        parse_mode=ParseMode.HTML,
+        reply_markup=build_multi_page_kb(buttons_list[0], done_button=True))
+
+    return 0
+
+
+def factions_status_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the factions status.
+    Sends the InlineKeyboard to select the status of the selected faction.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, faction_status_update() otherwise.
+    """
+
+    placeholders = get_lang(context, factions_status_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["factions_status"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["factions_status"]["buttons_list"]):
+            index = 0
+        context.user_data["factions_status"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["factions_status"]["buttons_list"]):
+            index = 0
+
+        context.user_data["factions_status"]["query_menu_index"] = index
+    elif choice == "DONE":
+        context.user_data["factions_status"]["query_menu"].delete()
+        controller.update_factions_status(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                          context.user_data["factions_status"]["factions"])
+
+        return factions_status_end(update, context)
+    else:
+        status = int(choice.split(" ")[0])
+        name = choice.split("$")[0]
+        name = name.split(" - ")[1]
+        name = name.split(":")[0]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, tags=["factions_status", "focus"],
+                                     value=name)
+            add_tag_in_telegram_data(context, tags=["factions_status", "factions", name],
+                                     value=status)
+            placeholders = get_lang(context, "bonus_dice")
+            message = context.user_data["factions_status"]["invocation_message"].reply_text(
+                text=placeholders["factions_status_message"].format(name),
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_plus_minus_keyboard(
+                    [placeholders["factions_status_button"].format(status)], back_button=False, done_button=True))
+
+            context.user_data["factions_status"]["query_menu"].delete()
+            add_tag_in_telegram_data(context, tags=["factions_status", "query_menu"], value=message)
+            return 1
+        else:
+            description = query_factions(name=name, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 0
+
+    context.user_data["factions_status"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["factions_status"]["buttons_list"][
+                context.user_data["factions_status"]["query_menu_index"]], done_button=True))
+    return 0
+
+
+def factions_status_update(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the new status of the selected. faction. The value is stored in the user_data.
+    When the selection is finished the InlineKeyboard with all the factions is sent again.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, factions_status_selection() otherwise.
+    """
+    placeholders = get_lang(context, "bonus_dice")
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    focus = context.user_data["factions_status"]["focus"]
+    status = context.user_data["factions_status"]["factions"][focus]
+
+    if "+" in choice or "-" in choice:
+        status += int(choice.split(" ")[1])
+        if status < -3:
+            status = -3
+        if status > 3:
+            status = 3
+        add_tag_in_telegram_data(context, ["factions_status", "factions", focus], value=status)
+
+        update_bonus_dice_kb(context, location="user", tags=["factions_status", "factions", focus],
+                             tot_dice=context.user_data["factions_status"]["factions"][focus],
+                             message_tag="factions_status_message",
+                             button_tag="factions_status_button")
+
+    elif choice == "DONE":
+        placeholders = get_lang(context, factions_status_update.__name__)
+        context.user_data["factions_status"]["query_menu"].delete()
+        context.user_data["factions_status"]["query_menu"] = context.user_data["factions_status"][
+            "invocation_message"].reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=build_multi_page_kb(
+                context.user_data["factions_status"]["buttons_list"][
+                    context.user_data["factions_status"]["query_menu_index"]], done_button=True))
+
+        return 0
+
+    else:
+        auto_delete_message(
+            update.effective_message.reply_text(placeholders["factions_status_description"], parse_mode=ParseMode.HTML),
+            placeholders["factions_status_description"])
+
+    return 1
+
+
+def factions_status_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the factions' status conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "faction_status")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_factions_status--------------------------------------------------------
 
 # ------------------------------------------conv_use_item---------------------------------------------------------------
 

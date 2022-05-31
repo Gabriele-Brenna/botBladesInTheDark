@@ -478,6 +478,49 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["coin".casefold(), "addCoin".casefold()], add_coin)],
+            states={
+                0: [CallbackQueryHandler(add_coin_amount)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_coin_end)],
+            name="conv_add_coin",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(
+                ["vaultCapacity".casefold(), "setVaultCapacity".casefold(), "setVault".casefold(), "vault".casefold()],
+                vault_capacity
+            )],
+            states={
+                0: [CallbackQueryHandler(vault_capacity_kb)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), vault_capacity_end)],
+            name="conv_vault_capacity",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(CommandHandler(["upgradeCrew".casefold(), "addCrewTier".casefold(),
+                                           "upCrew".casefold()], upgrade_crew))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["factionsStatus".casefold(), "factions".casefold()], factions_status)],
+            states={
+                0: [CallbackQueryHandler(factions_status_selection)],
+                1: [CallbackQueryHandler(factions_status_update)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), factions_status_end)],
+            name="conv_factions_status",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

@@ -188,7 +188,7 @@
       "1": "Select an existing ability.\n/data for more info."
     },
 
-    "create_crew_contact" : {
+    "create_crew_contact": {
       "0": "This NPC doesn't belong to your crew contacts pool...",
       "1": "Select another NPC.\n/data for more info."
     },
@@ -254,7 +254,7 @@
 
       "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
       "engagement": "Engagement \uD83C\uDFB2: {}",
-      "engagement_extended" : "Select the number of dice you want to roll. Consider the details of your plan.",
+      "engagement_extended": "Select the number of dice you want to roll. Consider the details of your plan.",
 
       "heat": "Select the amount of heat to add or remove.",
       "heat_button": "Heat \u2668\uFE0F: {}",
@@ -262,7 +262,15 @@
 
       "rep": "Select the amount of rep to add to your crew.",
       "rep_button": "Rep : {}",
-      "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it."
+      "rep_description": "If you kept this operation completely quiet you should earn <i>0</i> Rep.\nIf you have a <i>Special Ability</i> or a <i>Claim</i> that gives you extra Rep, you can mark it.",
+
+      "vault_capacity_message": "Select the total capacity of your crew's vault:",
+      "vault_capacity_button": "Capacity: {}",
+      "vault_capacity_rules": "By the game rules, the default capacity of the crew's vault is 4.\nIf your crew has the <i>Vault</i> Upgrade, the capacity can be increased to 8 (level 1) or to 16 (level 2).\nIf you have something that can give you more space or something that reduces it, mark the value of your vault's capacity.",
+
+      "factions_status_message": "Modify the status your crew has with this faction:",
+      "factions_status_button": "Status: {}",
+      "factions_status_description": "The status represents your relationship with another faction. It goes from -3 (<i>War</i>) to 3 (<i>Allies</i>)"
     },
 
     "group_action_cohort": {
@@ -651,6 +659,41 @@
       "0": "<i>{}</i> used their {} armor."
     },
 
+    "add_coin": {
+      "err": "You can't add coins without being in a game... /join to take part in a game.",
+      "0": "Add or remove the coins clicking the buttons"
+    },
+
+    "add_coin_amount": {
+      "0": "Can't add more coins here",
+      "coins": "you can't have more than 4 coins",
+      "stash": "you can't have more than 40 coins in your stash",
+      "vault": "you can't have more than {} coins in your vault"
+    },
+
+    "vault_capacity": {
+      "err": "You can't modify the vault capacity of the crew without being in a game... /join to join a game."
+    },
+
+    "upgrade_crew": {
+      "err": "You can't add coins without being in a game... /join to take part in a game.",
+      "True": "Your hold have become <i><b>strong</b></i>, but your tier remains: <i>{}</i>",
+      "False": "Your tier increased to <i>{}</i>, but your hold is now <i><b>weak</b></i>"
+    },
+
+    "factions_status": {
+      "err": "You can't modify the factions' status without being in a game... /join to join a game.",
+      "0": "Select the Faction you want to update:"
+    },
+
+    "factions_status_selection": {
+      "0": "Select the Faction you want to update:"
+    },
+
+    "factions_status_update": {
+      "0": "Select the Faction you want to update:"
+    },
+
     "use_item": {
       "0": "Choose the item you want to use. If you want a new item you will need to craft it during a downtime activity.",
       "1": "You can't use an item without being in a game... /join to take part in a game."
@@ -666,6 +709,7 @@
     "use_item_description": {
       "0": "<i>{}</i> has been used"
     }
+
   },
 
   "Journal": {

@@ -291,7 +291,7 @@ def build_plus_minus_keyboard(central_buttons: List[str], back_button: bool = Tr
     return custom_kb(buttons, inline, split_row, callbacks)
 
 
-def build_multi_page_kb(object_buttons: List[str], inline: bool = True):
+def build_multi_page_kb(object_buttons: List[str], inline: bool = True, done_button: bool = False):
     buttons = []
     callbacks = []
 
@@ -306,6 +306,10 @@ def build_multi_page_kb(object_buttons: List[str], inline: bool = True):
     buttons.append("\u27A1\uFE0F")
     callbacks.append("LEFT")
     callbacks.append("RIGHT")
+
+    if done_button:
+        buttons.append("\u2611\uFE0F DONE")
+        callbacks.append("DONE")
 
     return custom_kb(buttons, inline, 2, callbacks)
 
