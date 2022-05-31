@@ -456,10 +456,24 @@ def start_bot():
         ConversationHandler(
             entry_points=[CommandHandler(["useArmor".casefold(), "armorUse".casefold()], armor_use)],
             states={
-                0: [CallbackQueryHandler(armor_use_type)]
+                0: [CallbackQueryHandler(armor_use_type)],
+                1: [MessageHandler(Filters.text & ~Filters.command, armor_use_description)]
             },
             fallbacks=[CommandHandler("cancel".casefold(), armor_use_end)],
             name="conv_armor_use",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["useItem".casefold(), "ui".casefold()], use_item)],
+            states={
+                0: [CallbackQueryHandler(use_item_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, use_item_description)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), use_item_end)],
+            name="conv_use_item",
             persistent=True
         )
     )

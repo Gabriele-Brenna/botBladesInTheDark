@@ -644,7 +644,27 @@
     },
 
     "armor_use_type": {
+      "0": "Describe what you are trying to resist"
+    },
+
+    "armor_use_description": {
       "0": "<i>{}</i> used their {} armor."
+    },
+
+    "use_item": {
+      "0": "Choose the item you want to use. If you want a new item you will need to craft it during a downtime activity.",
+      "1": "You can't use an item without being in a game... /join to take part in a game."
+    },
+
+    "use_item_name": {
+      "0": "Choose the item you want to use.",
+      "1": "Describe the use of <i>{}</i>",
+      "2": "You can't use this item because it weights too much",
+      "3": "Description:\n{}\nWeight: {}\nUsages: {}\nQuality: {}"
+    },
+
+    "use_item_description": {
+      "0": "<i>{}</i> has been used"
     }
   },
 
@@ -805,6 +825,10 @@
     "write_armor_use": {
       "0": "ARMOR USE",
       "1": "<b><i>{}</i></b> used his <i>{}</i> armor"
+    },
+    "write_use_item": {
+      "0": "USE ITEM",
+      "1": "<b><i>{}</i></b> used <i>{}</i> for this reason: {}"
     },
     "results": {
       "action": {

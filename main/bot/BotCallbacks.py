@@ -3583,8 +3583,8 @@ def add_trauma(update: Update, context: CallbackContext) -> int:
 
     pc_name = context.user_data["active_PCs"][chat_id]
 
-    buttons = [trauma[0] for trauma in query_traumas(pc_class=controller.get_pc_class(chat_id,
-                                                                                      get_user_id(update), pc_name))]
+    buttons = [trauma[0] for trauma in query_traumas(pc_class=controller.get_pc_type(chat_id,
+                                                                                     get_user_id(update), pc_name))]
     message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(buttons))
 
     add_tag_in_telegram_data(context, ["add_trauma", "message"], message)
@@ -4303,8 +4303,7 @@ def armor_use(update: Update, context: CallbackContext) -> int:
 
 def armor_use_type(update: Update, context: CallbackContext) -> int:
     """
-    Stores the type of the armor in the user_data and calls the controller method commit_armor_use,
-    then calls armor_use_end.
+    Stores the type of the armor in the user_data and asks the user for the description of the armor usage.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -4319,6 +4318,27 @@ def armor_use_type(update: Update, context: CallbackContext) -> int:
     context.user_data["armor_use"]["message"].delete()
 
     add_tag_in_telegram_data(context, ["armor_use", "info", "armor_type"], choice)
+
+    message = context.user_data["armor_use"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["armor_use", "message"], message)
+
+    return 1
+
+
+def armor_use_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the description of the armor usage and calls the controller method commit_armor_use,
+    then calls armor_use_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, armor_use_description.__name__)
+
+    add_tag_in_telegram_data(context, ["armor_use", "info", "notes"], update.message.text)
+
+    context.user_data["armor_use"]["message"].delete()
 
     message = context.user_data["armor_use"]["invocation_message"].reply_text(placeholders["0"].format(
         context.user_data["armor_use"]["info"]["pc"], context.user_data["armor_use"]["info"]["armor_type"]
@@ -4345,6 +4365,159 @@ def armor_use_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_armor_use--------------------------------------------------------------
+
+
+# ------------------------------------------conv_use_item---------------------------------------------------------------
+
+
+def use_item(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game, in the correct phase and has active PCs, then starts the conversation that handles
+    the use of an ite, and asks the user for what item they want to use.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if "active_PCs" in context.user_data and update.effective_message.chat_id in context.user_data["active_PCs"]:
+        placeholders = get_lang(context, use_item.__name__)
+
+        if is_game_in_wrong_phase(update, context, placeholders["1"], 3):
+            return end_score_end(update, context)
+
+        add_tag_in_telegram_data(context, ["use_item", "invocation_message"], update.message)
+
+        chat_id = update.effective_message.chat_id
+        user_id = get_user_id(update)
+
+        add_tag_in_telegram_data(context, ["use_item", "info", "pc"], context.user_data["active_PCs"][chat_id])
+        items = controller.get_items_names(query_game_of_user(chat_id, user_id),
+                                           controller.get_pc_class(chat_id,
+                                                                   user_id,
+                                                                   context.user_data["use_item"]["info"]["pc"]))
+
+        buttons_list = []
+        buttons = []
+        for i in range(len(items)):
+            buttons.append(items[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, ["use_item", "buttons_list"], buttons_list)
+
+        context.user_data["use_item"]["query_menu"] = update.message.reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=build_multi_page_kb(buttons_list[0])
+        )
+
+        add_tag_in_telegram_data(context, ["use_item", "query_menu_index"], 0)
+
+        return 0
+
+
+def use_item_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the name of the item in the user data, calls the controller method use_item and, if it returns true,
+    asks them the description of the usage; if it returns false calls use_item_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, use_item_name.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+    index = context.user_data["use_item"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["use_item"]["buttons_list"]):
+            index = 0
+        context.user_data["use_item"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["use_item"]["buttons_list"]):
+            index = 0
+        context.user_data["use_item"]["query_menu_index"] = index
+
+    else:
+        item_name = choice.split("$")[0]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, ["use_item", "info", "item_name"], item_name)
+            result = controller.use_item(update.effective_message.chat_id,
+                                         get_user_id(update),
+                                         context.user_data["use_item"]["info"])
+            if result:
+                message = context.user_data["use_item"]["invocation_message"].reply_text(placeholders["1"].format(
+                    context.user_data["use_item"]["info"]["item_name"]), parse_mode=ParseMode.HTML)
+                add_tag_in_telegram_data(context, ["use_item", "message"], message)
+                return 1
+            else:
+                message = context.user_data["use_item"]["invocation_message"].reply_text(placeholders["2"])
+                auto_delete_message(message, 10)
+                return use_item_end(update, context)
+        else:
+            name = item_name.split(": ")[0]
+            item_dict = query_items(item_name=name, as_dict=True)[0]
+            description = item_dict["description"]
+            if description is None:
+                description = ""
+            info = placeholders["3"].format(description, item_dict["weight"], item_dict["usages"],
+                                            controller.get_crew_tier(query_game_of_user(
+                                                update.effective_message.chat_id, get_user_id(update))))
+            auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
+            return 0
+
+    context.user_data["use_item"]["query_menu"].edit_text(
+        placeholders["0"],
+        reply_markup=build_multi_page_kb(
+            context.user_data["use_item"]["buttons_list"][context.user_data["use_item"]["query_menu_index"]]))
+    return 0
+
+
+def use_item_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the description of the item in the user data and calls the controller method commit_use_item then calls
+    use_item_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, use_item_description.__name__)
+
+    add_tag_in_telegram_data(context, ["use_item", "info", "notes"], update.message.text)
+    context.user_data["use_item"]["message"].delete()
+
+    chat_id = update.effective_message.chat_id
+    user_id = get_user_id(update)
+    controller.commit_use_item(query_game_of_user(chat_id, user_id), user_id, context.user_data["use_item"]["info"])
+
+    auto_delete_message(placeholders["0"], 8)
+
+    return use_item_end(update, context)
+
+
+def use_item_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the use item conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "use_item")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_use_item---------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
