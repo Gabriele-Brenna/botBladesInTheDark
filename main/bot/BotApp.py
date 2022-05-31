@@ -491,6 +491,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["factionsStatus".casefold(), "factions".casefold()], factions_status)],
+            states={
+                0: [CallbackQueryHandler(factions_status_selection)],
+                1: [CallbackQueryHandler(factions_status_update)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), factions_status_end)],
+            name="conv_factions_status",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

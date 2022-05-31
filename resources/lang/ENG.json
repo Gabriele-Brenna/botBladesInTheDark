@@ -298,7 +298,11 @@
 
       "vault_capacity_message": "Select the total capacity of your crew's vault:",
       "vault_capacity_button": "Capacity: {}",
-      "vault_capacity_rules": "By the game rules, the default capacity of the crew's vault is 4.\nIf your crew has the <i>Vault</i> Upgrade, the capacity can be increased to 8 (level 1) or to 16 (level 2).\nIf you have something that can give you more space or something that reduces it, mark the value of your vault's capacity."
+      "vault_capacity_rules": "By the game rules, the default capacity of the crew's vault is 4.\nIf your crew has the <i>Vault</i> Upgrade, the capacity can be increased to 8 (level 1) or to 16 (level 2).\nIf you have something that can give you more space or something that reduces it, mark the value of your vault's capacity.",
+
+      "factions_status_message": "Modify the status your crew has with this faction:",
+      "factions_status_button": "Status: {}",
+      "factions_status_description": "The status represents your relationship with another faction. It goes from -3 (<i>War</i>) to 3 (<i>Allies</i>)"
     },
     "group_action_cohort": {
       "0": "Select the cohort you want to lead",
@@ -804,6 +808,19 @@
 
     "vault_capacity": {
       "err": "You can't modify the vault capacity of the crew without being in a game... /join to join a game."
+    },
+
+    "factions_status": {
+      "err": "You can't modify the factions' status without being in a game... /join to join a game.",
+      "0": "Select the Faction you want to update:"
+    },
+
+    "factions_status_selection": {
+      "0": "Select the Faction you want to update:"
+    },
+
+    "factions_status_update": {
+      "0": "Select the Faction you want to update:"
     }
 
   },

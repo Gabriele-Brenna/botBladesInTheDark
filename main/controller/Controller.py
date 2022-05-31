@@ -1016,5 +1016,29 @@ class Controller:
 
         insert_crew_json(game.identifier, save_to_json(crew))
 
+    def update_factions_status(self, game_id: int, factions: dict):
+        """
+        Updates the game's factions' status. If the factions passed are not in the game list, their instances
+        retrieved from the DB and added with the passed value.
+
+        :param game_id: the game's id.
+        :param factions: dictionary thet contains all the factions' names and their status to update.
+        """
+        def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
+            for elem in factions_list:
+                if elem.name.lower() == name.lower():
+                    return elem
+        game = self.get_game_by_id(game_id)
+
+        for key in factions.keys():
+            faction = get_faction_by_name(key, game.factions)
+            if faction is None:
+                game.factions.append(query_factions(name=key)[0])
+                faction = get_faction_by_name(key, game.factions)
+
+            faction.status = factions[key]
+
+        insert_faction_json(game.identifier, save_to_json(game.factions))
+
     def __repr__(self) -> str:
         return str(self.games)

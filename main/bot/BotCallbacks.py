@@ -1497,10 +1497,11 @@ def action_roll_goal(update: Update, context: CallbackContext):
         add_tag_in_telegram_data(context, location="chat", tags=["action_roll", "roll", "goal"],
                                  value=update.message.text)
 
-        auto_delete_message(context.chat_data["action_roll"]["invocation_message"].reply_text(
-            text=get_lang(context, group_action.__name__)["0"].format(
-                context.chat_data["action_roll"]["roll"]["pc"], update.message.text),
-            parse_mode=ParseMode.HTML), 25)
+        if "group_action" in context.chat_data["action_roll"]:
+            auto_delete_message(context.chat_data["action_roll"]["invocation_message"].reply_text(
+                text=get_lang(context, group_action.__name__)["0"].format(
+                    context.chat_data["action_roll"]["roll"]["pc"], update.message.text),
+                parse_mode=ParseMode.HTML), 25)
 
         chat_id = update.message.chat_id
         action_ratings = controller.get_pc_actions_ratings(get_user_id(update),
@@ -4371,10 +4372,11 @@ def vault_capacity(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, "bonus_dice")
     query_menu = update.message.reply_text(placeholders["vault_capacity_message"],
                                            reply_markup=build_plus_minus_keyboard(
-        [placeholders["vault_capacity_button"].format(context.user_data["vault_capacity"]["capacity"])],
+                                               [placeholders["vault_capacity_button"].format(
+                                                   context.user_data["vault_capacity"]["capacity"])],
                                                inline=True,
-                                           back_button=False,
-                                           done_button=True))
+                                               back_button=False,
+                                               done_button=True))
     add_tag_in_telegram_data(context, ["vault_capacity", "query_menu"], query_menu)
 
     return 0
@@ -4415,8 +4417,9 @@ def vault_capacity_kb(update: Update, context: CallbackContext) -> int:
         return vault_capacity_end(update, context)
 
     else:
-        auto_delete_message(update.effective_message.reply_text(placeholders["vault_capacity_rules"], parse_mode=ParseMode.HTML),
-                            placeholders["vault_capacity_rules"])
+        auto_delete_message(
+            update.effective_message.reply_text(placeholders["vault_capacity_rules"], parse_mode=ParseMode.HTML),
+            placeholders["vault_capacity_rules"])
 
     return 0
 
@@ -4429,7 +4432,7 @@ def vault_capacity_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END
     """
-    delete_conv_from_telegram_data(context, "armor_use")
+    delete_conv_from_telegram_data(context, "vault_capacity")
 
     return end_conv(update, context)
 
@@ -4568,6 +4571,186 @@ def add_coin_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_add_coin---------------------------------------------------------------
+
+# ------------------------------------------conv_factions_status--------------------------------------------------------
+
+def factions_status(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that regards the factions' status.
+    Sends the InlineKeyboard with the factions and their current status.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, factions_status.__name__)
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return factions_status_end(update, context)
+
+    add_tag_in_telegram_data(context, ["factions_status", "invocation_message"], update.message)
+
+    factions = controller.get_factions(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+
+    buttons_list = []
+    buttons = []
+    for i in range(len(factions)):
+        buttons.append(factions[i])
+        if (i + 1) % 8 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+    add_tag_in_telegram_data(context, tags=["factions_status", "buttons_list"], value=buttons_list)
+    add_tag_in_telegram_data(context, tags=["factions_status", "query_menu_index"], value=0)
+
+    context.user_data["factions_status"]["query_menu"] = context.user_data["factions_status"][
+        "invocation_message"].reply_text(
+        placeholders["0"],
+        parse_mode=ParseMode.HTML,
+        reply_markup=build_multi_page_kb(buttons_list[0], done_button=True))
+
+    return 0
+
+
+def factions_status_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the factions status.
+    Sends the InlineKeyboard to select the status of the selected faction.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, faction_status_update() otherwise.
+    """
+
+    placeholders = get_lang(context, factions_status_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["factions_status"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["factions_status"]["buttons_list"]):
+            index = 0
+        context.user_data["factions_status"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["factions_status"]["buttons_list"]):
+            index = 0
+
+        context.user_data["factions_status"]["query_menu_index"] = index
+    elif choice == "DONE":
+        context.user_data["factions_status"]["query_menu"].delete()
+        controller.update_factions_status(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                          context.user_data["factions_status"]["factions"])
+
+        return factions_status_end(update, context)
+    else:
+        status = int(choice.split(" ")[0])
+        name = choice.split("$")[0]
+        name = name.split(" - ")[1]
+        name = name.split(":")[0]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, tags=["factions_status", "focus"],
+                                     value=name)
+            add_tag_in_telegram_data(context, tags=["factions_status", "factions", name],
+                                     value=status)
+            placeholders = get_lang(context, "bonus_dice")
+            message = context.user_data["factions_status"]["invocation_message"].reply_text(
+                text=placeholders["factions_status_message"].format(name),
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_plus_minus_keyboard(
+                    [placeholders["factions_status_button"].format(status)], back_button=False, done_button=True))
+
+            context.user_data["factions_status"]["query_menu"].delete()
+            add_tag_in_telegram_data(context, tags=["factions_status", "query_menu"], value=message)
+            return 1
+        else:
+            description = query_factions(name=name, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 0
+
+    context.user_data["factions_status"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["factions_status"]["buttons_list"][
+                context.user_data["factions_status"]["query_menu_index"]], done_button=True))
+    return 0
+
+
+def factions_status_update(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the new status of the selected. faction. The value is stored in the user_data.
+    When the selection is finished the InlineKeyboard with all the factions is sent again.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, factions_status_selection() otherwise.
+    """
+    placeholders = get_lang(context, "bonus_dice")
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    focus = context.user_data["factions_status"]["focus"]
+    status = context.user_data["factions_status"]["factions"][focus]
+
+    if "+" in choice or "-" in choice:
+        status += int(choice.split(" ")[1])
+        if status < -3:
+            status = -3
+        if status > 3:
+            status = 3
+        add_tag_in_telegram_data(context, ["factions_status", "factions", focus], value=status)
+
+        update_bonus_dice_kb(context, location="user", tags=["factions_status", "factions", focus],
+                             tot_dice=context.user_data["factions_status"]["factions"][focus],
+                             message_tag="factions_status_message",
+                             button_tag="factions_status_button")
+
+    elif choice == "DONE":
+        placeholders = get_lang(context, factions_status_update.__name__)
+        context.user_data["factions_status"]["query_menu"].delete()
+        context.user_data["factions_status"]["query_menu"] = context.user_data["factions_status"][
+            "invocation_message"].reply_text(
+            placeholders["0"],
+            parse_mode=ParseMode.HTML,
+            reply_markup=build_multi_page_kb(
+                context.user_data["factions_status"]["buttons_list"][
+                    context.user_data["factions_status"]["query_menu_index"]], done_button=True))
+
+        return 0
+
+    else:
+        auto_delete_message(
+            update.effective_message.reply_text(placeholders["factions_status_description"], parse_mode=ParseMode.HTML),
+            placeholders["factions_status_description"])
+
+    return 1
+
+
+def factions_status_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the factions' status conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "faction_status")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_factions_status--------------------------------------------------------
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
