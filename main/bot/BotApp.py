@@ -491,6 +491,9 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["upgradeCrew".casefold(), "addCrewTier".casefold(),
+                                           "upCrew".casefold()], upgrade_crew))
+
     dispatcher.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler(["factionsStatus".casefold(), "factions".casefold()], factions_status)],

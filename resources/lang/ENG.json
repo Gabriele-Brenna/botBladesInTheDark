@@ -810,6 +810,12 @@
       "err": "You can't modify the vault capacity of the crew without being in a game... /join to join a game."
     },
 
+    "upgrade_crew": {
+      "err": "You can't add coins without being in a game... /join to take part in a game.",
+      "True": "Your hold have become <i><b>strong</b></i>, but your tier remains: <i>{}</i>",
+      "False": "Your tier increased to <i>{}</i>, but your hold is now <i><b>weak</b></i>"
+    },
+
     "factions_status": {
       "err": "You can't modify the factions' status without being in a game... /join to join a game.",
       "0": "Select the Faction you want to update:"

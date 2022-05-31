@@ -1016,6 +1016,20 @@ class Controller:
 
         insert_crew_json(game.identifier, save_to_json(crew))
 
+    def upgrade_crew(self, game_id: int) -> Tuple[bool, int]:
+        """
+        Upgrades the crew increasing the tier by 1 or changing its hold.
+
+        :param game_id: the game's id.
+        :return: a tuple with the actual hold and the crew's tier.
+        """
+        game = self.get_game_by_id(game_id)
+
+        if not game.crew.add_tier():
+            game.crew.change_hold()
+        insert_crew_json(game.identifier, save_to_json(game.crew))
+        return game.crew.hold, game.crew.tier
+
     def update_factions_status(self, game_id: int, factions: dict):
         """
         Updates the game's factions' status. If the factions passed are not in the game list, their instances

@@ -4572,6 +4572,24 @@ def add_coin_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_add_coin---------------------------------------------------------------
 
+
+def upgrade_crew(update: Update, context: CallbackContext) -> None:
+    """
+    Handles the upgrade of the crew, increasing its tier or changing its hold.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, upgrade_crew.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return
+
+    hold, tier = controller.upgrade_crew(query_game_of_user(update.message.chat_id, get_user_id(update)))
+
+    auto_delete_message(update.message.reply_text(placeholders[str(hold)].format(tier), parse_mode=ParseMode.HTML))
+
+
 # ------------------------------------------conv_factions_status--------------------------------------------------------
 
 def factions_status(update: Update, context: CallbackContext) -> int:
