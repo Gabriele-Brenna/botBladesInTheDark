@@ -207,10 +207,12 @@ class Controller:
 
         return pcs_names
 
-    def get_pc_actions_ratings(self, user_id: int, chat_id: int, pc_name: str) -> List[Tuple[str, int]]:
+    def get_pc_actions_ratings(self, user_id: int, chat_id: int, pc_name: str, attribute: str = None) \
+            -> List[Tuple[str, int]]:
         """
         Retrieves all the action with the related rating of the specified PC of the user in the chat.
 
+        :param attribute: if passed only the actions of the specified attribute are retrieved.
         :param user_id: the Telegram id of the user.
         :param chat_id: the Telegram chat id of the user.
         :param pc_name: the name of the target PC.
@@ -222,9 +224,10 @@ class Controller:
         pcs = game.get_pcs_list(user_id)
         for pc in pcs:
             if pc.name.lower() == pc_name.lower():
-                for attribute in pc.attributes:
-                    for action in attribute.actions:
-                        ratings.append((action.name, action.rating))
+                for attr in pc.attributes:
+                    if attribute == attr.name or attribute is None:
+                        for action in attr.actions:
+                            ratings.append((action.name, action.rating))
 
                 return ratings
 
@@ -463,9 +466,9 @@ class Controller:
             if cohort.elite:
                 label += "💠"
             if cohort.expert:
-                label += "expert: "
+                label += "[EXPERT] "
             else:
-                label += "gang: "
+                label += "[GANG] "
             label += cohort.type[0]
             for i in range(1, len(cohort.type)):
                 label += ", "
@@ -494,6 +497,15 @@ class Controller:
                 for attribute in pc.attributes:
                     attributes_ratings.append((attribute.name, attribute.attribute_level()))
                 return attributes_ratings
+
+    def get_pc_lifestyle(self, chat_id: int, user_id: int, pc_name: str) -> Optional[int]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        if not isinstance(pc, Owner):
+            return None
+        return int(pc.stash/10)
+
 
     def commit_resistance_roll(self, chat_id: int, user_id: int, resistance_roll: dict) -> Tuple[str, int]:
         """
@@ -1053,6 +1065,18 @@ class Controller:
             faction.status = factions[key]
 
         insert_faction_json(game.identifier, save_to_json(game.factions))
+
+    def commit_fortune_roll(self, game_id: int, fortune_roll: dict):
+        """
+        Writes in the game's journal about the fortune roll, then updates the databse.
+
+        :param game_id: the game's id.
+        :param fortune_roll: a dictionary with the info about the fortune roll
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.journal.write_fortune_roll(**fortune_roll)
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)

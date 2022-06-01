@@ -302,7 +302,9 @@
 
       "factions_status_message": "Modify the status your crew has with this faction:",
       "factions_status_button": "Status: {}",
-      "factions_status_description": "The status represents your relationship with another faction. It goes from -3 (<i>War</i>) to 3 (<i>Allies</i>)"
+      "factions_status_description": "The status represents your relationship with another faction. It goes from -3 (<i>War</i>) to 3 (<i>Allies</i>)",
+
+      "fortune_roll_extended": "If you have something that can give you an help (special abilities, crew upgrades, etc), you can modify the number of bonus dice you get.\nFor example: if you are rolling the quality of an item that is <i>fine</i> you can add 1 die"
     },
     "group_action_cohort": {
       "0": "Select the cohort you want to lead",
@@ -827,6 +829,38 @@
 
     "factions_status_update": {
       "0": "Select the Faction you want to update:"
+    },
+
+    "fortune_roll": {
+      "err": "You can't perform a fortune roll without being in a game... /join to join a game.",
+      "0": "Which is the goal of your roll ?"
+    },
+
+    "fortune_roll_goal": {
+      "0": "Select from where you want to take the pool of dice",
+      "keyboard": ["Action", "Attribute", "Cohort quality", "Item quality", "Crew tier", "Faction tier"],
+      "callbacks": [1, 2, 3, 4, 5, 6]
+    },
+
+    "fortune_roll_choice": {
+      "0": "Select the attribute to which the action you want to roll belongs",
+      "1": "Select the attribute you want to roll",
+      "2": "Select the faction you want to use for the roll",
+      "3": "Select the item you want to use for the roll",
+      "4": "Select the cohort you want to use for the roll"
+    },
+
+    "fortune_roll_action": {
+      "0": "Select the action you want to roll"
+    },
+
+    "fortune_roll_faction": {
+      "404": "Description not found",
+      "0": "Select the faction you want to use for the roll"
+    },
+
+    "fortune_roll_bonus_dice": {
+      "0": "Describe the final outcome of your roll"
     }
 
   },

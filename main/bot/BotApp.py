@@ -507,6 +507,25 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["fortuneRoll".casefold(), "fortune".casefold(), "fr".casefold()],
+                                         fortune_roll)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, fortune_roll_goal)],
+                1: [CallbackQueryHandler(fortune_roll_choice)],
+                2: [CallbackQueryHandler(fortune_roll_what)],
+                3: [CallbackQueryHandler(fortune_roll_bonus_dice)],
+                4: [MessageHandler(Filters.text & ~Filters.command, fortune_roll_notes)],
+                10: [CallbackQueryHandler(fortune_roll_action)],
+                20: [CallbackQueryHandler(fortune_roll_faction)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), fortune_roll_end)],
+            name="conv_fortuneRoll",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
