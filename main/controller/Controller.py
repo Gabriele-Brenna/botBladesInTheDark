@@ -1147,5 +1147,83 @@ class Controller:
         update_user_characters(user_id, game_id, save_to_json(
             self.get_game_by_id(game_id).get_player_by_id(user_id).characters))
 
+    def get_exp(self, chat_id: int, user_id: int, pc_name: str = None, specific: str = None) -> Union[dict, int]:
+        """
+        Gets the exp of the crew and the pc from the model.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc.
+        :param specific: name of the attribute whose exp is needed.
+        :return: a dict with all the exp from the model or just a single one
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        exp_dict = {"crew": game.crew.crew_exp.exp}
+
+        if pc_name is not None:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            exp_dict["playbook"] = pc.playbook.exp
+            for attr in pc.attributes:
+                exp_dict[attr.name.lower()] = attr.exp
+
+        if specific is None:
+            return exp_dict
+
+        return exp_dict[specific]
+
+    def get_playbook_size(self, chat_id: int, user_id: int, pc_name: str = None, attribute: str = None) -> int:
+        """
+        Gets the max size of the playbook of each experience attribute from the model.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc.
+        :param attribute: name of the attribute whose exp limit is needed.
+        :return: the exp limit for the requested attribute.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        if pc_name is None:
+            return game.crew.crew_exp.exp_limit
+        else:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            if attribute == "playbook":
+                return pc.playbook.exp_limit
+            else:
+                return pc.get_attribute_by_name(attribute).exp_limit
+
+    def commit_add_exp(self, chat_id: int, user_id: int, pc_name: str, add_exp: dict) -> List[Tuple[str, int]]:
+        """
+        Adds (or remove) the selected amount of exp from the crew and/or the pc and updates the database.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param add_exp: dictionary with the information used to modify the coins.
+        :return: list of tuples containing the attributes whose points are increased and by how much.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        points = []
+
+        crew = game.crew
+        if crew.crew_exp.add_exp(add_exp["crew"]):
+            points.append(("crew_points", crew.crew_exp.points))
+
+        if pc_name is not None:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            if pc.playbook.add_exp(add_exp["playbook"]):
+                points.append(("playbook_points", pc.playbook.points))
+            for key in add_exp.keys():
+                attr = pc.get_attribute_by_name(key)
+                if attr:
+                    if attr.add_exp(add_exp[key]):
+                        points.append((key+"_points", attr.points))
+            update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+        insert_crew_json(game.identifier, save_to_json(crew))
+
+        return points
+
     def __repr__(self) -> str:
         return str(self.games)

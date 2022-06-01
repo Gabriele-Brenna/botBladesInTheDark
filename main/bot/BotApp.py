@@ -521,6 +521,18 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addExp".casefold(), "exp".casefold()], add_exp)],
+            states={
+                0: [CallbackQueryHandler(add_exp_amount)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_exp_end)],
+            name="conv_add_exp",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

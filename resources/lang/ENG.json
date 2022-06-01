@@ -708,6 +708,24 @@
 
     "use_item_description": {
       "0": "<i>{}</i> has been used"
+    },
+
+    "add_exp": {
+      "0": "Add or remove the exp by clicking the buttons",
+      "err": "You can't add exp without being in a game... /join to take part in a game."
+    },
+
+    "add_exp_amount": {
+      "crew": "Your exp can be {} at max. After that you will gain one point every time you complete it. Each point can be used to gain two upgrades or a new ability",
+      "playbook": "Your exp can be {} at max. After that you will gain one point every time you complete it.",
+      "insight": "Your exp can be {} at max. After that you will gain one point every time you complete it.",
+      "prowess": "Your exp can be {} at max. After that you will gain one point every time you complete it.",
+      "resolve": "Your exp can be {} at max. After that you will gain one point every time you complete it.",
+      "crew_points": "Your crew has now {} points to spend.",
+      "playbook_points": "Your playbook has now {} point/points to spend.",
+      "insight_points": "Your insight has now {} point/points to spend.",
+      "prowess_points": "Your prowess has now {} point/points to spend.",
+      "resolve_points": "Your resolve has now {} point/points to spend."
     }
 
   },
