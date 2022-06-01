@@ -533,6 +533,7 @@ def start_bot():
                 4: [MessageHandler(Filters.text & ~Filters.command, fortune_roll_notes)],
                 10: [CallbackQueryHandler(fortune_roll_action)],
                 20: [CallbackQueryHandler(fortune_roll_faction)],
+                30: [CallbackQueryHandler(fortune_roll_item)]
             },
             fallbacks=[CommandHandler("cancel".casefold(), fortune_roll_end)],
             name="conv_fortuneRoll",

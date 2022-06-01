@@ -1099,15 +1099,15 @@ class Controller:
         items += self.get_game_by_id(game_id).crafted_items
         return items
 
-    def get_items_names(self, game_id: int, pc_class: str) -> List[str]:
+    def get_items_names(self, game_id: int, pc_class: str) -> List[Tuple[str, int]]:
         """
         Gets the names of all the usable items of a pc.
 
         :param game_id: the id of the game.
         :param pc_class: the class of the pc.
-        :return: a list of strings representing the names of the items
+        :return: a list of tuple with a string representing the name of the item and an int which is its quality.
         """
-        return [item.name for item in self.get_items(game_id, pc_class)]
+        return [(item.name, item.quality) for item in self.get_items(game_id, pc_class)]
 
     def get_item_by_name(self, game_id: int, pc_class: str, item_name: str) -> Item:
         """

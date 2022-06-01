@@ -728,7 +728,8 @@
       "1": "Select the attribute you want to roll",
       "2": "Select the faction you want to use for the roll",
       "3": "Select the item you want to use for the roll",
-      "4": "Select the cohort you want to use for the roll"
+      "4": "Select the cohort you want to use for the roll",
+      "5": "Select the item you want to use for the roll"
     },
 
     "fortune_roll_action": {
@@ -742,6 +743,11 @@
 
     "fortune_roll_bonus_dice": {
       "0": "Describe the final outcome of your roll"
+    },
+
+    "fortune_roll_item": {
+      "0": "Select the item you want to use for the roll",
+      "1": "Description:\n{}\nWeight: {}\nUsages: {}\nQuality: {}"
     }
 
   },
