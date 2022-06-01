@@ -567,9 +567,9 @@ class Controller:
 
         return trauma_victim
 
-    def get_pc_class(self, chat_id: int, user_id: int, pc_name: str) -> str:
+    def get_pc_type(self, chat_id: int, user_id: int, pc_name: str) -> str:
         """
-        Gets the class of the specified pc.
+        Gets the type of the specified pc.
 
         :param chat_id: the Telegram id of the user.
         :param user_id: the Telegram chat id of the user.
@@ -825,8 +825,8 @@ class Controller:
         Close the last added score by removing it from the game's scores list.
         Calls the method to write the game's journal and updates the DB.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param end_score: dictionary containing all the information of the score's closure.
         :return: the number of coin the players may spend to increase their crew's tier if they completed the Rep
                 progress bar.
@@ -842,13 +842,15 @@ class Controller:
 
         insert_score_json(game.identifier, save_to_json(game.scores))
         insert_crew_json(game.identifier, save_to_json(game.crew))
+        for u in game.users:
+            update_user_characters(u.player_id, game.identifier, save_to_json(u.characters))
 
         end_score.pop("rep")
         game.journal.write_end_score(**end_score)
 
         insert_journal(game.identifier, game.journal.get_log_string())
 
-        return coin_to_pay
+        return coin_to_pay if coin_to_pay is not None else 0
 
     def can_store_coins(self, game_id: int, coins: int) -> Tuple[bool, bool]:
         """
@@ -1065,6 +1067,97 @@ class Controller:
             faction.status = factions[key]
 
         insert_faction_json(game.identifier, save_to_json(game.factions))
+
+    def get_pc_class(self, chat_id: int, user_id: int, pc_name: str) -> str:
+        """
+        Gets the class of the specified pc.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: the name of the class
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        if isinstance(pc, Human):
+            return pc.pc_class
+        else:
+            return self.get_pc_type(chat_id, user_id, pc_name)
+
+    def get_items(self, game_id: int, pc_class: str) -> List[Item]:
+        """
+        Gets all the list of items usable by a pc.
+
+        :param game_id: the id of the game.
+        :param pc_class: the class of the pc.
+        :return: the list of items
+        """
+        items = query_items(pc_class=pc_class, canon=True)
+        items += query_items(common_items=True)
+        for item in items:
+            item.quality = self.get_crew_tier(game_id)
+        items += self.get_game_by_id(game_id).crafted_items
+        return items
+
+    def get_items_names(self, game_id: int, pc_class: str) -> List[str]:
+        """
+        Gets the names of all the usable items of a pc.
+
+        :param game_id: the id of the game.
+        :param pc_class: the class of the pc.
+        :return: a list of strings representing the names of the items
+        """
+        return [item.name for item in self.get_items(game_id, pc_class)]
+
+    def get_item_by_name(self, game_id: int, pc_class: str, item_name: str) -> Item:
+        """
+        Gets a specific item given its name.
+
+        :param game_id: the id of the game.
+        :param pc_class: the class of the pc.
+        :param item_name: name of the items.
+        :return: the item
+        """
+        items = self.get_items(game_id, pc_class)
+        for item in items:
+            if item.name == item_name:
+                return item
+
+    def get_crew_tier(self, game_id: int) -> int:
+        """
+        Gets the tier of the crew.
+
+        :param game_id: the id of the game.
+        :return: the tier of the crew
+        """
+        return self.get_game_by_id(game_id).crew.tier
+
+    def use_item(self, chat_id: int, user_id: int, use_item: dict) -> bool:
+        """
+        Calls the method use_item of the pc.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param use_item: dictionary containing all the information about the use of the armor.
+        :return: True if the item is used, False otherwise
+        """
+        game_id = query_game_of_user(chat_id, user_id)
+        pc_class = self.get_pc_class(chat_id, user_id, use_item["pc"])
+        pc = self.get_game_by_id(game_id).get_player_by_id(user_id).get_character_by_name(use_item["pc"])
+        return pc.use_item(self.get_item_by_name(game_id, pc_class, use_item["item_name"]))
+
+    def commit_use_item(self, game_id: int, user_id: int, use_item: dict):
+        """
+        Calls write_use_item and updates the database.
+
+        :param game_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param use_item: dictionary containing all the information about the use of the armor.
+        """
+        self.get_game_by_id(game_id).journal.write_use_item(**use_item)
+        insert_journal(game_id, self.get_game_by_id(game_id).journal.get_log_string())
+        update_user_characters(user_id, game_id, save_to_json(
+            self.get_game_by_id(game_id).get_player_by_id(user_id).characters))
 
     def commit_fortune_roll(self, game_id: int, fortune_roll: dict):
         """

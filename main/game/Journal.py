@@ -696,7 +696,8 @@ class Journal:
         :return: the div Tag
         """
         placeholder = self.get_lang(self.write_resistance_roll.__name__)
-        div_tag = self.create_div_tag({"class": "resistanceRoll"})
+        div_tag = self.create_div_tag({"class": "resistanceRoll",
+                                       "style": "margin-left: {}%".format(self.get_indentation())})
 
         div_tag.append(self.create_h2_tag(placeholder["0"]))
 
@@ -781,21 +782,46 @@ class Journal:
 
         return div_tag
 
-    def create_armor_use_tag(self, pc: str, armor_type: str):
+    def create_armor_use_tag(self, pc: str, armor_type: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "armor".
 
         :param pc: who uses the armor
         :param armor_type: type of the armor
+        :param notes: extra notes
         :return: the div Tag
         """
         placeholders = self.get_lang(self.write_armor_use.__name__)
 
-        div_tag = self.create_div_tag({"class": "armor"})
+        div_tag = self.create_div_tag({"class": "armor",
+                                       "style": "margin-left: {}%".format(self.get_indentation())})
 
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc, armor_type)))
+
+        div_tag.append(self.create_p_tag(notes))
+
+        return div_tag
+
+    def create_use_item_tag(self, pc: str, item_name: str, notes: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "useItem".
+
+        :param pc: who uses the item
+        :param item_name: name of the item
+        :param notes: extra notes
+        :return: the div Tag
+        """
+
+        placeholders = self.get_lang(self.write_use_item.__name__)
+
+        div_tag = self.create_div_tag({"class": "useItem",
+                                       "style": "margin-left: {}%".format(self.get_indentation())})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, item_name, notes)))
 
         return div_tag
 
@@ -1132,13 +1158,27 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_armor_use(self, pc: str, armor_type: str):
+    def write_armor_use(self, pc: str, armor_type: str, notes: str):
         """
         Method used to write the use of an armor in the attribute journal representing the html file of the journal.
+
         :param pc: who uses the armor
         :param armor_type: type of the armor used
+        :param notes: extra notes
         """
-        tag = self.create_armor_use_tag(pc, armor_type)
+        tag = self.create_armor_use_tag(pc, armor_type, notes)
+
+        self.write_general(tag)
+
+    def write_use_item(self, pc: str, item_name: str, notes: str):
+        """
+        Method used to write the use of an item in the attribute journal representing the html file of the journal.
+
+        :param pc: who uses the item
+        :param item_name: name of the item
+        :param notes: extra notes
+        """
+        tag = self.create_use_item_tag(pc, item_name, notes)
 
         self.write_general(tag)
 

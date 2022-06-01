@@ -42,6 +42,8 @@ class PC(Character, ISavable, IDrawable):
         self.traumas = traumas
         if items is None:
             items = []
+        if isinstance(items, Item):
+            items = [items]
         self.items = items
         if harms is None:
             harms = [[], [], []]
