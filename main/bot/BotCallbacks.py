@@ -4818,6 +4818,7 @@ def use_item(update: Update, context: CallbackContext) -> int:
                                            controller.get_pc_class(chat_id,
                                                                    user_id,
                                                                    context.user_data["use_item"]["info"]["pc"]))
+        items = [item[0] for item in items]
 
         buttons_list = []
         buttons = []
@@ -4889,6 +4890,7 @@ def use_item_name(update: Update, context: CallbackContext) -> int:
             name = item_name.split(": ")[0]
             item_dict = query_items(item_name=name, as_dict=True)[0]
             description = item_dict["description"]
+            # TODO: fetch from model
             if description is None:
                 description = ""
             info = placeholders["3"].format(description, item_dict["weight"], item_dict["usages"],
@@ -4941,6 +4943,466 @@ def use_item_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_use_item---------------------------------------------------------------
+
+
+# ------------------------------------------conv_fortune_roll-----------------------------------------------------------
+
+
+def fortune_roll(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user in the correct game phase then starts the conversation of the fortune roll.
+    Adds the dict "fortune_roll" in user_data .
+    Finally, sends the goal request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, fortune_roll.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return fortune_roll_end(update, context)
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+
+    return 0
+
+
+def fortune_roll_goal(update: Update, context: CallbackContext) -> int:
+    """
+    Stores goal of the fortune roll in the user data, then sends the inline keyboard to select
+    which type of fortune roll perform.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, fortune_roll_goal.__name__)
+    context.user_data["fortune_roll"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "roll", "goal"], update.message.text)
+
+    chat_id = update.message.chat_id
+
+    keyboard = placeholders["keyboard"].copy()
+    callbacks = placeholders["callbacks"].copy()
+
+    if not controller.get_cohorts_of_crew(chat_id, get_user_id(update)):
+        keyboard.pop(2)
+        callbacks.pop(2)
+
+    if ("active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]) or \
+            ("active_PCs" not in context.user_data):
+        keyboard.pop(1)
+        keyboard.pop(0)
+        callbacks.pop(1)
+        callbacks.pop(0)
+
+    message = context.user_data["fortune_roll"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(keyboard, True, 2, callbacks))
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def fortune_roll_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Advances the conversation to the next state based on the type of fortune role chosen.
+    Eventually stores the info in the user_data or sends the next inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, fortune_roll_choice.__name__)
+    context.user_data["fortune_roll"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "bonus_dice"], 0)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+
+    # Action
+    if choice == 1:
+        message = context.user_data["fortune_roll"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML,
+                                                                                     reply_markup=custom_kb(
+                                                                                         query_attributes(True), True))
+
+        add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+        return 10
+
+    # Attribute
+    elif choice == 2:
+        keyboard: List[str] = ["{}: {}".format(attr[0], attr[1]) for attr in controller.get_pc_attribute_rating(
+            chat_id, get_user_id(update), pc_name)]
+        lifestyle = controller.get_pc_lifestyle(chat_id, get_user_id(update), pc_name)
+        if lifestyle is not None:
+            keyboard.append("Lifestyle: {}".format(lifestyle))
+        message = context.user_data["fortune_roll"]["invocation_message"].reply_text(placeholders["1"], ParseMode.HTML,
+                                                                                     reply_markup=custom_kb(
+                                                                                         keyboard, True, 1))
+
+        add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+        return 2
+
+    # Cohort quality:
+    elif choice == 3:
+        cohorts = controller.get_cohorts_of_crew(chat_id, get_user_id(update))
+        cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+
+        message = context.user_data["fortune_roll"]["invocation_message"].reply_text(placeholders["4"], ParseMode.HTML,
+                                                                                     reply_markup=custom_kb(
+                                                                                         cohorts, True, 1))
+
+        add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+
+        return 2
+
+    # Item quality
+    elif choice == 4:
+        items = controller.get_items_names(query_game_of_user(chat_id, get_user_id(update)),
+                                           controller.get_pc_class(chat_id, get_user_id(update), pc_name))
+
+        items = ["{}: {}".format(item[0], item[1]) for item in items]
+
+        buttons_list = []
+        buttons = []
+        for i in range(len(items)):
+            buttons.append(items[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, tags=["fortune_roll", "buttons_list"], value=buttons_list)
+        add_tag_in_telegram_data(context, tags=["fortune_roll", "query_menu_index"], value=0)
+
+        query_menu = context.user_data["fortune_roll"]["invocation_message"].reply_text(
+            placeholders["5"], ParseMode.HTML, reply_markup=build_multi_page_kb(buttons_list[0]))
+
+        add_tag_in_telegram_data(context, ["fortune_roll", "query_menu"], query_menu)
+
+        return 30
+
+    # Crew tier
+    elif choice == 5:
+        crew_tier = controller.get_crew_tier(query_game_of_user(chat_id, get_user_id(update)))
+        add_tag_in_telegram_data(context, ["fortune_roll", "roll", "what"], "Crew's tier: {}".format(crew_tier))
+        add_tag_in_telegram_data(context, ["fortune_roll", "dice"], crew_tier)
+        return send_fortune_roll_bonus_dice(context)
+
+    # Faction tier
+    elif choice == 6:
+        factions = controller.get_factions(query_game_of_user(chat_id, get_user_id(update)))
+
+        buttons_list = []
+        buttons = []
+        for i in range(len(factions)):
+            buttons.append(factions[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, tags=["fortune_roll", "buttons_list"], value=buttons_list)
+        add_tag_in_telegram_data(context, tags=["fortune_roll", "query_menu_index"], value=0)
+
+        query_menu = context.user_data["fortune_roll"]["invocation_message"].reply_text(
+            placeholders["2"], ParseMode.HTML, reply_markup=build_multi_page_kb(buttons_list[0]))
+
+        add_tag_in_telegram_data(context, ["fortune_roll", "query_menu"], query_menu)
+
+        return 20
+
+
+def fortune_roll_what(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the "what" (what is rolled) of the fortune roll in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: send_fortune_roll_bonus_dice
+    """
+    context.user_data["fortune_roll"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "roll", "what"], choice)
+    add_tag_in_telegram_data(context, ["fortune_roll", "dice"], int(choice.split(": ")[1]))
+
+    return send_fortune_roll_bonus_dice(context)
+
+
+def send_fortune_roll_bonus_dice(context: CallbackContext) -> int:
+    """
+    Sends the keyboard for the bonus dice of the fortune roll
+
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, "bonus_dice")
+    query_menu = context.user_data["fortune_roll"]["invocation_message"].reply_text(
+        placeholders["message"].format(fortune_roll_calc_total_dice(context.user_data["fortune_roll"])),
+        reply_markup=build_plus_minus_keyboard(
+            [placeholders["button"].format(
+                context.user_data["fortune_roll"]["bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, tags=["fortune_roll", "query_menu"], value=query_menu)
+
+    return 3
+
+
+def fortune_roll_calc_total_dice(fortune_dict: dict) -> int:
+    """
+    Calculates the total dice added for the fortune roll so far.
+
+    :param fortune_dict: a dictionary containing the fortune roll's info
+    :return: the total number of dice.
+    """
+    return fortune_dict["bonus_dice"] + fortune_dict["dice"]
+
+
+def fortune_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the outcome is stored in the chat_data and the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    placeholders = get_lang(context, fortune_roll_bonus_dice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    bonus_dice = context.user_data["fortune_roll"]["bonus_dice"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        tags = ["fortune_roll", "bonus_dice"]
+        bonus_dice += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, tags=tags, value=bonus_dice)
+
+        update_bonus_dice_kb(context, tags,
+                             fortune_roll_calc_total_dice(context.user_data["fortune_roll"]), "user")
+
+    elif choice == "DONE":
+        dice_to_roll = fortune_roll_calc_total_dice(context.user_data["fortune_roll"])
+
+        context.user_data["fortune_roll"]["query_menu"].delete()
+
+        roll_dice(update, context, dice_to_roll, ["fortune_roll", "roll", "outcome"], "user")
+
+        context.user_data["fortune_roll"]["message"] = \
+            context.user_data["fortune_roll"]["invocation_message"].reply_text(
+                placeholders["0"], parse_mode=ParseMode.HTML)
+        return 4
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["fortune_roll_extended"],
+                                                                parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["fortune_roll_extended"])
+
+    return 3
+
+
+def fortune_roll_notes(update: Update, context: CallbackContext) -> int:
+    add_tag_in_telegram_data(context, ["fortune_roll", "roll", "notes"], update.message.text)
+
+    chat_id = update.message.chat_id
+    if controller.is_master(get_user_id(update), chat_id):
+        add_tag_in_telegram_data(context, ["fortune_roll", "roll", "pc"], "The GM")
+    else:
+        add_tag_in_telegram_data(context, ["fortune_roll", "roll", "pc"], context.user_data["active_PCs"][chat_id])
+    controller.commit_fortune_roll(query_game_of_user(chat_id, get_user_id(update)),
+                                   context.user_data["fortune_roll"]["roll"])
+
+    return fortune_roll_end(update, context)
+
+
+def fortune_roll_action(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the choice of the action to roll.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, fortune_roll_action.__name__)
+    context.user_data["fortune_roll"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+    pc_name = context.user_data["active_PCs"][chat_id]
+    actions = controller.get_pc_actions_ratings(get_user_id(update), chat_id, pc_name, choice)
+    keyboard = ["{}: {}".format(action[0], action[1]) for action in actions]
+    message = context.user_data["fortune_roll"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML,
+                                                                                 reply_markup=custom_kb(
+                                                                                     keyboard, True, 1))
+
+    add_tag_in_telegram_data(context, ["fortune_roll", "message"], message)
+
+    return 2
+
+
+def fortune_roll_faction(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the choice of the faction used to perform the roll.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, fortune_roll_faction.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["fortune_roll"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["fortune_roll"]["buttons_list"]):
+            index = 0
+        context.user_data["fortune_roll"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["fortune_roll"]["buttons_list"]):
+            index = 0
+
+        context.user_data["fortune_roll"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        name = name.split(" - ")[1]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, tags=["fortune_roll", "roll", "what"],
+                                     value=name)
+            add_tag_in_telegram_data(context, tags=["fortune_roll", "dice"],
+                                     value=int(name.split(": ")[1]))
+
+            context.user_data["fortune_roll"]["query_menu"].delete()
+
+            return send_fortune_roll_bonus_dice(context)
+        else:
+            name = name.split(":")[0]
+            description = query_factions(name=name, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 20
+
+    context.user_data["fortune_roll"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["fortune_roll"]["buttons_list"][
+                context.user_data["fortune_roll"]["query_menu_index"]]))
+    return 20
+
+
+def fortune_roll_item(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the choice of the item used to perform the roll.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, fortune_roll_item.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["fortune_roll"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["fortune_roll"]["buttons_list"]):
+            index = 0
+        context.user_data["fortune_roll"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["fortune_roll"]["buttons_list"]):
+            index = 0
+
+        context.user_data["fortune_roll"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, tags=["fortune_roll", "roll", "what"],
+                                     value=name)
+
+            add_tag_in_telegram_data(context, tags=["fortune_roll", "dice"],
+                                     value=int(name.split(": ")[1]))
+
+            context.user_data["fortune_roll"]["query_menu"].delete()
+
+            return send_fortune_roll_bonus_dice(context)
+        else:
+            name = name.split(":")[0]
+            item_dict = query_items(item_name=name, as_dict=True)[0]
+            description = item_dict["description"]
+            # TODO: fetch from model
+            if description is None:
+                description = ""
+            info = placeholders["1"].format(description, item_dict["weight"], item_dict["usages"],
+                                            controller.get_crew_tier(query_game_of_user(
+                                                update.effective_message.chat_id, get_user_id(update))))
+
+            auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
+            return 30
+
+    context.user_data["fortune_roll"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["fortune_roll"]["buttons_list"][
+                context.user_data["fortune_roll"]["query_menu_index"]]))
+    return 30
+
+
+def fortune_roll_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the fortune roll conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "fortune_roll")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_fortune_roll-----------------------------------------------------------
 
 
 # ------------------------------------------conv_add_exp----------------------------------------------------------------
