@@ -5528,6 +5528,134 @@ def fortune_roll_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_fortune_roll-----------------------------------------------------------
 
 
+# ------------------------------------------conv_add_exp----------------------------------------------------------------
+
+
+def add_exp(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the exp
+    and sends the user the inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_exp.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_exp_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_exp", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["add_exp", "info", "crew"], 0)
+    add_tag_in_telegram_data(context, ["add_exp", "info", "playbook"], 0)
+    add_tag_in_telegram_data(context, ["add_exp", "info", "insight"], 0)
+    add_tag_in_telegram_data(context, ["add_exp", "info", "prowess"], 0)
+    add_tag_in_telegram_data(context, ["add_exp", "info", "resolve"], 0)
+
+    query_menu = update.message.reply_text(placeholders["0"],
+                                           reply_markup=build_plus_minus_keyboard(
+                                               build_add_exp_buttons(update, context),
+                                               back_button=False, done_button=True))
+
+    add_tag_in_telegram_data(context, ["add_exp", "query_menu"], query_menu)
+
+    return 0
+
+
+def build_add_exp_buttons(update: Update, context: CallbackContext) -> List[str]:
+    """
+    Builds the button for the inline keyboard used to add exp.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the list of buttons' label.
+    """
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    exp_dict = controller.get_exp(chat_id, get_user_id(update), pc_name)
+
+    buttons = []
+    for key in exp_dict.keys():
+        exp_dict[key] += context.user_data["add_exp"]["info"][key]
+        buttons.append("{}: {}".format(key.capitalize(), exp_dict[key]))
+
+    return buttons
+
+
+def add_exp_amount(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the buttons from the inline keyboard of the exp.
+    Calls the controller method commit_add_exp() when DONE button is pressed.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.:
+    :return: this state if the DONE button has not been pressed, add_coin_end otherwise.
+    """
+    placeholders = get_lang(context, add_exp_amount.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_exp_info = context.user_data["add_exp"]["info"]
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+
+    if "+" in choice or "-" in choice:
+        choice = choice.split(" ")
+        selection = choice[0].lower()
+        exp = controller.get_exp(chat_id, get_user_id(update), pc_name, selection)
+        if (add_exp_info[selection] + exp + int(choice[1])) >= 0:
+            add_exp_info[selection] += int(choice[1])
+        placeholders = get_lang(context, add_exp.__name__)
+        context.user_data["add_exp"]["query_menu"].edit_text(placeholders["0"],
+                                                             reply_markup=build_plus_minus_keyboard(
+                                                                 build_add_exp_buttons(update, context),
+                                                                 back_button=False,
+                                                                 done_button=True))
+        return 0
+    elif choice == "DONE":
+        result = controller.commit_add_exp(chat_id, get_user_id(update), pc_name, add_exp_info)
+        for t in result:
+            auto_delete_message(context.user_data["add_exp"]["invocation_message"].reply_text(
+                placeholders[t[0]].format(t[1])
+            ))
+        return add_exp_end(update, context)
+    else:
+        name = choice.split(": ")[0].lower()
+        if name == "crew":
+            auto_delete_message(context.user_data["add_exp"]["invocation_message"].reply_text(
+                placeholders["crew"].format(controller.get_playbook_size(chat_id, get_user_id(update)))))
+        else:
+            auto_delete_message(context.user_data["add_exp"]["invocation_message"].reply_text(
+                placeholders[name].format(controller.get_playbook_size(chat_id, get_user_id(update),
+                                                                       pc_name, attribute=name))))
+        return 0
+
+
+def add_exp_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add exp conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_exp")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_add_exp----------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.
