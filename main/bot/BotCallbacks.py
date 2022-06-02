@@ -4942,6 +4942,129 @@ def use_item_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
+def add_action_dots(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, add_action_dots.__name__)
+    if "active_PCs" in context.user_data and update.effective_message.chat_id in context.user_data["active_PCs"]:
+        chat_id = update.effective_message.chat_id
+
+        add_tag_in_telegram_data(context, ["add_action_dots", "invocation_message"], update.message)
+
+        current_action_dots = controller.get_pc_actions_ratings(get_user_id(update), chat_id,
+                                                                context.user_data["active_PCs"][chat_id])
+        action_dots = {}
+        for elem in current_action_dots:
+            action_dots[elem[0].capitalize()] = elem[1]
+
+        add_tag_in_telegram_data(context, tags=["add_action_dots", "action_dots"], value=action_dots)
+        add_tag_in_telegram_data(context, tags=["add_action_dots", "points"], value=controller.get_pc_points(
+            chat_id, get_user_id(update), context.user_data["active_PCs"][chat_id]))
+
+        buttons = query_attributes(only_names=True)
+        buttons.append("DONE")
+        query_menu = context.user_data["add_action_dots"]["invocation_message"].reply_text(
+            text=placeholders["0"],
+            reply_markup=custom_kb(buttons, inline=True, split_row=3))
+        add_tag_in_telegram_data(context, tags=["add_action_dots", "query_menu"], value=query_menu)
+        return 0
+
+    update.effective_message.reply_text(placeholders["err"])
+
+
+def add_action_dots_attribute_selection(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, add_action_dots_attribute_selection.__name__)
+    chat_id = update.effective_message.chat_id
+    pc = context.user_data["active_PCs"][chat_id]
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    if choice == "DONE":
+        controller.add_action_dots(chat_id, get_user_id(update), pc,
+                                    context.user_data["add_action_dots"]["action_dots"],
+                                    context.user_data["add_action_dots"]["points"])
+
+        return add_action_dots_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["add_action_dots", "selected_attribute"], value=choice)
+
+    buttons = create_central_buttons_action_dots(context.user_data["add_action_dots"]["action_dots"], choice)
+
+    context.user_data["add_action_dots"]["query_menu"].delete()
+    query_menu = context.user_data["add_action_dots"]["invocation_message"].reply_text(
+        text=placeholders["0"].format(context.user_data["add_action_dots"]["points"][choice]),
+        reply_markup=build_plus_minus_keyboard(buttons))
+    add_tag_in_telegram_data(context, tags=["add_action_dots", "query_menu"], value=query_menu)
+    return 1
+
+
+def add_action_dots_keyboard(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, add_action_dots_keyboard.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    action_dots = context.user_data["add_action_dots"]["action_dots"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        attribute = context.user_data["add_action_dots"]["selected_attribute"]
+
+        choice = choice.split(" ")
+        context.user_data["add_action_dots"]["points"][attribute] -= int(choice[1])
+        if context.user_data["add_action_dots"]["points"][attribute] < 0:
+            context.user_data["add_action_dots"]["points"][attribute] = 0
+            return 1
+
+        action_dots[choice[0]] += int(choice[1])
+
+        if action_dots[choice[0]] < 0:
+            context.user_data["add_action_dots"]["points"][attribute] -= 1
+            action_dots[choice[0]] = 0
+        elif action_dots[choice[0]] > 4:
+            context.user_data["add_action_dots"]["points"][attribute] += 1
+            action_dots[choice[0]] = 4
+
+        buttons = create_central_buttons_action_dots(action_dots, attribute)
+
+        context.user_data["add_action_dots"]["query_menu"].edit_text(text=placeholders["0"].format(
+            context.user_data["add_action_dots"]["points"][attribute]),
+            reply_markup=build_plus_minus_keyboard(buttons))
+
+        return 1
+    elif choice == "BACK":
+        context.user_data["add_action_dots"]["query_menu"].delete()
+        buttons = query_attributes(only_names=True)
+        buttons.append("DONE")
+        query_menu = context.user_data["add_action_dots"]["invocation_message"].reply_text(
+            text=placeholders["1"],
+            reply_markup=custom_kb(buttons, inline=True, split_row=3))
+        add_tag_in_telegram_data(context, tags=["add_action_dots", "query_menu"], value=query_menu)
+
+        return 0
+
+    else:
+
+        description = query_actions(choice)[0][1]
+        auto_delete_message(context.bot.sendMessage(chat_id=get_user_id(update),
+                                                    text=description,
+                                                    ), description)
+        return 1
+
+
+def add_action_dots_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the fortune roll conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_action_dots")
+
+    return end_conv(update, context)
+
+
 # ------------------------------------------conv_use_item---------------------------------------------------------------
 
 

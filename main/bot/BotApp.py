@@ -541,6 +541,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addDots".casefold(), "addActionDots".casefold(), "dots".casefold(),
+                                          "spendActionPoints".casefold(), "ap".casefold(), "ad".casefold()], add_action_dots)],
+            states={
+                0: [CallbackQueryHandler(add_action_dots_attribute_selection)],
+                1: [CallbackQueryHandler(add_action_dots_keyboard)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), factions_status_end)],
+            name="conv_add_action_dots",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

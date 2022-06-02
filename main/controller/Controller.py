@@ -1171,5 +1171,38 @@ class Controller:
         game.journal.write_fortune_roll(**fortune_roll)
         insert_journal(game.identifier, game.journal.get_log_string())
 
+    def get_pc_points(self, chat_id: int, user_id: int, pc_name: str) -> dict:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+
+        points_dict = {"Playbook": pc.playbook.points}
+        for attribute in pc.attributes:
+            points_dict[attribute.name.capitalize()] = attribute.points
+
+        return points_dict
+
+    def add_action_dots(self, chat_id: int, user_id: int, pc_name: str, new_actions_dict: dict, new_points_dict: dict):
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+
+        pc_action_dots = self.get_pc_actions_ratings(user_id, chat_id, pc_name)
+        old_action_dots = {}
+        for elem in pc_action_dots:
+            old_action_dots[elem[0].capitalize()] = elem[1]
+
+        actions_to_add = {key: new_actions_dict[key] - old_action_dots.get(key, 0) for key in new_actions_dict}
+        # Transforming the dict into a list of tuples
+        action_dots = list(actions_to_add.items())
+        for action in action_dots:
+            pc.add_action_dots(*action)
+
+        new_points_dict.pop("Playbook")
+        for key in new_points_dict.keys():
+            for attribute in pc.attributes:
+                if key.lower() == attribute.name.lower():
+                    attribute.points = new_points_dict[key]
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
     def __repr__(self) -> str:
         return str(self.games)

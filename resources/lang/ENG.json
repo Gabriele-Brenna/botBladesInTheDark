@@ -748,6 +748,21 @@
     "fortune_roll_item": {
       "0": "Select the item you want to use for the roll",
       "1": "Description:\n{}\nWeight: {}\nUsages: {}\nQuality: {}"
+    },
+
+    "add_action_dots": {
+      "0": "Select the attribute of the action you want to upgrade.",
+
+      "err": "You don't have an active pc in this game... /join to take part in a game."
+    },
+
+    "add_action_dots_attribute_selection": {
+      "0": "Select the action you want to upgrade.\nYou can add {} more dots."
+    },
+
+    "add_action_dots_keyboard": {
+      "0": "Select the action you want to upgrade.\nYou can add {} more dots.",
+      "1": "Select the attribute of the action you want to upgrade."
     }
 
   },
