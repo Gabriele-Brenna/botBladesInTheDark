@@ -966,6 +966,33 @@ class Controller:
 
         return pc.coin, pc.stash, crew.coins
 
+    def can_pay(self, chat_id: int, user_id: int, pc_name: str, coins_to_pay: int) -> Tuple[bool, bool]:
+        """
+        Checks if the passed PC, or his Crew, can pay the specified amount of coins.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param coins_to_pay: is the amount of coins to pay.
+        :return: a Tuple of two boolean values: the first regards the crew, the second regards the PC's possessions.
+        """
+        pc_coins, pc_stash, crew_coins = self.get_player_coins(chat_id, user_id, pc_name)
+
+        can_pay_pc = False
+        can_pay_crew = False
+
+        if pc_coins is not None and pc_stash is not None:
+            pc_stash = int(pc_stash / 2)
+            pc_possessions = pc_coins + pc_stash
+            if pc_possessions >= coins_to_pay:
+                can_pay_pc = True
+
+        if crew_coins >= coins_to_pay:
+            can_pay_crew = True
+
+        return can_pay_crew, can_pay_pc
+
+
     def check_add_coin(self, chat_id: int, user_id: int, pc_name: str, where: str, coins: int) -> bool:
         """
         Checks if the selected pc can add the specified amount of coins.
