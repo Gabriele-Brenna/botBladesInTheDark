@@ -551,53 +551,259 @@ class Journal:
 
         return div_tag
 
-    def create_activity_tag(self, pc: str,
-                            activity: Literal['acquire_assets', 'crafting', 'long_term_project', 'recover',
-                                              'reduce_heat', 'train', 'indulge_vice', 'help_cohort',
-                                              'replace_cohort'],
-                            extra_info: str = None, rolls: int = 0, extra_roll=None,
-                            overindulge: Literal['brag', 'lost', 'tapped', 'attracted trouble'] = None,
-                            extra_overindulge: str = "", notes: str = ""):
+    def create_acquire_asset_tag(self, pc: str, asset: str, quality: int, min_quality: int,
+                                 outcome: Union[int, str], extra_quality: int, notes: str):
         """
-        Method used to create and insert a div tag with class attribute set to "activity".
+        Method used to create and insert a div tag with class attribute set to "acquire_asset".
 
         :param pc: who does the downtime activity
-        :param activity: type of activity. Choose from: 'acquire_assets', 'crafting', 'long_term_project', 'recover',
-        'reduce_heat', 'train', 'indulge_vice', 'help_cohort', 'replace_cohort'
-        :param extra_info: extra information about the activity
-        :param rolls: result of the roll
-        :param extra_roll: extra information obtained by the roll (e.g. quality, name of the new cohort,
-        amount of stress)
-        :param overindulge: if the activity was 'indulge_vice' this the type. Choose from: 'Brag', 'Lost', 'Tapped',
-        'Attracted trouble'
-        :param extra_overindulge: extra information about how they overindulged
+        :param asset: the asset to acquire
+        :param quality: quality obtained after the dice roll
+        :param min_quality: minimum quality of the asset
+        :param outcome: outcome of the roll
+        :param extra_quality: by how much the quality is increased
         :param notes: extra notes
         :return: the div Tag
         """
-        placeholder = self.get_lang(self.write_activity.__name__)
-        activity = activity.lower()
-        div_tag = self.create_div_tag({"class": "activity"})
+        placeholders = self.get_lang(self.write_activity.__name__)["acquire_asset"]
+        div_tag = self.create_div_tag({"class": "acquire_asset"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
 
-        div_tag.append(self.create_h2_tag(placeholder["default"]["0"]))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(
+            pc, asset, placeholders["2"].format(min_quality) if min_quality > -1 else ".")))
 
-        div_tag.append(self.create_p_tag(placeholder["default"]["1"].format(pc, placeholder[activity]["0"], "({})".
-                                                                            format(extra_info) if extra_info else "")))
+        div_tag.append(self.create_p_tag(placeholders["3"].format(outcome)))
 
-        div_tag.append(self.create_p_tag(placeholder["default"]["2"].format(
-            rolls, placeholder[activity]["1"].format(extra_roll))))
+        div_tag.append(self.create_p_tag(placeholders["4"].format(quality)))
 
-        if activity == "indulge_vice" and overindulge:
-            div_tag.append(self.create_p_tag(placeholder[activity]["2"]))
-            overindulge = overindulge.lower()
+        if extra_quality > 0:
+            div_tag.append(self.create_p_tag(placeholders["5"].format(pc, quality+extra_quality)))
 
-            if overindulge == "brag":
-                div_tag.append(self.create_p_tag(placeholder[activity]["3"].format(extra_overindulge)))
-            elif overindulge == "lost":
-                div_tag.append(self.create_p_tag(placeholder[activity]["4"].format(extra_overindulge)))
-            elif overindulge == "tapped":
-                div_tag.append(self.create_p_tag(placeholder[activity]["5"].format(extra_overindulge)))
-            elif overindulge == "attracted trouble":
-                div_tag.append(self.create_p_tag(placeholder[activity]["6"].format(extra_overindulge)))
+        if quality >= min_quality:
+            div_tag.append(self.create_p_tag(placeholders["6"].format(pc)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["7"].format(pc)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_long_term_project_tag(self, pc: str, project: str, segments: int, tick: int,
+                                     notes: str, new: bool = False):
+        """
+        Method used to create and insert a div tag with class attribute set to "long_term_project".
+
+        :param pc: who does the downtime activity
+        :param project: name of the project
+        :param segments: total segments of the project's clock
+        :param tick: advancement of the project's clock
+        :param notes: extra notes
+        :param new: True if the project is new, False otherwise
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["long_term_project"]
+
+        div_tag = self.create_div_tag({"class": "long_term_project"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders[str(1 + new)].format(pc, project)))
+        if new:
+            div_tag.append(self.create_p_tag(placeholders["3"].format(segments)))
+
+        if tick < segments:
+            div_tag.append(self.create_p_tag(placeholders["4"].format(tick, segments)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["5"].format(project)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_crafting_tag(self, pc: str, item: str, min_quality: int, quality: int, outcome: int,
+                            extra_quality: int, notes: str, item_description: str = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "crafting".
+
+        :param pc: who does the downtime activity
+        :param item: item to craft
+        :param item_description: description of the item
+        :param min_quality: minimum quality of the item to craft
+        :param quality: quality obtained after the dice roll
+        :param outcome: outcome of the roll
+        :param extra_quality: by how much the quality is increased
+        :param notes: extra notes
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["crafting"]
+        div_tag = self.create_div_tag({"class": "crafting"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(
+            pc, item, " ({})".format(item_description) if item_description else ".")))
+        div_tag.append(self.create_p_tag(placeholders["2"].format(min_quality)))
+        div_tag.append(self.create_p_tag(placeholders["3"].format(outcome)))
+
+        if extra_quality > 0:
+            div_tag.append(self.create_p_tag(placeholders["5"].format(pc, quality+extra_quality)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["4"].format(quality)))
+
+        if quality+extra_quality >= min_quality:
+            div_tag.append(self.create_p_tag(placeholders["7"].format(pc, item)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["8"].format(pc, item)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_recover_tag(self, pc: str, segments: int, tick: int, notes: str, friend: str = None, contact: str = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "recover".
+
+        :param pc: who does the downtime activity
+        :param segments: total segments of the healing clock
+        :param tick: advancement of the project's clock
+        :param friend: if not None is the crew's member helping the pc out
+        :param contact: if not None is the npc helping the pc out
+        :param notes: extra notes
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["recover"]
+        div_tag = self.create_div_tag({"class": "recover"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc)))
+
+        if friend or contact:
+            div_tag.append(self.create_p_tag(placeholders["2"].format(pc, friend if friend else contact)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["3"].format(pc)))
+
+        div_tag.append(self.create_p_tag(placeholders["4"].format(pc, tick, segments)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_reduce_heat_tag(self, pc: str, method: str, outcome: Union[int, str], heat: int, notes):
+        """
+        Method used to create and insert a div tag with class attribute set to "reduce_heat".
+
+        :param pc: who does the downtime activity
+        :param method: method used by the pc to reduce the heat
+        :param outcome: outcome of the roll
+        :param heat: by how much is the heat reduced
+        :param notes: extra notes
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["reduce_heat"]
+        div_tag = self.create_div_tag({"class": "reduce_heat"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, method)))
+        div_tag.append(self.create_p_tag(placeholders["2"].format(outcome)))
+        div_tag.append(self.create_p_tag(placeholders["3"].format(pc, heat)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_train_tag(self, pc: str, what: str, points: int, notes: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "train".
+
+        :param pc: who does the downtime activity
+        :param what: what has been trained
+        :param points: amount of the xp gained
+        :param notes: extra notes
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["train"]
+        div_tag = self.create_div_tag({"class": "train"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, what, points)))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_indulge_vice_tag(self, pc: str, how: str, purveyor: str, amount: int, outcome: Union[int, str],
+                                notes: str, brag: str = None, lost: str = None, tapped: str = None,
+                                trouble: str = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "indulge_vice".
+
+        :param pc: who does the downtime activity
+        :param how: how the pc indulge
+        :param purveyor: who is the purveyor
+        :param amount: stress removed
+        :param outcome: outcome of the roll
+        :param notes: extra notes
+        :param brag: if not None how the pc overindulges
+        :param lost: if not None how the pc overindulges
+        :param tapped: if not None how the pc overindulges
+        :param trouble: if not None how the pc overindulges
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["indulge_vice"]
+        div_tag = self.create_div_tag({"class": "indulge_vice"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, how, purveyor)))
+        div_tag.append(self.create_p_tag(placeholders["2"].format(outcome)))
+        div_tag.append(self.create_p_tag(placeholders["3"].format(pc, amount)))
+
+        attr = [brag, lost, tapped, trouble]
+        for i in range(len(attr)):
+            if attr[i]:
+                div_tag.append(self.create_p_tag(placeholders["4"].format(pc, placeholders[str(5+i)].format(attr[i]))))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_help_cohort_tag(self, pc: str, cohort: str, notes: str, harm: str = None):
+        """
+        Method used to create and insert a div tag with class attribute set to "help_cohort".
+
+        :param pc: who does the downtime activity
+        :param cohort: what cohort the pc will help
+        :param notes: extra notes
+        :param harm: if not None is the harm the cohort now has
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["help_cohort"]
+        div_tag = self.create_div_tag({"class": "help_cohort"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, cohort)))
+        if harm:
+            div_tag.append(self.create_p_tag(placeholders["2"].format(harm)))
+        else:
+            div_tag.append(self.create_p_tag(placeholders["3"]))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        return div_tag
+
+    def create_replace_cohort_tag(self, pc: str, old_cohort: str, new_cohort: str, notes: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "replace_cohort".
+
+        :param pc: who does the downtime activity
+        :param old_cohort: cohort the pc will remove
+        :param new_cohort: new cohort the pc will have
+        :param notes: extra notes
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_activity.__name__)["replace_cohort"]
+        div_tag = self.create_div_tag({"class": "replace_cohort"})
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, old_cohort, new_cohort)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
@@ -1062,29 +1268,20 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_activity(self, pc: str,
-                       activity: Literal['acquire_assets', 'crafting', 'long_term_project', 'recover',
-                                         'reduce_heat', 'train', 'indulge_vice', 'help_cohort',
-                                         'replace_cohort'],
-                       extra_info: str = None, rolls: int = 0, extra_roll=None,
-                       overindulge: str = None, extra_overindulge: str = "", notes: str = ""):
+    def write_activity(self, activity_dict: dict):
         """
         Method used to write a downtime activity in the attribute journal representing the html file of the journal.
 
-        :param pc: who does the downtime activity
-        :param activity: type of activity. Choose from: 'acquire_assets', 'crafting', 'long_term_project', 'recover',
-        'reduce_heat', 'train', 'indulge_vice', 'help_cohort', 'replace_cohort'
-        :param extra_info: extra information about the activity
-        :param rolls: result of the roll
-        :param extra_roll: extra information obtained by the roll (e.g. quality, name of the new cohort,
-        amount of stress)
-        :param overindulge: if the activity was 'indulge_vice' this the type. Choose from: 'Brag', 'Lost', 'Tapped',
-        'Attracted trouble'
-        :param extra_overindulge: extra information about how they overindulged
-        :param notes: extra notes
+        :param activity_dict: a dictionary containing the information necessary to call the right method
         """
-        tag = self.create_activity_tag(pc, activity, extra_info, rolls,
-                                       extra_roll, overindulge, extra_overindulge, notes)
+        method_dict = {'acquire_asset': 'create_acquire_asset_tag', 'crafting': 'create_crafting_tag',
+                       'long_term_project': 'create_long_term_project_tag', 'recover': 'create_recover_tag',
+                       'reduce_heat': 'create_reduce_heat_tag', 'train': 'create_train_tag',
+                       'indulge_vice': 'create_indulge_vice_tag', 'help_cohort': 'create_help_cohort_tag',
+                       'replace_cohort': 'create_replace_cohort_tag'}
+        method_to_call = getattr(self, method_dict[activity_dict["activity"]])
+        activity_dict.pop("activity")
+        tag = method_to_call(**activity_dict)
 
         self.write_general(tag)
 
