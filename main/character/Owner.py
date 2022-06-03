@@ -83,6 +83,13 @@ class Owner(PC):
 
         return True
 
+    def pay_coins(self, coins: int) -> bool:
+        for i in range(coins):
+            if not self.add_coins(-1):
+                if not self.stash_coins(-2):
+                    return False
+        return True
+
     @abstractmethod
     def migrate(self, mc: super.__class__):
         pass
