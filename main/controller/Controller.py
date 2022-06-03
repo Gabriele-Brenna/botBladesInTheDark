@@ -966,6 +966,74 @@ class Controller:
 
         return pc.coin, pc.stash, crew.coins
 
+    def can_pay(self, chat_id: int, user_id: int, pc_name: str, coins_to_pay: int) -> Tuple[bool, bool]:
+        """
+        Checks if the passed PC, or his Crew, can pay the specified amount of coins.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param coins_to_pay: is the amount of coins to pay.
+        :return: a Tuple of two boolean values: the first regards the crew, the second regards the PC's possessions.
+        """
+        pc_coins, pc_stash, crew_coins = self.get_player_coins(chat_id, user_id, pc_name)
+
+        can_pay_pc = False
+        can_pay_crew = False
+
+        if pc_coins is not None and pc_stash is not None:
+            pc_stash = int(pc_stash / 2)
+            pc_possessions = pc_coins + pc_stash
+            if pc_possessions >= coins_to_pay:
+                can_pay_pc = True
+
+        if crew_coins >= coins_to_pay:
+            can_pay_crew = True
+
+        return can_pay_crew, can_pay_pc
+
+    def pay_with_possessions(self, chat_id: int, user_id: int, pc_name: str, coins_to_pay: int) -> bool:
+        """
+        Execute a payment of the specified amount of coins, using the PC's possessions.
+        The priority order of retrieval is: coin, stash.
+        Every coin counts double for the stash, according to the BitD rules.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param coins_to_pay: is the amount of coins to pay.
+        :return: True if the payment was effected, False otherwise.
+        """
+        if self.can_pay(chat_id, user_id, pc_name, coins_to_pay)[1]:
+            game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+
+            if isinstance(pc, Owner):
+                pc.pay_coins(coins_to_pay)
+                return True
+            return False
+        return False
+
+    def pay_with_crew(self, chat_id: int, user_id: int, pc_name: str, coins_to_pay: int) -> bool:
+        """
+        Execute a payment of the specified amount of coins, using the Crew's possessions.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param coins_to_pay: is the amount of coins to pay.
+        :return: True if the payment was effected, False otherwise.
+        """
+        if self.can_pay(chat_id, user_id, pc_name, coins_to_pay)[0]:
+            game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+            crew = game.crew
+
+            for i in range(coins_to_pay):
+                if not crew.add_coin(-1):
+                    return False
+            return True
+        return False
+
     def check_add_coin(self, chat_id: int, user_id: int, pc_name: str, where: str, coins: int) -> bool:
         """
         Checks if the selected pc can add the specified amount of coins.
