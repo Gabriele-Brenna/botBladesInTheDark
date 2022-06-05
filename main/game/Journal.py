@@ -657,7 +657,8 @@ class Journal:
 
         return div_tag
 
-    def create_recover_tag(self, pc: str, segments: int, tick: int, notes: str, friend: str = None, contact: str = None):
+    def create_recover_tag(self, pc: str, segments: int, tick: int, notes: str, friend: str = None,
+                           contact: str = None, cohort: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "recover".
 
@@ -666,6 +667,7 @@ class Journal:
         :param tick: advancement of the project's clock
         :param friend: if not None is the crew's member helping the pc out
         :param contact: if not None is the npc helping the pc out
+        :param cohort: if not None is the cohort helping the pc out
         :param notes: extra notes
         :return: the div Tag
         """
@@ -675,8 +677,13 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc)))
 
-        if friend or contact:
-            div_tag.append(self.create_p_tag(placeholders["2"].format(pc, friend if friend else contact)))
+        if friend or contact or cohort:
+            if friend:
+                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, friend)))
+            elif contact:
+                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, contact)))
+            elif cohort:
+                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, cohort)))
         else:
             div_tag.append(self.create_p_tag(placeholders["3"].format(pc)))
 
@@ -732,7 +739,7 @@ class Journal:
 
     def create_indulge_vice_tag(self, pc: str, how: str, purveyor: str, amount: int, outcome: Union[int, str],
                                 notes: str, brag: str = None, lost: str = None, tapped: str = None,
-                                trouble: str = None):
+                                trouble: bool = False):
         """
         Method used to create and insert a div tag with class attribute set to "indulge_vice".
 
@@ -756,10 +763,13 @@ class Journal:
         div_tag.append(self.create_p_tag(placeholders["2"].format(outcome)))
         div_tag.append(self.create_p_tag(placeholders["3"].format(pc, amount)))
 
-        attr = [brag, lost, tapped, trouble]
+        attr = [brag, lost, tapped]
         for i in range(len(attr)):
             if attr[i]:
                 div_tag.append(self.create_p_tag(placeholders["4"].format(pc, placeholders[str(5+i)].format(attr[i]))))
+
+        if trouble:
+            div_tag.append(self.create_p_tag(placeholders["4"].format(pc, placeholders["8"])))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 

@@ -5656,6 +5656,183 @@ def add_exp_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_add_exp----------------------------------------------------------------
 
 
+# ------------------------------------------conv_add_upgrade------------------------------------------------------------
+
+
+def add_upgrade(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the upgrades
+    and sends the user the inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_upgrade.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_upgrade_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_upgrade", "invocation_message"], update.message)
+    add_tag_in_telegram_data(context, ["add_upgrade", "info", "upgrade_points"], controller.get_crew_upgrade_points(
+        query_game_of_user(update.effective_message.chat_id, get_user_id(update))
+    ))
+
+    add_tag_in_telegram_data(context, ["add_upgrade", "info", "upgrades"], controller.get_crew_upgrades(
+        query_game_of_user(update.effective_message.chat_id, get_user_id(update))))
+
+    groups = query_upgrade_groups()
+    groups.append("DONE")
+
+    query_menu = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(groups, inline=True, split_row=2))
+    add_tag_in_telegram_data(context, ["add_upgrade", "query_menu"], query_menu)
+
+    return 0
+
+
+def add_upgrade_group(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the group of the upgrade chosen by the user in the user_data and asks to divide the upgrade points between
+    all the upgrades of the category. If DONE is selected then calls commit_add_upgrades in controller.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_upgrade_group.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["add_upgrade", "info", "group"], choice)
+
+    context.user_data["add_upgrade"]["query_menu"].delete()
+
+    upgrades = context.user_data["add_upgrade"]["info"]["upgrades"]
+
+    if choice == "DONE":
+        controller.commit_add_upgrade(update.effective_message.chat_id,
+                                      get_user_id(update), context.user_data["add_upgrade"]["info"]["upgrades"],
+                                      context.user_data["add_upgrade"]["info"]["upgrade_points"])
+        return add_upgrade_end(update, context)
+    elif choice.lower() == "specific":
+        buttons = create_central_buttons_upgrades(upgrades, choice, controller.get_crew_type(query_game_of_user(
+                update.effective_message.chat_id, get_user_id(update))))
+    else:
+        buttons = create_central_buttons_upgrades(upgrades, choice)
+
+    query_menu = context.user_data["add_upgrade"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.user_data["add_upgrade"]["info"]["upgrade_points"]),
+        reply_markup=build_plus_minus_keyboard(buttons))
+
+    add_tag_in_telegram_data(context, ["add_upgrade",  "query_menu"], query_menu)
+
+    return 1
+
+
+def add_upgrade_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Gets the user selection, removes the amount of available upgrade points and increase the quality of
+    the selected upgrade.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_upgrade_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    upgrades = context.user_data["add_upgrade"]["info"]["upgrades"]
+
+    if "+" in choice or "-" in choice:
+        choice = choice.split(" ")
+        name = choice[0]
+        for i in range(1, len(choice) - 1):
+            name += " {}".format(choice[i])
+
+        upgrade = None
+        for upg in upgrades:
+            if upg["name"] == name:
+                if "+" in choice and context.user_data["add_upgrade"]["info"]["upgrade_points"] > 0:
+                    upg["quality"] += int(choice[-1])
+                    context.user_data["add_upgrade"]["info"]["upgrade_points"] -= int(choice[-1])
+                else:
+                    upg["quality"] += int(choice[-1])
+                    context.user_data["add_upgrade"]["info"]["upgrade_points"] -= int(choice[-1])
+                if upg["quality"] == 0:
+                    upgrades.remove(upg)
+                else:
+                    upgrade = upg
+                break
+
+        if upgrade is None and "+" in choice[-1]:
+            if context.user_data["add_upgrade"]["info"]["upgrade_points"] > 0:
+                upgrades.append({"name": name, "quality": 1})
+                context.user_data["add_upgrade"]["info"]["upgrade_points"] -= 1
+                upgrade = upgrades[-1]
+
+        if upgrade is not None:
+            if upgrade["quality"] < 0:
+                context.user_data["add_upgrade"]["info"]["upgrade_points"] -= 1
+                upgrade["quality"] = 0
+
+            tot_quality = query_upgrades(upgrade["name"])[0]["tot_quality"]
+            if upgrade["quality"] > tot_quality:
+                context.user_data["add_upgrade"]["info"]["upgrade_points"] += 1
+                upgrade["quality"] = tot_quality
+
+        group = context.user_data["add_upgrade"]["info"]["group"]
+
+        if group.lower() == "specific":
+            buttons = create_central_buttons_upgrades(upgrades, group, controller.get_crew_type(query_game_of_user(
+                update.effective_message.chat_id, get_user_id(update))))
+        else:
+            buttons = create_central_buttons_upgrades(upgrades, group)
+
+        # context.user_data["add_upgrade"]["query_menu"].delete()
+        context.user_data["add_upgrade"]["query_menu"].edit_text(
+            text=placeholders["0"].format(context.user_data["add_upgrade"]["info"]["upgrade_points"]),
+            reply_markup=build_plus_minus_keyboard(buttons))
+        return 1
+
+    elif choice == "BACK":
+        group = query_upgrade_groups()
+        group.append("DONE")
+        context.user_data["add_upgrade"]["query_menu"].delete()
+        context.user_data["add_upgrade"]["query_menu"] = context.user_data["add_upgrade"][
+            "invocation_message"].reply_text(
+            text=placeholders["1"].format(context.user_data["add_upgrade"]["info"]["upgrade_points"]),
+            reply_markup=custom_kb(group, inline=True, split_row=2))
+        return 0
+
+    else:
+
+        description = query_upgrades(upgrade=choice)[0]["description"]
+        auto_delete_message(context.user_data["add_upgrade"]["invocation_message"].reply_text(
+            text=description,
+        ), description)
+        return 1
+
+
+def add_upgrade_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add upgrade conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_upgrade")
+
+    return end_conv(update, context)
+
+# ------------------------------------------conv_add_upgrade------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

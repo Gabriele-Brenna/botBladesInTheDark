@@ -567,6 +567,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addUpgrade".casefold(), "au".casefold()], add_upgrade)],
+            states={
+                0: [CallbackQueryHandler(add_upgrade_group)],
+                1: [CallbackQueryHandler(add_upgrade_selection)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_upgrade_end)],
+            name="conv_add_upgrade",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
