@@ -16,9 +16,9 @@ class TestGame(TestCase):
         self.assertEqual([Clock("Clock101", 4, 0), Clock("Clock102", 7, 0)], self.game.clocks)
 
     def test_get_project_clocks(self):
-        c1 = Clock("Project: discover", 7, 3)
+        c1 = Clock("[Project]: discover", 7, 3)
         c2 = Clock("Kill", 10, 8)
-        c3 = Clock("proJect: seek", 4, 3)
+        c3 = Clock("[proJect]: seek", 4, 3)
 
         self.game.clocks.append(c1)
         self.game.clocks.append(c2)

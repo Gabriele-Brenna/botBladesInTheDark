@@ -189,18 +189,21 @@ class Controller:
         game.journal.write_phase(new_state)
         insert_state(game_id, new_state)
 
-    def get_user_characters_names(self, user_id: int, chat_id: int) -> List[str]:
+    def get_user_characters_names(self, user_id: int, chat_id: int, all_users: bool = False) -> List[str]:
         """
-        Retrieves the list of the PCs' names of the specified user, in the specified chat.
+        Retrieves the list of the PCs' names, in the specified chat.
 
+        :param all_users: if True, all the characters of the name are retrieved.
         :param user_id: the Telegram id of the user.
         :param chat_id: the Telegram chat id of the user.
         :return: a list of strings containing all the names.
         """
 
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
-
-        pcs = game.get_pcs_list(user_id)
+        user = None
+        if not all_users:
+            user = user_id
+        pcs = game.get_pcs_list(user)
         pcs_names = []
         for pc in pcs:
             pcs_names.append(pc.name)
@@ -221,7 +224,7 @@ class Controller:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
         ratings = []
-        pcs = game.get_pcs_list(user_id)
+        pcs = game.get_pcs_list()
         for pc in pcs:
             if pc.name.lower() == pc_name.lower():
                 for attr in pc.attributes:
@@ -392,15 +395,20 @@ class Controller:
 
         insert_journal(game.identifier, game.journal.get_log_string())
 
-    def get_clocks_of_game(self, game_id: int) -> List[str]:
+    def get_clocks_of_game(self, game_id: int, projects: bool = False) -> List[str]:
         """
         Retrieves the list of clocks of the specified game.
 
+        :param projects: if True only the "project" clocks are retrieved.
         :param game_id: the game's id.
         :return: the list of clocks' names of the specified game
         """
-        return ["{}: {}/{}".format(clock.name, clock.progress, clock.segments)
-                for clock in self.get_game_by_id(game_id).clocks]
+        if projects:
+            return ["{}: {}/{}".format(clock.name, clock.progress, clock.segments)
+                    for clock in self.get_game_by_id(game_id).get_project_clocks()]
+        else:
+            return ["{}: {}/{}".format(clock.name, clock.progress, clock.segments)
+                    for clock in self.get_game_by_id(game_id).clocks]
 
     def tick_clock_of_game(self, chat_id: int, user_id: int, old_clock: dict, ticks: int) -> Tuple[bool, dict]:
         """
@@ -450,10 +458,11 @@ class Controller:
         game = self.get_game_by_id(game_id)
         return game.crew is not None
 
-    def get_cohorts_of_crew(self, chat_id: int, user_id: int) -> List[Tuple[str, int]]:
+    def get_cohorts_of_crew(self, chat_id: int, user_id: int, dead: bool = False) -> List[Tuple[str, int]]:
         """
         Gives a list of tuple representing the cohorts of the specified crew.
 
+        :param dead: states if the retrieved cohorts should be dead or not.
         :param chat_id: the Telegram id of the user who invoked the action roll.
         :param user_id: the Telegram chat id of the user.
         :return: a list of tuple with a string representing the cohort's types and an int representing its quality
@@ -462,19 +471,20 @@ class Controller:
 
         co = []
         for cohort in crew.cohorts:
-            label = ""
-            if cohort.elite:
-                label += "💠"
-            if cohort.expert:
-                label += "[EXPERT] "
-            else:
-                label += "[GANG] "
-            label += cohort.type[0]
-            for i in range(1, len(cohort.type)):
-                label += ", "
-                label += cohort.type[i]
+            if (not dead and cohort.harm < 4) or (dead and cohort.harm >= 4):
+                label = ""
+                if cohort.elite:
+                    label += "💠"
+                if cohort.expert:
+                    label += "[EXPERT] "
+                else:
+                    label += "[GANG] "
+                label += cohort.type[0]
+                for i in range(1, len(cohort.type)):
+                    label += ", "
+                    label += cohort.type[i]
 
-            co.append((label, cohort.quality))
+                co.append((label, cohort.quality))
 
         return co
 
@@ -608,12 +618,13 @@ class Controller:
         update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
         return is_dead
 
-    def get_factions(self, game_id: int) -> List[str]:
+    def get_factions(self, game_id: int, faction_name: str = None) -> List[str]:
         """
         Gets the list with all the Faction for the specified game. Loads all the faction from the DB and checks, for
         every faction, if it's already present in the game's factions list. If present the faction of the game replaces
         the faction from the DB.
 
+        :param faction_name: if specified, only this faction is retrieved
         :param game_id: represents the ID of the game.
         :return: a list of strings, each one composed by the actual status the players have with the faction, the name
             of the faction and the faction's tier level.
@@ -627,7 +638,7 @@ class Controller:
         game = self.get_game_by_id(game_id)
 
         game_factions = game.factions
-        db_factions = query_factions()
+        db_factions = query_factions(faction_name)
 
         # replacing the factions that already exist in the game
         for i in range(len(db_factions)):
@@ -1362,6 +1373,24 @@ class Controller:
                     attribute.points = new_points_dict[key]
 
         update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+    def has_pc_overindulged(self, chat_id: int, user_id: int, pc_name: str, roll_outcome: Union[int, str]) -> bool:
+        """
+        Checks if the selected pc has overindulged
+
+         :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param roll_outcome: the outcome of the roll during the downtime activity "indulge vice"
+        :return: True if the pc has overindulged, False otherwise (or if he rolled a "CRIT")
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+
+        if isinstance(roll_outcome, int):
+            return pc.stress_level - roll_outcome < 0
+        else:
+            return False
 
     def __repr__(self) -> str:
         return str(self.games)

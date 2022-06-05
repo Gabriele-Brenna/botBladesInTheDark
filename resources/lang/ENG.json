@@ -252,6 +252,10 @@
       "button": "Bonus \uD83C\uDFB2: {}",
       "extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the number of bonus dice you get.",
 
+      "vice_message": "Adjust the outcome of the roll.",
+      "vice_button": "Result \uD83C\uDFB2: {}",
+      "vice_extended": "If you have a special ability, a Claim or something else that can give you an help, you can modify the outcome of the roll.",
+
       "score": "Select the number of dice you want to roll. You start with 1 dice of sheer luck.",
       "engagement": "Engagement \uD83C\uDFB2: {}",
       "engagement_extended": "Select the number of dice you want to roll. Consider the details of your plan.",
@@ -396,6 +400,7 @@
 
     "create_clock_name": {
       "0": "Chose how many segments the clock should be divided into",
+      "1": "Invalid name for the clock, to create a project clock use /downtimeActivity...\nWrite another name",
       "keyboard": [4, 6, 8]
     },
 
@@ -781,6 +786,100 @@
     "add_action_dots_keyboard": {
       "0": "Select the action you want to upgrade.\nYou can add {} more dots.",
       "1": "Select the attribute of the action you want to upgrade."
+    },
+
+    "downtime": {
+      "0": "Select the downtime activity you want to do",
+      "err": "You don't do a downtime activity without being in a game... /join to take part in a game.",
+      "err2": "You don't have an active pc in this game... /join to take part in a game.",
+      "keyboard": ["Acquire Asset", "Crafting", "Long-Term Project", "Recover", "Reduce Heat", "Train", "Indulge Vice", "Help Cohort", "Replace Cohort"],
+      "callbacks": [1,2,3,4,5,6,7,8,9]
+    },
+
+    "downtime_choice": {
+      "1": "What do you want to acquire ?",
+      "2": "What do you want to craft ?",
+      "3": "Select a project",
+      "new": "New Project",
+      "4": "Select an healing method",
+      "keyboard4": ["NPC", "PC", "Cohort", "Improvise"],
+      "callbacks4": [1,2,3,4],
+      "5": "Select the attribute of the action you want to roll.",
+      "6": "Select what you want to train",
+
+      "8": "Select the cohort you want to help recuperate",
+      "9": "Select the cohort you want to replace"
+    },
+
+    "downtime_asset": {
+      "0": "Write the minimum quality",
+      "1": "The <b>GM</b> has to set some information: <u>{}</u> want to acquire the asset: <i>{}</i>\n/reply_downtime",
+      "keyboard": ["-1", "0", "1", "2", "3", "4", "5", "6", "7"]
+    },
+
+    "downtime_item": {
+      "0": "Write the minimum quality",
+      "1": "The <b>GM</b> has to set some information: <u>{}</u> want to craft an item: <i>{}</i>\n/reply_downtime",
+      "keyboard": ["-1", "0", "1", "2", "3", "4", "5", "6", "7"]
+    },
+
+    "downtime_minimum_quality": {
+      "err": "The minimum quality should be a number, -1 if there's no minimum quality for this asset"
+    },
+
+    "downtime_bonus_dice": {
+      "0": "Write how many quality level you want to add (-2 coin for each added level)"
+    },
+
+    "downtime_added_quality": {
+      "err": "The added quality should be a positive number, 0 if you don't want to increase it",
+      "0": "You couldn't pursue your objective: minimum quality requirement not fulfilled..."
+    },
+
+    "payment_keyboard": {
+      "0": "You have <i>{}</i> coins to pay. Select a payment method.",
+      "keyboard": ["Auto Pay (crew)", "Auto Pay (possession)", "Do it later"],
+      "callbacks": [1,2,3]
+    },
+    "downtime_payment": {
+      "0": "Write some extra description of the activity",
+      "1": "Write the description of the item (drawbacks included)"
+    },
+
+    "downtime_notes": {
+      "0": "Write some extra description of the activity"
+    },
+
+    "downtime_attribute_choice": {
+      "0": "Select the action to roll"
+    },
+
+    "missing_cohorts": {
+      "0": "You don't have any valid cohorts..."
+    },
+
+    "downtime_project_choice": {
+      "0": "Create a new clock for the project.\n/createClock_longTermProject",
+      "1": "Select the attribute of the action you want to roll."
+    },
+
+    "downtime_recover_choice": {
+      "3": "Select the cohort that will help you"
+    },
+
+    "downtime_npc_selection": {
+      "0":  "Select the cohort that will help you",
+      "404": "Description not found"
+    },
+
+    "downtime_adjust_roll": {
+      "0": "Oh no! {} overindulged!\nThe GM needs to choose a consequence...",
+      "keyboard": ["Brag", "Lost", "Tapped", "Attract Trouble"]
+    },
+
+    "downtime_master_choice": {
+      "0": "The GM selected <i>{}</i>.\nWrite what happened",
+      "1": "The GM selected <i>{}</i>. There will be consequences...\n/entanglements"
     }
 
   },

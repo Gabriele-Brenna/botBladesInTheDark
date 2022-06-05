@@ -81,7 +81,7 @@ class Game:
         """
         clock = []
         for c in self.clocks:
-            if c.name.lower().startswith("project"):
+            if c.name.lower().startswith("[project]"):
                 clock.append(c)
         return clock
 

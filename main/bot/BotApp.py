@@ -252,7 +252,8 @@ def start_bot():
     dispatcher.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler(["createClock".casefold(), "newClock".casefold(), "addClock".casefold()],
-                                         create_clock)],
+                                         create_clock),
+                          CommandHandler("createClock_longTermProject", create_project_clock)],
             states={
                 0: [MessageHandler(Filters.text & ~Filters.command, create_clock_name)],
                 1: [MessageHandler(Filters.text & ~Filters.command, create_clock_segments)],
@@ -556,13 +557,137 @@ def start_bot():
     dispatcher.add_handler(
         ConversationHandler(
             entry_points=[CommandHandler(["addDots".casefold(), "addActionDots".casefold(), "dots".casefold(),
-                                          "spendActionPoints".casefold(), "ap".casefold(), "ad".casefold()], add_action_dots)],
+                                          "spendActionPoints".casefold(), "ap".casefold(), "ad".casefold()],
+                                         add_action_dots)],
             states={
                 0: [CallbackQueryHandler(add_action_dots_attribute_selection)],
                 1: [CallbackQueryHandler(add_action_dots_keyboard)]
             },
             fallbacks=[CommandHandler("cancel".casefold(), factions_status_end)],
             name="conv_add_action_dots",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["downtime".casefold(), "downtimeActivity".casefold(),
+                                          "dtActivity".casefold()], downtime)],
+            states={
+                0: [CallbackQueryHandler(downtime_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, downtime_notes)],
+                10: [MessageHandler(Filters.text & ~Filters.command, downtime_asset)],
+                20: [MessageHandler(Filters.text & ~Filters.command, downtime_item)],
+                30: [CallbackQueryHandler(downtime_project_choice)],
+                40: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(downtime_recover_choice)],
+                    states={
+                        1: [CallbackQueryHandler(downtime_bonus_dice)],
+                        41: [CallbackQueryHandler(downtime_npc_selection)],
+                        42: [CallbackQueryHandler(downtime_pc_selection)],
+                        43: [CallbackQueryHandler(downtime_cohort_choice)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="conv_Recover",
+                    persistent=True,
+                    map_to_parent={
+                        2: 1,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                50: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(downtime_attribute_choice)],
+                    states={
+                        0: [CallbackQueryHandler(downtime_action_choice)],
+                        1: [CallbackQueryHandler(downtime_bonus_dice)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="conv_ReduceHeat",
+                    persistent=True,
+                    map_to_parent={
+                        2: 1,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                60: [CallbackQueryHandler(downtime_attribute_train_choice)],
+                70: [CallbackQueryHandler(downtime_adjust_roll)],
+                71: [CallbackQueryHandler(downtime_master_choice)],
+                80: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(downtime_cohort_choice)],
+                    states={
+                        0: [CallbackQueryHandler(downtime_payment)],
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="conv_Cohort",
+                    persistent=True,
+                    map_to_parent={
+                        1: 1,
+                        2: 1,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                11: [ConversationHandler(
+                    entry_points=[CommandHandler(["reply_downtime".casefold()], master_reply)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, downtime_minimum_quality)],
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="master_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        1: 12,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                21: [ConversationHandler(
+                    entry_points=[CommandHandler(["reply_downtime".casefold()], master_reply)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, downtime_minimum_quality)],
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="master_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        1: 22,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                22: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(downtime_bonus_dice)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, downtime_added_quality)],
+                        1: [CallbackQueryHandler(downtime_payment)],
+                        2: [MessageHandler(Filters.text & ~Filters.command, downtime_item_description)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="master_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        3: 1,
+                        22: 22,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+                12: [ConversationHandler(
+                    entry_points=[CallbackQueryHandler(downtime_bonus_dice)],
+                    states={
+                        0: [MessageHandler(Filters.text & ~Filters.command, downtime_added_quality)],
+                        1: [CallbackQueryHandler(downtime_payment)]
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+                    name="master_conv_resistanceRoll",
+                    persistent=True,
+                    map_to_parent={
+                        3: 1,
+                        2: 1,
+                        12: 12,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )],
+            },
+            per_user=False,
+            fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
+            name="conv_downtimeActivity",
             persistent=True
         )
     )

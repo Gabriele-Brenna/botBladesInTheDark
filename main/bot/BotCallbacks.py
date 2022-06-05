@@ -1403,6 +1403,11 @@ def group_action_cohort(update: Update, context: CallbackContext) -> int:
         user_id = get_user_id(update)
         cohorts = controller.get_cohorts_of_crew(chat_id, user_id)
 
+        if not cohorts:
+            placeholders = get_lang(context, "missing_cohorts")
+            auto_delete_message(update.message.reply_text(placeholders["0"]), 15)
+            return end_conv(update, context)
+
         cohorts_labels = []
         for cohort in cohorts:
             cohorts_labels.append(cohort[0])
@@ -2307,6 +2312,9 @@ def add_cohort_edgflaw_num(update: Update, context: CallbackContext) -> int:
 
     if isinstance(num, int) and 0 <= num <= 4:
         if num == 0:
+            controller.add_cohort_in_crew(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                          context.user_data["add_cohort"]["cohort"])
+
             return add_cohort_end(update, context)
 
         add_tag_in_telegram_data(context, ["add_cohort", "numEdgeFlaws"], num)
@@ -2434,6 +2442,41 @@ def create_clock(update: Update, context: CallbackContext) -> int:
 
     add_tag_in_telegram_data(context, ["create_clock", "clock"], {})
 
+    add_tag_in_telegram_data(context, ["create_clock", "clock", "name"], "")
+
+    return 0
+
+
+def create_project_clock(update: Update, context: CallbackContext) -> Optional[int]:
+    """
+    Handles the creation of a project clock in the middle of the downtime activity,
+    checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, create_clock.__name__)
+
+    if "downtime" in context.chat_data and "invoker" in context.chat_data["downtime"]:
+        if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+            return
+    else:
+        return
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return create_clock_end(update, context)
+
+    add_tag_in_telegram_data(context, ["create_clock", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+
+    add_tag_in_telegram_data(context, ["create_clock", "clock"], {})
+
+    add_tag_in_telegram_data(context, ["create_clock", "clock", "name"], "[project] ")
+
     return 0
 
 
@@ -2448,8 +2491,14 @@ def create_clock_name(update: Update, context: CallbackContext) -> int:
     """
     placeholders = get_lang(context, create_clock_name.__name__)
     context.user_data["create_clock"]["message"].delete()
+    clock_name = update.message.text
+    if "[project]" in clock_name:
+        message = context.user_data["create_clock"]["invocation_message"].reply_text(placeholders["1"])
+        add_tag_in_telegram_data(context, ["create_clock", "message"], message)
+        update.message.delete()
+        return 0
 
-    add_tag_in_telegram_data(context, ["create_clock", "clock", "name"], update.message.text)
+    context.user_data["create_clock"]["clock"]["name"] += clock_name
 
     message = context.user_data["create_clock"]["invocation_message"].reply_text(
         placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"]))
@@ -2498,6 +2547,24 @@ def create_clock_segments(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(placeholders["0"].format(
         name, context.user_data["create_clock"]["clock"]["segments"],
         context.user_data["create_clock"]["clock"]["name"]), quote=False, parse_mode=ParseMode.HTML)
+
+    if "[project]" in context.user_data["create_clock"]["clock"]["name"]:
+        placeholders = get_lang(context, downtime_project_choice.__name__)
+
+        new_clock = controller.get_clocks_of_game(query_game_of_user(update.message.chat_id, get_user_id(update)), True)
+        new_clock = new_clock[len(new_clock) - 1]
+        name = new_clock.split(": ")[0]
+
+        choice = new_clock.split(": ")[1]
+        segments = int(choice.split("/")[1])
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "name"], name, "chat")
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "segments"], segments, "chat")
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "progress"], 0, "chat")
+
+        keyboard = query_attributes(True)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["1"], reply_markup=custom_kb(keyboard, True, 1))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
 
     return create_clock_end(update, context)
 
@@ -4981,8 +5048,8 @@ def add_action_dots_attribute_selection(update: Update, context: CallbackContext
     choice = query.data
     if choice == "DONE":
         controller.add_action_dots(chat_id, get_user_id(update), pc,
-                                    context.user_data["add_action_dots"]["action_dots"],
-                                    context.user_data["add_action_dots"]["points"])
+                                   context.user_data["add_action_dots"]["action_dots"],
+                                   context.user_data["add_action_dots"]["points"])
 
         return add_action_dots_end(update, context)
 
@@ -5654,6 +5721,800 @@ def add_exp_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_add_exp----------------------------------------------------------------
+
+
+# ------------------------------------------conv_downtimeActivity-------------------------------------------------------
+
+
+def downtime(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, downtime.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 2):
+        return downtime_end(update, context)
+
+    chat_id = update.message.chat_id
+    if ("active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]) or \
+            ("active_PCs" not in context.user_data):
+        auto_delete_message(update.message.reply_text(placeholders["err2"]), 15)
+        return downtime_end(update, context)
+
+    add_tag_in_telegram_data(context, ["downtime", "invoker"], get_user_id(update), "chat")
+    add_tag_in_telegram_data(context, ["downtime", "invocation_message"], update.message, "chat")
+    add_tag_in_telegram_data(context, ["downtime", "info", "pc"], context.user_data["active_PCs"][chat_id], "chat")
+
+    message = update.message.reply_text(placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+        placeholders["keyboard"], True, 2, placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    return 0
+
+
+def downtime_choice(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_choice.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+
+    # Acquire Asset
+    if choice == 1:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "acquire_assets", "chat")
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["1"])
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 10
+    # Crafting
+    elif choice == 2:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "crafting", "chat")
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["2"])
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 20
+    elif choice == 3:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "long_term_project", "chat")
+        keyboard = controller.get_clocks_of_game(query_game_of_user(chat_id, get_user_id(update)), True)
+        keyboard.append(placeholders["new"])
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["3"], reply_markup=custom_kb(keyboard, True, 1))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 30
+    # Recover
+    elif choice == 4:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "recover", "chat")
+        keyboard = placeholders["keyboard4"].copy()
+        callbacks = placeholders["callbacks4"].copy()
+        if not controller.get_cohorts_of_crew(chat_id, get_user_id(update)):
+            keyboard.pop(2)
+            callbacks.pop(2)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["4"], reply_markup=custom_kb(keyboard, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 40
+    # Reduce heat
+    elif choice == 5:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "reduce_heat", "chat")
+        keyboard = query_attributes(True)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["5"], reply_markup=custom_kb(keyboard, True))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 50
+    # Train
+    elif choice == 6:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "train", "chat")
+        keyboard = ["Personal"]
+        keyboard += query_attributes(True)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["6"], reply_markup=custom_kb(keyboard, True, 1))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 60
+    # Vice
+    elif choice == 7:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "indulge_vice", "chat")
+        attribute_ratings = [rating[1] for rating in controller.get_pc_attribute_rating(
+            chat_id, get_user_id(update), context.user_data["active_PCs"][chat_id])]
+
+        roll_dice(update, context, min(attribute_ratings), ["downtime", "info", "outcome"])
+
+        outcome = context.chat_data["downtime"]["info"]["outcome"]
+        placeholders = get_lang(context, "bonus_dice")
+        query_menu = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["vice_message"], reply_markup=build_plus_minus_keyboard(
+                [placeholders["vice_button"].format(outcome)], False, True))
+        add_tag_in_telegram_data(context, ["downtime", "query_menu"], query_menu, "chat")
+        return 70
+    # Help cohort
+    elif choice == 8:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "help_cohort", "chat")
+        cohorts = controller.get_cohorts_of_crew(chat_id, get_user_id(update))
+        if not cohorts:
+            placeholders = get_lang(context, "missing_cohorts")
+            auto_delete_message(context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"]), 15)
+            return downtime_end(update, context)
+        cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+        callbacks = [i + 1 for i in range(len(cohorts))]
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["8"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 80
+    # Replace cohort
+    elif choice == 9:
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "replace_cohort", "chat")
+        cohorts = controller.get_cohorts_of_crew(chat_id, get_user_id(update), True)
+        if not cohorts:
+            placeholders = get_lang(context, "missing_cohorts")
+            auto_delete_message(context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"]), 15)
+            return downtime_end(update, context)
+        cohorts = ["\u2620\uFE0F{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+        callbacks = [i + 1 for i in range(len(cohorts))]
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["9"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 80
+
+
+def downtime_asset(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_asset.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "asset"], update.message.text, "chat")
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["1"].format(
+        context.chat_data["downtime"]["info"]["pc"],
+        context.chat_data["downtime"]["info"]["asset"]), parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "message"], value=message)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "GM_question"],
+                             value={"text": placeholders["0"],
+                                    "reply_markup": custom_kb(buttons=placeholders["keyboard"])})
+
+    update.message.delete()
+    return 11
+
+
+def downtime_minimum_quality(update: Update, context: CallbackContext) -> Optional[int]:
+    placeholders = get_lang(context, downtime_minimum_quality.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    try:
+        quality = int(update.message.text)
+    except:
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["err"])
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 0
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "minimum_quality"], value=quality)
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "dice"], value=controller.get_crew_tier(
+        query_game_of_user(update.message.chat_id, get_user_id(update))))
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "bonus_dice"], value=0)
+
+    send_downtime_bonus_dice(context)
+
+    update.message.delete()
+    return 1
+
+
+def send_downtime_bonus_dice(context: CallbackContext):
+    """
+    Sends the keyboard for the bonus dice of the downtime activity
+
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, "bonus_dice")
+    query_menu = context.chat_data["downtime"]["invocation_message"].reply_text(
+        placeholders["message"].format(downtime_calc_total_dice(context.chat_data["downtime"])),
+        reply_markup=build_plus_minus_keyboard(
+            [placeholders["button"].format(
+                context.chat_data["downtime"]["bonus_dice"])],
+            done_button=True,
+            back_button=False),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "query_menu"], value=query_menu)
+
+
+def downtime_calc_total_dice(downtime_dict: dict) -> int:
+    """
+    Calculates the total dice added for the fortune roll so far.
+
+    :param downtime_dict: a dictionary containing the fortune roll's info
+    :return: the total number of dice.
+    """
+    return downtime_dict["bonus_dice"] + downtime_dict["dice"]
+
+
+def downtime_bonus_dice(update: Update, context: CallbackContext) -> Optional[int]:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the outcome is stored in the chat_data and the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_bonus_dice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    bonus_dice = context.chat_data["downtime"]["bonus_dice"]
+    activity = context.chat_data["downtime"]["info"]["activity"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        tags = ["downtime", "bonus_dice"]
+        bonus_dice += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, location="chat", tags=tags, value=bonus_dice)
+
+        update_bonus_dice_kb(context, tags, downtime_calc_total_dice(context.chat_data["downtime"]))
+
+    elif choice == "DONE":
+        dice_to_roll = downtime_calc_total_dice(context.chat_data["downtime"])
+
+        context.chat_data["downtime"]["query_menu"].delete()
+
+        roll_dice(update, context, dice_to_roll, ["downtime", "info", "outcome"])
+
+        if activity != "crafting" and activity != "acquire_asset":
+            placeholders = get_lang(context, downtime_notes.__name__)
+            context.chat_data["downtime"]["message"] = \
+                context.chat_data["downtime"]["invocation_message"].reply_text(
+                    placeholders["0"], parse_mode=ParseMode.HTML)
+            return 2
+
+        else:
+            context.chat_data["downtime"]["message"] = \
+                context.chat_data["downtime"]["invocation_message"].reply_text(
+                    placeholders["0"], parse_mode=ParseMode.HTML)
+            return 0
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"],
+                                                                parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["extended"])
+    if activity != "crafting" and activity != "acquire_asset":
+        return 1
+    else:
+        return 12
+
+
+def downtime_added_quality(update: Update, context: CallbackContext) -> Optional[int]:
+    placeholders = get_lang(context, downtime_added_quality.__name__)
+
+    try:
+        extra_quality = int(update.message.text)
+        if extra_quality < 0:
+            raise Exception
+    except:
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["err"])
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 0
+
+    chat_id = update.effective_message.chat_id
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "extra_quality"], value=extra_quality)
+
+    outcome = context.chat_data["downtime"]["info"]["outcome"]
+    tot_quality = controller.get_crew_tier(query_game_of_user(chat_id, get_user_id(update)))
+    if isinstance(outcome, str):
+        tot_quality += 2
+    else:
+        if 1 <= outcome <= 3:
+            tot_quality += -1
+        elif outcome == 6:
+            tot_quality += 1
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "quality"], value=tot_quality)
+
+    if tot_quality + extra_quality < context.chat_data["downtime"]["info"]["minimum_quality"]:
+        auto_delete_message(context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["0"].format(extra_quality), ParseMode.HTML), 15)
+
+        # TODO: controller.commit_downtime_activity(, failure=True)
+
+        placeholders = get_lang(context, downtime_notes.__name__)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 3
+
+    elif extra_quality > 0:
+        context.chat_data["downtime"]["message"].delete()
+        placeholders = get_lang(context, "payment_keyboard")
+
+        keyboard = placeholders["keyboard"].copy()
+        callbacks = placeholders["callbacks"].copy()
+
+        can_pay_crew, can_pay_possession = controller.can_pay(chat_id, get_user_id(update),
+                                                              context.chat_data["downtime"]["info"]["pc"],
+                                                              extra_quality)
+        if not can_pay_possession:
+            keyboard.pop(1)
+            callbacks.pop(1)
+        if not can_pay_crew:
+            keyboard.pop(0)
+            callbacks.pop(0)
+
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["0"].format(extra_quality), ParseMode.HTML,
+            reply_markup=custom_kb(keyboard, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+        return 1
+
+    else:
+        context.chat_data["downtime"]["message"].delete()
+        placeholders = get_lang(context, downtime_notes.__name__)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["0"].format(extra_quality), ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 2
+
+
+def downtime_payment(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, downtime_payment.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "payment"], choice, "chat")
+
+    activity = context.chat_data["downtime"]["info"]["activity"]
+
+    if activity.lower() == "crafting":
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["1"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    else:
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    return 2
+
+
+def downtime_item(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_item.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "item"], update.message.text, "chat")
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["1"].format(
+        context.chat_data["downtime"]["info"]["pc"],
+        context.chat_data["downtime"]["info"]["item"]), parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "message"], value=message)
+
+    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "GM_question"],
+                             value={"text": placeholders["0"],
+                                    "reply_markup": custom_kb(buttons=placeholders["keyboard"])})
+
+    update.message.delete()
+    return 21
+
+
+def downtime_item_description(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_notes.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "item_description"], update.message.text, "chat")
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    update.message.delete()
+    return 3
+
+
+def downtime_attribute_train_choice(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, downtime_notes.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "attribute"], choice, "chat")
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+    return 1
+
+
+def downtime_cohort_choice(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, downtime_notes.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data) - 1
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "cohort"], choice, "chat")
+    activity = context.chat_data["downtime"]["info"]["activity"]
+    if activity == "replace_cohort":
+        placeholders = get_lang(context, "payment_keyboard")
+
+        keyboard = placeholders["keyboard"].copy()
+        callbacks = placeholders["callbacks"].copy()
+
+        chat_id = update.effective_message.chat_id
+        coins = controller.get_crew_tier(query_game_of_user(chat_id, get_user_id(update))) + 2
+        can_pay_crew, can_pay_possession = controller.can_pay(
+            chat_id, get_user_id(update), context.chat_data["downtime"]["info"]["pc"], coins)
+        if not can_pay_possession:
+            keyboard.pop(1)
+            callbacks.pop(1)
+        if not can_pay_crew:
+            keyboard.pop(0)
+            callbacks.pop(0)
+
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["0"].format(coins), ParseMode.HTML,
+            reply_markup=custom_kb(keyboard, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 0
+    elif activity == "recover":
+        cohort_quality = controller.get_cohorts_of_crew(
+            update.effective_message.chat_id, get_user_id(update))[choice][1]
+
+        add_tag_in_telegram_data(context, ["downtime", "dice"], cohort_quality, "chat")
+
+        send_downtime_bonus_dice(context)
+        return 1
+    else:
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 1
+
+
+def downtime_attribute_choice(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_attribute_choice.__name__)
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    actions = controller.get_pc_actions_ratings(get_user_id(update), update.effective_message.chat_id,
+                                                context.chat_data["downtime"]["info"]["pc"], choice)
+    actions = ["{}: {}".format(action[0], action[1]) for action in actions]
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(actions, True, 1))
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+    return 0
+
+
+def downtime_action_choice(update: Update, context: CallbackContext) -> int:
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "action"], choice, "chat")
+    add_tag_in_telegram_data(context, ["downtime", "dice"], int(choice.split(": ")[1]), "chat")
+    add_tag_in_telegram_data(context, ["downtime", "bonus_dice"], 0, "chat")
+
+    send_downtime_bonus_dice(context)
+    return 1
+
+
+def downtime_project_choice(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+    placeholders = get_lang(context, downtime_project_choice.__name__)
+
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    if choice == get_lang(context, downtime_choice.__name__)["new"]:
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    else:
+        name = choice.split(": ")[0]
+
+        choice = choice.split(": ")[1]
+
+        progress = int(choice.split("/")[0])
+        segments = int(choice.split("/")[1])
+
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "name"], name, "chat")
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "segments"], segments, "chat")
+        add_tag_in_telegram_data(context, ["downtime", "info", "clock", "progress"], progress, "chat")
+
+        keyboard = query_attributes(True)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["1"], reply_markup=custom_kb(keyboard, True, 1))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    return 50
+
+
+def downtime_recover_choice(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+    placeholders = get_lang(context, downtime_recover_choice.__name__)
+
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+
+    add_tag_in_telegram_data(context, ["downtime", "bonus_dice"], 0, "chat")
+
+    # NPC
+    if choice == 1:
+        npcs = controller.get_npcs(query_game_of_user(chat_id, get_user_id(update)))
+        buttons_list = []
+        buttons = []
+        for i in range(len(npcs)):
+            buttons.append(npcs[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, location="chat", tags=["downtime", "buttons_list"], value=buttons_list)
+        add_tag_in_telegram_data(context, location="chat", tags=["downtime", "query_menu_index"], value=0)
+
+        query_menu = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["3"], reply_markup=build_multi_page_kb(buttons_list[0]))
+
+        add_tag_in_telegram_data(context, ["downtime", "query_menu"], query_menu, "chat")
+
+        return 41
+
+    # PC
+    elif choice == 2:
+        pcs = controller.get_user_characters_names(get_user_id(update), chat_id, True)
+        buttons_list = ["{}: {}".format(
+            pc, controller.get_pc_action_rating(get_user_id(update), chat_id, pc, "tinker")[1]) for pc in pcs]
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["3"], reply_markup=custom_kb(buttons_list, True, 1))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 42
+
+    # Cohort
+    elif choice == 3:
+        cohorts = controller.get_cohorts_of_crew(chat_id, get_user_id(update))
+        cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+        callbacks = [i + 1 for i in range(len(cohorts))]
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["3"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+        return 43
+
+    # Improvise
+    else:
+        add_tag_in_telegram_data(context, ["downtime", "dice"], 0, "chat")
+        send_downtime_bonus_dice(context)
+        return 1
+
+
+def downtime_npc_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, downtime_npc_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.chat_data["downtime"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.chat_data["downtime"]["buttons_list"]):
+            index = 0
+        context.chat_data["downtime"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.chat_data["downtime"]["buttons_list"]):
+            index = 0
+
+        context.chat_data["downtime"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        faction_name, name = name.split(" - ")
+        if "$" in choice:
+            add_tag_in_telegram_data(context, ["downtime", "info", "npc"], name, "chat")
+            faction_name = faction_name.replace("[", "")
+            faction_name = faction_name.replace("]", "")
+            if faction_name != ' ':
+                faction_tier = controller.get_factions(query_game_of_user(
+                    update.effective_message.chat_id, get_user_id(update)), faction_name)[0].split(": ")[1]
+            else:
+                faction_tier = controller.get_crew_tier(query_game_of_user(
+                    update.effective_message.chat_id, get_user_id(update)))
+            add_tag_in_telegram_data(context, ["downtime", "dice"], int(faction_tier), "chat")
+            context.chat_data["downtime"]["query_menu"].delete()
+            send_downtime_bonus_dice(context)
+            return 1
+        else:
+            npc_name = name.split(", ")[0]
+            npc_role = name.split(", ")[1]
+            description = query_npcs(name=npc_name,
+                                     role=npc_role, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 41
+
+    context.chat_data["downtime"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.chat_data["downtime"]["buttons_list"][context.chat_data["downtime"]["query_menu_index"]]))
+    return 41
+
+
+def downtime_pc_selection(update: Update, context: CallbackContext) -> int:
+    context.chat_data["downtime"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "pc"], choice, "chat")
+
+    tinker_rating = choice.split(": ")[-1]
+
+    add_tag_in_telegram_data(context, ["downtime", "dice"], int(tinker_rating), "chat")
+
+    send_downtime_bonus_dice(context)
+    return 1
+
+
+def downtime_adjust_roll(update: Update, context: CallbackContext) -> Optional[int]:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the outcome is stored in the chat_data and the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    placeholders = get_lang(context, downtime_adjust_roll.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    outcome = context.chat_data["downtime"]["info"]["outcome"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        if isinstance(outcome, str):
+            outcome = 7
+        outcome += int(choice.split(" ")[2])
+        if outcome < 0:
+            outcome = 0
+        if outcome > 6:
+            outcome = "CRIT"
+        add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "outcome"], value=outcome)
+        placeholders = get_lang(context, "bonus_dice")
+        context.chat_data["downtime"]["query_menu"].edit_text(
+            placeholders["vice_message"],
+            reply_markup=build_plus_minus_keyboard(
+                [placeholders["vice_button"].format(outcome)],
+                done_button=True,
+                back_button=False),
+            parse_mode=ParseMode.HTML)
+
+    elif choice == "DONE":
+        pc_name = context.chat_data["downtime"]["info"]["pc"]
+        if not controller.has_pc_overindulged(update.effective_message.chat_id, get_user_id(update),
+                                              pc_name, outcome):
+            # TODO: commit
+            return downtime_end(update, context)
+
+        context.chat_data["downtime"]["query_menu"].delete()
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["0"].format(pc_name), reply_markup=custom_kb(placeholders["keyboard"], True, 1,
+                                                      ["brag", "lost", "tapped", "trouble"]))
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 71
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["vice_extended"],
+                                                                parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["vice_extended"])
+    return 70
+
+
+def downtime_master_choice(update: Update, context: CallbackContext) -> Optional[int]:
+    if not controller.is_master(get_user_id(update), update.effective_message.chat_id):
+        return
+
+    placeholders = get_lang(context, downtime_master_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "overindulge", "consequence"], choice, "chat")
+
+    context.chat_data["downtime"]["message"].delete()
+
+    if choice == "trouble":
+        # TODO commit
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders["1"].format(choice), ParseMode.HTML)
+        auto_delete_message(message, 25)
+        return downtime_end(update, context)
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(
+        placeholders["0"].format(choice), ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+    return 1
+
+
+def downtime_notes(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "notes"], update.message.text, "chat")
+
+    # TODO: controller.commit_downtime_activity()
+
+    return downtime_end(update, context)
+
+
+def downtime_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the downtime activity conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "downtime", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_downtimeActivity-------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
