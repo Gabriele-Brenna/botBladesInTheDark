@@ -11,6 +11,7 @@ from game.Player import Player
 from game.Score import Score
 from organization.Cohort import Cohort
 from organization.Crew import Crew
+from organization.Upgrade import Upgrade
 from utility.FilesLoader import load_games
 from utility.ISavable import save_to_json
 from utility.htmlFactory import MapFactory
@@ -1313,8 +1314,8 @@ class Controller:
         """
         Adds (or remove) the selected amount of exp from the crew and/or the pc and updates the database.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param pc_name: the name of the user's active pc.
         :param add_exp: dictionary with the information used to modify the coins.
         :return: list of tuples containing the attributes whose points are increased and by how much.
@@ -1373,6 +1374,56 @@ class Controller:
                     attribute.points = new_points_dict[key]
 
         update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+    def get_crew_type(self, game_id: int) -> str:
+        """
+        Gets the type of the crew.
+
+        :param game_id: identifier of the game
+        :return: the crew type
+        """
+        return self.get_game_by_id(game_id).crew.type
+
+    def get_crew_upgrade_points(self, game_id: int) -> int:
+        """
+        Gets the available upgrade points.
+
+        :param game_id: identifier of the game
+        :return: the upgrade points
+        """
+        return self.get_game_by_id(game_id).crew.crew_exp.points*2
+
+    def get_crew_upgrades(self, game_id: int) -> List[dict]:
+        """
+        Gets the upgrades the crew already has.
+
+        :param game_id: identifier of the game
+        :return: list of the dictionaries of the upgrades
+        """
+        upgrades = self.get_game_by_id(game_id).crew.upgrades
+        upgrades_dict = []
+        for upgrade in upgrades:
+            upgrades_dict.append({"name": upgrade.name, "quality": upgrade.quality})
+        return upgrades_dict
+
+    def commit_add_upgrade(self, chat_id: int, user_id: int, upgrades: dict, upgrade_points: int):
+        """
+        Commits the changes made in the model and updates the database.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param upgrades: dict containing all the information about the upgrades.
+        :param upgrade_points: remaining amount of upgrade points
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        crew = game.crew
+        for upgrade in upgrades:
+            upg = Upgrade(**upgrade)
+            if not crew.upgrades.__contains__(upg):
+                crew.upgrades.append(upg)
+
+        crew.crew_exp.points = int(upgrade_points/2)
+
+        insert_crew_json(game.identifier, save_to_json(crew))
 
     def has_pc_overindulged(self, chat_id: int, user_id: int, pc_name: str, roll_outcome: Union[int, str]) -> bool:
         """

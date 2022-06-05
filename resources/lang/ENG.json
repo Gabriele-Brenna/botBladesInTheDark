@@ -788,6 +788,20 @@
       "1": "Select the attribute of the action you want to upgrade."
     },
 
+    "add_upgrade": {
+      "0": "Select the group of the upgrade you want to choose",
+      "err": "You can't add a crew upgrade without being in a game... /join to take part in a game."
+    },
+
+    "add_upgrade_group": {
+      "0": "Select the upgrade or upgrades you want for your crew. You have {} points to spend."
+    },
+
+    "add_upgrade_selection": {
+      "0": "Select the upgrade or upgrades you want for your crew. You have {} points to spend.",
+      "1": "Select the group of the upgrade you want to choose"
+    },
+
     "downtime": {
       "0": "Select the downtime activity you want to do",
       "err": "You don't do a downtime activity without being in a game... /join to take part in a game.",
@@ -962,46 +976,71 @@
 		"1": "<b><i>{}</i></b> decided to <b><i>{}</i></b> {}",
 		"2": "They roll a {} and {}"
 	  },
-	  "acquire_assets": {
-		"0": "acquire an asset",
-		"1": "obtain the asset with {} quality"
+	  "acquire_asset": {
+		"0": "ACQUIRE ASSET",
+		"1": "<b><i>{}</i></b> wants to acquire <i>{}</i>{}",
+        "2": ", with the minimum quality set to <b>{}</b>",
+        "3": "The outcome is: <i>{}</i>.",
+        "4": "The quality of the asset is: {}",
+        "5": "<b><i>{}</i></b> increased the quality of the asset to {}",
+        "6": "<b><i>{}</i></b> managed to acquire the asset",
+        "7": "<b><i>{}</i></b> couldn't acquire the asset"
 	  },
 	  "crafting": {
-		"0": "craft an item",
-		"1": "crafted the new item with {} quality"
+		"0": "CRAFTING",
+		"1": "<b><i>{}</i></b> wants to craft: <i>{}</i>{}",
+        "2": "The minimum quality is: {}",
+        "3": "The outcome is: {}",
+        "4": "The quality of the item is: {}",
+        "5": "<b><i>{}</i></b> increased the quality of the item to {}",
+        "7": "<b><i>{}</i></b> managed to craft <i>{}</i>",
+        "8": "<b><i>{}</i></b> wasn't able to craft <i>{}</i>"
 	  },
 	  "long_term_project": {
-		"0": "make a long term project",
-		"1": "tick {} segments of the project clock"
+		"0": "LONG TERM PROJECT",
+		"1": "<b><i>{}</i></b> is working on a new long term project: <i>{}</i>",
+        "2": "<b><i>{}</i></b> is working on <i>{}</i>",
+        "3": "The new project has a clock with {} segments.",
+        "4": "The project clock has {} segments ticked out of {}",
+        "5": "The project <i>{}</i> has been completed"
 	  },
 	  "recover": {
-		"0": "heal themselves by",
-		"1": "tick {} segments of the healing clock"
+		"0": "RECOVER",
+        "1": "<b><i>{}</i></b> wants to heal",
+        "2": "<b><i>{}</i></b> seeks treatment from {}",
+        "3": "<b><i>{}</i></b> mends their own harms, but this will cost them some stress",
+		"4": "<b><i>{}</i></b> ticks {} segments out of {} of the healing clock"
 	  },
 	  "reduce_heat": {
-		"0": "reduce the heat on themselves",
-		"1": "reduced the heat by {} levels"
+		"0": "REDUCE HEAT",
+        "1": "<b><i>{}</i></b> tries to reduce the heat by: {}",
+        "2": "The outcome is {}",
+		"3": "<b><i>{}</i></b> reduced the crew's heat by {}"
 	  },
 	  "train": {
-		"0": "train",
-		"1": "earned {} points"
+		"0": "TRAIN",
+		"1": "<b><i>{}</i></b> trained {} and gained {} xp points"
 	  },
 	  "indulge_vice": {
-		"0": "indulge their vice",
-		"1": "cleared their stress by {} segment",
-		"2": "Oh no! They overindulged!",
-		"3": "Brag: {}",
-		"4": "Lost: {}",
-		"5": "Tapped: {}",
-		"6": "Attracted trouble: {}"
+		"0": "INDULGE VICE",
+		"1": "<b><i>{}</i></b> decided to {} by going to {}",
+        "2": "The outcome is {}",
+        "3": "<b><i>{}</i></b> cleared {} stress segments",
+		"4": "Oh no! <b><i>{}</i></b> overindulged and {}",
+		"5": "brag about their exploits: {}",
+		"6": "got lost: {}",
+		"7": "tapped: {}",
+		"8": "attracted trouble"
 	  },
 	  "help_cohort": {
-		"0": "help a cohort",
-		"1": "now the harm of the cohort is {}"
+		"0": "HELP COHORT",
+        "1": "<b><i>{}</i></b> is helping {}",
+		"2": "The harm of the cohort is now {}",
+        "3": "The cohort has no more harm."
 	  },
 	  "replace_cohort": {
-		"0": "replace a cohort",
-		"1": "a new cohort has appeared {}"
+		"0": "REPLACE COHORT",
+		"1": "<b><i>{}</i></b> is replacing {} with {}"
 	  }
 	},
 	"write_add_claim": {

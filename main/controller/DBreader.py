@@ -9,6 +9,7 @@ from component.SpecialAbility import SpecialAbility
 from controller.DBmanager import *
 from organization.Claim import Claim
 from organization.Faction import Faction
+from organization.Upgrade import Upgrade
 
 
 def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
@@ -728,7 +729,9 @@ def query_upgrade_groups() -> List[str]:
 
 
 def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = None,
-                   common: bool = False, canon: bool = None) -> List[Dict[str, Union[str, int]]]:
+                   common: bool = False, canon: bool = None, as_dict: bool = True) -> Union[List[Dict[str,
+                                                                                                      Union[str, int]]],
+                                                                                            List[Upgrade]]:
     """
     Retrieves the specified upgrade from the database.
 
@@ -737,6 +740,7 @@ def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = Non
     :param group: the target group of upgrades.
     :param common: if the wanted upgrades are not in the "specific" group.
     :param canon: if the upgrades are canon or not.
+    :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of dictionaries containing the keys: "name", "description" and "tot_quality"
     """
     connection = establish_connection()
@@ -782,7 +786,10 @@ def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = Non
 
     upgrades = []
     for elem in rows:
-        upgrades.append({"name": elem[0], "description": elem[1], "tot_quality": int(elem[2])})
+        if as_dict:
+            upgrades.append({"name": elem[0], "description": elem[1], "tot_quality": int(elem[2])})
+        else:
+            upgrades.append(Upgrade(elem[0], 0))
 
     return upgrades
 
