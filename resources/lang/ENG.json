@@ -934,6 +934,36 @@
 
     "add_harm_cohort_level": {
       "err": "You should write a number..."
+    },
+
+    "add_harm": {
+      "0": "Describe the harm",
+      "err": "You can't add an harm without being in a game... /join to take part in a game.",
+      "err2": "You don't have any active pc..."
+    },
+
+    "add_harm_description": {
+      "0": "Select the level of the harm",
+      "keyboard": ["Lesser (1)", "Moderate (2)", "Severe (3)"],
+      "callbacks": [1,2,3]
+    },
+
+    "add_harm_level": {
+      "0": "The selected level of harm was already full... the harm has been added at level <i>{}</i>",
+      "1": "You exceeded the level 3 of harm...\nIt is a fatal harm? /die or /migratePC"
+    },
+
+    "end_downtime": {
+      "err": "You can't end the downtime activities without being in a game... /join to take part in a game.",
+      "0": "The downtime activities are ended.\n/changeState to move the game to the next phase.",
+      "trauma": "<i>{}</i> suffered too much stress. /trauma to add <b>{}</b> trauma."
+    },
+
+    "change_vice_purveyor": {
+      "err": "You can't change your vice purveyor without being in a game... /join to take part in a game.",
+      "0": "Who will provide you assistance to take care of your vice?",
+      "1": "You don't have any active PC in this game... /join to add a PC of yours in this game.",
+      "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
     }
 
   },
@@ -1123,6 +1153,14 @@
     "write_use_item": {
       "0": "USE ITEM",
       "1": "<b><i>{}</i></b> used <i>{}</i> for this reason: {}"
+    },
+    "write_end_downtime": {
+      "0": "END OF DOWNTIME",
+      "1": "The scoundrels should go back to work now..."
+    },
+    "write_change_vice_purveyor": {
+      "0": "CHANGE OF VICE PURVEYOR",
+      "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
     },
     "results": {
       "action": {

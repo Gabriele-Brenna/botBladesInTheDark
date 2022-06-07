@@ -1052,6 +1052,40 @@ class Journal:
 
         return div_tag
 
+    def create_end_downtime_tag(self):
+        """
+        Method used to create and insert a div tag with class attribute set to "endDowntime".
+
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_end_downtime.__name__)
+
+        div_tag = self.create_div_tag({"class": "endDowntime"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"]))
+
+        return div_tag
+
+    def create_change_vice_purveyor_tag(self, pc: str, new_purveyor: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "changeVicePurveyor".
+
+        :param pc: is the pc of interest.
+        :param new_purveyor: is the new purveyor of the pc.
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_change_vice_purveyor.__name__)
+
+        div_tag = self.create_div_tag({"class": "changeVicePurveyor"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, new_purveyor)))
+
+        return div_tag
+
     def get_indentation(self) -> int:
         """
         Method used to get the percentage indentation based on the value of the attribute indentation
@@ -1397,6 +1431,27 @@ class Journal:
         :param notes: extra notes
         """
         tag = self.create_use_item_tag(pc, item_name, notes)
+
+        self.write_general(tag)
+
+    def write_end_downtime(self):
+        """
+        Method used to write the end of downtime in the attribute journal representing the html file of the journal.
+        """
+        tag = self.create_end_downtime_tag()
+
+        self.write_general(tag)
+
+    def write_change_vice_purveyor(self, pc: str, new_purveyor: str):
+        """
+        Method used to write the changing of a vice purveyor in the attribute journal representing
+        the html file of the journal.
+
+        :param pc: is the pc of interest.
+        :param new_purveyor: is the new purveyor of the pc.
+        :return:
+        """
+        tag = self.create_change_vice_purveyor_tag(pc, new_purveyor)
 
         self.write_general(tag)
 

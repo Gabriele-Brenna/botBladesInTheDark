@@ -734,6 +734,35 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addHarm".casefold(), "harm".casefold()], add_harm)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, add_harm_description)],
+                1: [CallbackQueryHandler(add_harm_level)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_harm_end)],
+            name="conv_addHarm",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(CommandHandler(["endDowntime".casefold(), "downtimeEnd".casefold(),
+                                          "endDT".casefold(), "DTEnd".casefold()], end_downtime))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changePurveyor".casefold(), "changeVicePurveyor".casefold(),
+                                          "vicePurveyor".casefold()], change_vice_purveyor)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, change_vice_purveyor_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
+            name="conv_changeVicePurveyor",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

@@ -6731,6 +6731,95 @@ def downtime_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_downtimeActivity-------------------------------------------------------
 
+def end_downtime(update: Update, context: CallbackContext):
+    """
+    Handles the closure of downtime activities. Checks if the game is not in score phase.
+    Calls the controller method to apply the changes and sends to all the PCs who suffered trauma a notification.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, end_downtime.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 2):
+        return
+    trauma_suffers = controller.end_downtime(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+
+    for pc in trauma_suffers.keys():
+        auto_delete_message(update.effective_message.reply_text(placeholders["trauma"].format(pc, trauma_suffers[pc]),
+                                                                parse_mode=ParseMode.HTML), 15)
+
+    auto_delete_message(update.effective_message.reply_text(placeholders["0"]), 15)
+
+
+def change_vice_purveyor(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of a new vice purveyor. Checks if the game is not in init phase, if the user has an active
+    PC for the game in this chat and if his PC is a Human.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_vice_purveyor.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return change_vice_purveyor_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+
+    if chat_id not in context.user_data["active_PCs"]:
+        auto_delete_message(update.effective_message.reply_text(placeholders["1"]), 10)
+        return change_vice_purveyor_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    if controller.get_pc_type(chat_id, get_user_id(update), pc_name).lower() != "Human".lower():
+        auto_delete_message(update.effective_message.reply_text(placeholders["2"]), 10)
+        return change_vice_purveyor_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["change_vice_purveyor", "invocation_message"], value=update.message)
+
+    message = context.user_data["change_vice_purveyor"]["invocation_message"].reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, tags=["change_vice_purveyor", "message"], value=message)
+
+    add_tag_in_telegram_data(context, tags=["change_vice_purveyor", "info", "pc"], value=pc_name)
+
+    return 0
+
+
+def change_vice_purveyor_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the new purveyor of the pc in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to change_vice_purveyor_end().
+    """
+
+    context.user_data["change_vice_purveyor"]["message"].delete()
+
+    add_tag_in_telegram_data(context, tags=["change_vice_purveyor", "info", "new_purveyor"], value=update.message.text)
+    controller.change_vice_purveyor(update.effective_message.chat_id, get_user_id(update),
+                                    context.user_data["change_vice_purveyor"]["info"])
+
+    update.message.delete()
+
+    return change_vice_purveyor_end(update, context)
+
+
+def change_vice_purveyor_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the change vice purveyor conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "change_vice_purveyor")
+
+    return end_conv(update, context)
+
 
 # ------------------------------------------conv_addAbility-------------------------------------------------------------
 
@@ -6936,7 +7025,7 @@ def add_ability_end(update: Update, context: CallbackContext) -> int:
 
 def add_harm_cohort(update: Update, context: CallbackContext) -> int:
     """
-    Checks if the user controls a PC in this chat and starts the conversation that handles the adding of harm to a cohort.
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of harm to a cohort.
     Adds the dict "harm_cohort" in user_data.
     Finally, sends the inline keyboard to choose the cohort.
 
@@ -7028,6 +7117,106 @@ def add_harm_cohort_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_addHarmCohort----------------------------------------------------------
+
+
+# ------------------------------------------conv_addHarm----------------------------------------------------------------
+
+
+def add_harm(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of harm to the PC.
+    Adds the dict "add_harm" in user_data.
+    Finally, sends the request of the harm's description
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_harm.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_harm_end(update, context)
+
+    chat_id = update.message.chat_id
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return add_harm_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_harm", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["add_harm", "info", "pc"], context.user_data["active_PCs"][chat_id])
+    message = context.user_data["add_harm"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["add_harm", "message"], message)
+
+    return 0
+
+
+def add_harm_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort and send the request of the harm, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_harm_description.__name__)
+    context.user_data["add_harm"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["add_harm", "info", "description"], update.message.text)
+
+    message = context.user_data["add_harm"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML,
+        reply_markup=custom_kb(placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["add_harm", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def add_harm_level(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the selected level then, calls the controller method commit_add_cohort_harm, then calls add_harm_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_harm_cohort_end
+    """
+    placeholders = get_lang(context, add_harm_level.__name__)
+    context.user_data["add_harm"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["add_harm", "info", "level"], choice)
+
+    level = controller.commit_add_harm(update.effective_message.chat_id, get_user_id(update),
+                                       context.user_data["add_harm"]["info"])
+    if level is not None:
+        if level == 4:
+            message = context.user_data["add_harm"]["invocation_message"].reply_text(
+                placeholders["1"].format(level), ParseMode.HTML)
+        else:
+            message = context.user_data["add_harm"]["invocation_message"].reply_text(
+                placeholders["0"].format(level), ParseMode.HTML)
+        auto_delete_message(message, 15)
+    return add_harm_end(update, context)
+
+
+def add_harm_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add harm conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_harm", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addHarm----------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

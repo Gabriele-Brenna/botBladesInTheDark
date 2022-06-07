@@ -339,11 +339,27 @@ class Controller:
         return trauma_victims
 
     def get_journal_of_game(self, game_id: int) -> Tuple[bytes, str]:
+        """
+        Retrieves the Journal's HTML file of the specified game as a bytes array
+        and builds the file's name using the game's title.
+
+        :param game_id: is the identifier of the game.
+        :return: a Tuple that contains the bytes of the file and a string that represents its name.
+        """
         game = self.get_game_by_id(game_id)
 
         return game.journal.read_journal(), ("Journal - " + game.title + ".html")
 
     def get_character_sheet_image(self, chat_id: int, user_id: int, pc_name: str) -> Tuple[bytes, str]:
+        """
+        Retrieves the PC's sheet PNG file of the specified PC as a bytes array
+        and builds the file's name using the PC's name.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the target PC.
+        :return: a Tuple that contains the bytes of the file and a string that represents its name.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
         kwargs = {}
@@ -352,10 +368,26 @@ class Controller:
         return game.get_player_by_id(user_id).get_character_by_name(pc_name).draw_image(**kwargs), (pc_name + ".png")
 
     def get_crew_sheet_image(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+        """
+        Retrieves the Crew's sheet PNG file of the specified game as a bytes array
+        and builds the file's name using the Crew's name.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :return: a Tuple that contains the bytes of the file and a string that represents its name.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         return game.crew.draw_image(), (game.crew.name + ".png")
 
     def get_interactive_map(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+        """
+        Retrieves the map's PNG file of the specified game as a bytes array
+        and builds the file's name.
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :return: a Tuple that contains the bytes of the file and a string that represents its name.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         players = game.users
         players_names = []
@@ -443,6 +475,12 @@ class Controller:
         return filled, new_clock.__dict__
 
     def add_claim_to_game(self, game_id: int, claim: dict):
+        """
+        Handles the addiction of a new Claim to the game's crew and write the information in the journal.
+
+        :param game_id: is the identifier of the game.
+        :param claim: dictionary that contains all the information needed.
+        """
         game = self.get_game_by_id(game_id)
 
         new_claim = Claim(claim["name"], claim["description"])
@@ -459,6 +497,12 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
     def game_has_crew(self, game_id: int) -> bool:
+        """
+        Checks if the passed game has a Crew.
+
+        :param game_id: is the identifier of the game.
+        :return: True if a Crew exists, False otherwise
+        """
         game = self.get_game_by_id(game_id)
         return game.crew is not None
 
@@ -770,6 +814,14 @@ class Controller:
         return target
 
     def add_heat_to_crew(self, chat_id: int, user_id: int, heat: dict) -> int:
+        """
+        Applies the effect of the "heat" command to the game's crew and writes the new information in the journal.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param heat: dictionary that contains the information needed.
+        :return: the actual wanted level of the crew.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         wanted_level = game.crew.add_heat(heat["total_heat"])
 
@@ -1365,6 +1417,15 @@ class Controller:
         return points
 
     def get_pc_points(self, chat_id: int, user_id: int, pc_name: str) -> dict:
+        """
+        Retrieves all the specified PC's points.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: the name of the user's active pc.
+        :return: a dictionary where the keys are "Playbook", "Insight", "Prowess" and "Resolve" and the values are their
+                available points.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
 
@@ -1375,6 +1436,17 @@ class Controller:
         return points_dict
 
     def add_action_dots(self, chat_id: int, user_id: int, pc_name: str, new_actions_dict: dict, new_points_dict: dict):
+        """
+        Handles the addition and removal of the action dots of the specified PC. The new configuration of dots is
+        evaluated via the subtraction of the configuration passed and the old configuration.
+        This method handles the action points, too.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: the name of the user's active pc.
+        :param new_actions_dict: represents the dictionary of all the PC's actions and their ratings.
+        :param new_points_dict: represents the dictionary of all the PC's action points.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
 
@@ -1448,10 +1520,11 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         crew = game.crew
+        crew.upgrades.clear()
         for upgrade in upgrades:
             upg = Upgrade(**upgrade)
-            if not crew.upgrades.__contains__(upg):
-                crew.upgrades.append(upg)
+            # if not crew.upgrades.__contains__(upg):
+            crew.upgrades.append(upg)
 
         crew.crew_exp.points = int(upgrade_points/2)
 
@@ -1752,6 +1825,69 @@ class Controller:
         cohort.add_harm(cohort_harm_info["harm"])
 
         insert_crew_json(game_id, save_to_json(crew))
+
+    def commit_add_harm(self, chat_id: int, user_id: int, harm_info: dict) -> Optional[int]:
+        """
+        Adds the given harm to the selected pc and updates it in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param harm_info: a dictionary with the info used to add the harm
+        :return: an int representing the level where the harm is added if different from the one specified
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        user = game.get_player_by_id(user_id)
+        pc = user.get_character_by_name(harm_info["pc"])
+        harm_info.pop("pc")
+        level = pc.add_harm(**harm_info)
+
+        update_user_characters(user_id, game.identifier, save_to_json(user.characters))
+
+        if level != harm_info["level"]:
+            return level
+
+    def end_downtime(self, game_id: int) -> Dict[str, int]:
+        """
+        Applies the effects of the closure of the downtime activities.
+        Adds to the PCs who didn't indulge their vice in downtime an amount of stress equals to the number of their
+        trauma.
+
+        :param game_id: identifier of the game
+        :return: a dictionary where the keys are the name of the PCs who filled their stress bar and the values are the
+                numbers of trauma they suffer.
+        """
+        game = self.get_game_by_id(game_id)
+
+        trauma_suffers = {}
+        for player in game.users:
+            for pc in player.characters:
+                if "indulge_vice" not in pc.downtime_activities:
+                    trauma = pc.add_stress(len(pc.traumas))
+                    if trauma > 0:
+                        trauma_suffers[pc.name] = trauma
+                        update_user_characters(player.player_id, game.identifier, save_to_json(player.characters))
+
+        game.journal.write_end_downtime()
+
+        return trauma_suffers
+
+    def change_vice_purveyor(self, chat_id: int, user_id: int, change_purveyor: Dict[str, str]):
+        """
+        Adds the new purveyor in to the vice of the pc of this user.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param change_purveyor: dictionary that contains all the information needed (the PC's name and the new purveyor)
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(change_purveyor["pc"])
+        if isinstance(pc, Human):
+            pc.vice.add_purveyor(change_purveyor["new_purveyor"])
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        game.journal.write_change_vice_purveyor(**change_purveyor)
+
 
     def __repr__(self) -> str:
         return str(self.games)
