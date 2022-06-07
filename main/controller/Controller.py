@@ -411,10 +411,12 @@ class Controller:
             return ["{}: {}/{}".format(clock.name, clock.progress, clock.segments)
                     for clock in self.get_game_by_id(game_id).clocks]
 
-    def tick_clock_of_game(self, chat_id: int, user_id: int, old_clock: dict, ticks: int) -> Tuple[bool, dict]:
+    def tick_clock_of_game(self, chat_id: int, user_id: int, old_clock: dict, ticks: int, write: bool = True) \
+            -> Tuple[bool, dict]:
         """
         Advances the specified clock of the game, updates the database and write into the journal.
 
+        :param write: if True a parapgraph is added to the journal.
         :param chat_id: the Telegram id of the user who invoked the action roll.
         :param user_id: the Telegram chat id of the user.
         :param old_clock: a dictionary representing the Clock to tick
@@ -433,9 +435,10 @@ class Controller:
 
         insert_clock_json(game.identifier, save_to_json(game.clocks))
 
-        game.journal.write_clock(query_users_names(user_id)[0], new_clock, clock_to_tick)
+        if write:
+            game.journal.write_clock(query_users_names(user_id)[0], new_clock, clock_to_tick)
 
-        insert_journal(game.identifier, game.journal.get_log_string())
+            insert_journal(game.identifier, game.journal.get_log_string())
 
         return filled, new_clock.__dict__
 
@@ -728,17 +731,7 @@ class Controller:
         score.pop("members")
 
         if score["target"]["type"] == "NPC":
-            name, role = score["target"]["name"].split(", ")
-            target = game.get_npc_by_name_and_role(name, role)
-            if target is None:
-                target = query_npcs(name=name, role=role)[0]
-                if target.faction is not None and isinstance(target.faction, str):
-                    npc_faction = game.get_faction_by_name(target.faction)
-                    if npc_faction is None:
-                        npc_faction = query_factions(target.faction)[0]
-                        game.factions.append(npc_faction)
-                    target.faction = npc_faction
-                game.NPCs.append(target)
+            target = self.add_pc_to_game(score["target"]["name"], game)
         elif score["target"]["type"] == "Faction":
             faction_name = score["target"]["name"].split(": ")[0]
             target = game.get_faction_by_name(faction_name)
@@ -761,6 +754,20 @@ class Controller:
         # game.journal.indentation += 1
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def add_pc_to_game(self, npc: str, game: Game) -> NPC:
+        name, role = npc.split(", ")
+        target = game.get_npc_by_name_and_role(name, role)
+        if target is None:
+            target = query_npcs(name=name, role=role)[0]
+            if target.faction is not None and isinstance(target.faction, str):
+                npc_faction = game.get_faction_by_name(target.faction)
+                if npc_faction is None:
+                    npc_faction = query_factions(target.faction)[0]
+                    game.factions.append(npc_faction)
+                target.faction = npc_faction
+            game.NPCs.append(target)
+        return target
 
     def add_heat_to_crew(self, chat_id: int, user_id: int, heat: dict) -> int:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
@@ -1429,7 +1436,7 @@ class Controller:
         """
         Checks if the selected pc has overindulged
 
-         :param chat_id: the Telegram id of the user.
+        :param chat_id: the Telegram id of the user.
         :param user_id: the Telegram chat id of the user.
         :param pc_name: the name of the user's active pc.
         :param roll_outcome: the outcome of the roll during the downtime activity "indulge vice"
@@ -1442,6 +1449,168 @@ class Controller:
             return pc.stress_level - roll_outcome < 0
         else:
             return False
+
+    def commit_downtime_activity(self, chat_id: int, user_id: int, downtime_info: dict) -> dict:
+        """
+        Applies the effects of the downtime activity passed: modifies the pc
+        (and eventually the crew or the elements of the game) and updates the database
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param downtime_info: a dictionary containing the info of the activity
+        :return: a dictionary containing the information that needs to be notified to the user
+        """
+
+        def payment(coins: int):
+            if "payment" in downtime_info:
+                if downtime_info["payment"] == 1:
+                    self.pay_with_crew(chat_id, user_id, pc.name, coins)
+                    insert_crew_json(game.identifier, save_to_json(game.crew))
+                elif downtime_info["payment"] == 2:
+                    self.pay_with_possessions(chat_id, user_id, pc.name, coins)
+
+                downtime_info.pop("payment")
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        user = game.get_player_by_id(user_id)
+        pc = user.get_character_by_name(downtime_info["pc"])
+
+        activity = downtime_info["activity"]
+
+        return_dict = {}
+
+        if activity == "acquire_asset":
+            payment(self.calc_coins_acquire_asset(
+                downtime_info["quality"], downtime_info["extra_quality"], game.crew.tier))
+
+        elif activity == "crafting":
+            payment(downtime_info["extra_quality"])
+            if downtime_info["quality"] + downtime_info["extra_quality"] >= downtime_info["minimum_quality"]:
+                game.crafted_items.append(
+                    Item(downtime_info["item"], downtime_info["item_description"],
+                         quality=int(downtime_info["quality"]) + int(downtime_info["extra_quality"])))
+                insert_crafted_item_json(game.identifier, save_to_json(game.crafted_items))
+
+        elif activity == "long_term_project":
+            ticks = self.calc_value_of_outcome(downtime_info["outcome"])
+            downtime_info.pop("outcome")
+            downtime_info["tick"] = ticks
+
+            filled, downtime_info["new_clock"] = self.tick_clock_of_game(chat_id, user_id, downtime_info["clock"],
+                                                                         ticks, False)
+            downtime_info["new_clock"] = Clock(**downtime_info["new_clock"])
+            downtime_info["clock"] = Clock(**downtime_info["clock"])
+            if filled:
+                return_dict["filled"] = downtime_info["clock"]["name"]
+
+        elif activity == "recover":
+            traumas = 0
+            if "npc" in downtime_info:
+                self.add_pc_to_game(downtime_info["npc"], game)
+                insert_npc_json(game.identifier, save_to_json(game.NPCs))
+            elif "healer" in downtime_info:
+                if downtime_info["healer"].split(":")[0].lower() == downtime_info["pc"].lower():
+                    traumas = pc.add_stress(2)
+            elif "cohort" in downtime_info:
+                pass
+            else:
+                traumas = pc.add_stress(1)
+
+            ticks = self.calc_value_of_outcome(downtime_info["outcome"])
+            return_dict["time_healed"] = pc.tick_healing_clock(ticks)
+            if traumas > 0:
+                return_dict["traumas"] = traumas
+            downtime_info["tick"] = ticks
+            downtime_info["segments"] = pc.healing.segments
+            downtime_info.pop("outcome")
+
+        elif activity == "reduce_heat":
+            heat = self.calc_value_of_outcome(downtime_info["outcome"])
+            game.crew.add_heat(-heat)
+            downtime_info["heat"] = heat
+            insert_crew_json(game.identifier, save_to_json(game.crew))
+
+        elif activity == "train":
+            points = 1 + (downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
+            attr = pc.get_attribute_by_name(downtime_info["attribute"])
+            if attr is None:
+                pc.playbook.add_exp(points)
+            else:
+                attr.add_exp(points)
+            downtime_info["points"] = points
+
+        elif activity == "indulge_vice":
+            if isinstance(downtime_info["outcome"], str):
+                pc.stress_level = 0
+            else:
+                pc.clear_stress(downtime_info["outcome"])
+
+            if "overindulge" in downtime_info:
+                consequence = downtime_info["overindulge"]["consequence"]
+                if consequence != "trouble":
+                    downtime_info[consequence] = downtime_info["overindulge"]["notes"]
+                downtime_info.pop("overindulge")
+                if consequence == "brag":
+                    return_dict["wanted_level"] = game.crew.add_heat(2)
+                    insert_crew_json(game.identifier, save_to_json(game.crew))
+                elif consequence == "lost":
+                    pc.recover()
+                elif consequence == "tapped":
+                    if isinstance(pc, Owner):
+                        pc.vice.remove_purveyor()
+                else:
+                    downtime_info["trouble"] = True
+
+        elif activity == "help_cohort":
+            cohorts_alive = []
+            for cohort in game.crew.cohorts:
+                if cohort.harm < 4:
+                    cohorts_alive.append(cohort)
+            cohort = cohorts_alive[downtime_info["cohort"]]
+            cohort.add_harm(-2)
+            downtime_info["cohort"] = self.get_cohorts_of_crew(chat_id, user_id)[downtime_info["cohort"]][0]
+            downtime_info["harm"] = cohort.harm
+            insert_crew_json(game.identifier, save_to_json(game.crew))
+
+        elif activity == "replace_cohort":
+            cohorts_dead = []
+            for cohort in game.crew.cohorts:
+                if cohort.harm >= 4:
+                    cohorts_dead.append(cohort)
+            cohort = cohorts_dead[downtime_info["cohort"]]
+            cohort.harm = 0
+            downtime_info["cohort"] = self.get_cohorts_of_crew(chat_id, user_id)[downtime_info["cohort"]][0]
+            payment(game.crew.tier + 2)
+            insert_crew_json(game.identifier, save_to_json(game.crew))
+
+        pc.downtime_activities.append(activity)
+        update_user_characters(user_id, game.identifier, save_to_json(user.characters))
+
+        game.journal.write_activity(downtime_info)
+        insert_journal(game.identifier, game.journal.get_log_string())
+        return return_dict
+
+    def calc_coins_acquire_asset(self, reached_quality: int, extra_quality: int, crew_tier: int) -> int:
+        coins = extra_quality
+        if reached_quality + extra_quality > crew_tier + 2:
+            coins += reached_quality + extra_quality - (crew_tier + 2)
+        return coins
+
+    def calc_value_of_outcome(self, outcome: Union[int, str], values=None) -> int:
+        if values is None:
+            values = [5, 1, 2, 3]
+        vCrit, v1, v2, v3 = values
+        if isinstance(outcome, str):
+            value = vCrit
+        elif 1 <= outcome <= 3:
+            value = v1
+        elif 4 <= outcome <= 5:
+            value = v2
+        else:
+            value = v3
+
+        return value
+
 
     def __repr__(self) -> str:
         return str(self.games)

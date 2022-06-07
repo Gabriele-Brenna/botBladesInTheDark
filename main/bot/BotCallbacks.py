@@ -5785,7 +5785,7 @@ def add_upgrade_group(update: Update, context: CallbackContext) -> int:
         return add_upgrade_end(update, context)
     elif choice.lower() == "specific":
         buttons = create_central_buttons_upgrades(upgrades, choice, controller.get_crew_type(query_game_of_user(
-                update.effective_message.chat_id, get_user_id(update))))
+            update.effective_message.chat_id, get_user_id(update))))
     else:
         buttons = create_central_buttons_upgrades(upgrades, choice)
 
@@ -5793,7 +5793,7 @@ def add_upgrade_group(update: Update, context: CallbackContext) -> int:
         placeholders["0"].format(context.user_data["add_upgrade"]["info"]["upgrade_points"]),
         reply_markup=build_plus_minus_keyboard(buttons))
 
-    add_tag_in_telegram_data(context, ["add_upgrade",  "query_menu"], query_menu)
+    add_tag_in_telegram_data(context, ["add_upgrade", "query_menu"], query_menu)
 
     return 1
 
@@ -5897,6 +5897,7 @@ def add_upgrade_end(update: Update, context: CallbackContext) -> int:
 
     return end_conv(update, context)
 
+
 # ------------------------------------------conv_add_upgrade------------------------------------------------------------
 
 
@@ -5941,7 +5942,7 @@ def downtime_choice(update: Update, context: CallbackContext) -> Optional[int]:
 
     # Acquire Asset
     if choice == 1:
-        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "acquire_assets", "chat")
+        add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "acquire_asset", "chat")
         message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["1"])
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
         return 10
@@ -5951,6 +5952,7 @@ def downtime_choice(update: Update, context: CallbackContext) -> Optional[int]:
         message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["2"])
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
         return 20
+    # Long term project
     elif choice == 3:
         add_tag_in_telegram_data(context, ["downtime", "info", "activity"], "long_term_project", "chat")
         keyboard = controller.get_clocks_of_game(query_game_of_user(chat_id, get_user_id(update)), True)
@@ -6151,9 +6153,22 @@ def downtime_bonus_dice(update: Update, context: CallbackContext) -> Optional[in
             return 2
 
         else:
+            outcome = context.chat_data["downtime"]["info"]["outcome"]
+            crew_tier = controller.get_crew_tier(query_game_of_user(
+                update.effective_message.chat_id, get_user_id(update)))
+            quality = crew_tier
+            if isinstance(outcome, str):
+                quality += 2
+            else:
+                if 1 <= outcome <= 3:
+                    quality += -1
+                elif outcome == 6:
+                    quality += 1
+            add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "quality"], value=quality)
             context.chat_data["downtime"]["message"] = \
                 context.chat_data["downtime"]["invocation_message"].reply_text(
-                    placeholders["0"], parse_mode=ParseMode.HTML)
+                    placeholders["0"].format(context.chat_data["downtime"]["info"]["minimum_quality"], quality),
+                    parse_mode=ParseMode.HTML)
             return 0
 
     else:
@@ -6183,23 +6198,12 @@ def downtime_added_quality(update: Update, context: CallbackContext) -> Optional
 
     add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "extra_quality"], value=extra_quality)
 
-    outcome = context.chat_data["downtime"]["info"]["outcome"]
-    tot_quality = controller.get_crew_tier(query_game_of_user(chat_id, get_user_id(update)))
-    if isinstance(outcome, str):
-        tot_quality += 2
-    else:
-        if 1 <= outcome <= 3:
-            tot_quality += -1
-        elif outcome == 6:
-            tot_quality += 1
-
-    add_tag_in_telegram_data(context, location="chat", tags=["downtime", "info", "quality"], value=tot_quality)
+    crew_tier = controller.get_crew_tier(query_game_of_user(chat_id, get_user_id(update)))
+    tot_quality = context.chat_data["downtime"]["info"]["quality"]
 
     if tot_quality + extra_quality < context.chat_data["downtime"]["info"]["minimum_quality"]:
         auto_delete_message(context.chat_data["downtime"]["invocation_message"].reply_text(
             placeholders["0"].format(extra_quality), ParseMode.HTML), 15)
-
-        # TODO: controller.commit_downtime_activity(, failure=True)
 
         placeholders = get_lang(context, downtime_notes.__name__)
         message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
@@ -6213,9 +6217,16 @@ def downtime_added_quality(update: Update, context: CallbackContext) -> Optional
         keyboard = placeholders["keyboard"].copy()
         callbacks = placeholders["callbacks"].copy()
 
-        can_pay_crew, can_pay_possession = controller.can_pay(chat_id, get_user_id(update),
-                                                              context.chat_data["downtime"]["info"]["pc"],
-                                                              extra_quality)
+        if context.chat_data["downtime"]["info"]["activity"] == "acquire_asset":
+            coins = controller.calc_coins_acquire_asset(tot_quality, extra_quality, crew_tier)
+
+            can_pay_crew, can_pay_possession = controller.can_pay(chat_id, get_user_id(update),
+                                                                  context.chat_data["downtime"]["info"]["pc"], coins)
+        else:
+            coins = extra_quality
+            can_pay_crew, can_pay_possession = controller.can_pay(chat_id, get_user_id(update),
+                                                                  context.chat_data["downtime"]["info"]["pc"],
+                                                                  coins)
         if not can_pay_possession:
             keyboard.pop(1)
             callbacks.pop(1)
@@ -6224,7 +6235,7 @@ def downtime_added_quality(update: Update, context: CallbackContext) -> Optional
             callbacks.pop(0)
 
         message = context.chat_data["downtime"]["invocation_message"].reply_text(
-            placeholders["0"].format(extra_quality), ParseMode.HTML,
+            placeholders["0"].format(coins), ParseMode.HTML,
             reply_markup=custom_kb(keyboard, True, 1, callbacks))
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
 
@@ -6234,7 +6245,7 @@ def downtime_added_quality(update: Update, context: CallbackContext) -> Optional
         context.chat_data["downtime"]["message"].delete()
         placeholders = get_lang(context, downtime_notes.__name__)
         message = context.chat_data["downtime"]["invocation_message"].reply_text(
-            placeholders["0"].format(extra_quality), ParseMode.HTML)
+            placeholders["0"], ParseMode.HTML)
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
         return 2
 
@@ -6464,7 +6475,7 @@ def downtime_recover_choice(update: Update, context: CallbackContext) -> Optiona
         add_tag_in_telegram_data(context, location="chat", tags=["downtime", "query_menu_index"], value=0)
 
         query_menu = context.chat_data["downtime"]["invocation_message"].reply_text(
-            placeholders["3"], reply_markup=build_multi_page_kb(buttons_list[0]))
+            placeholders["1"], reply_markup=build_multi_page_kb(buttons_list[0]))
 
         add_tag_in_telegram_data(context, ["downtime", "query_menu"], query_menu, "chat")
 
@@ -6476,7 +6487,7 @@ def downtime_recover_choice(update: Update, context: CallbackContext) -> Optiona
         buttons_list = ["{}: {}".format(
             pc, controller.get_pc_action_rating(get_user_id(update), chat_id, pc, "tinker")[1]) for pc in pcs]
         message = context.chat_data["downtime"]["invocation_message"].reply_text(
-            placeholders["3"], reply_markup=custom_kb(buttons_list, True, 1))
+            placeholders["2"], reply_markup=custom_kb(buttons_list, True, 1))
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
         return 42
 
@@ -6569,7 +6580,7 @@ def downtime_pc_selection(update: Update, context: CallbackContext) -> int:
     query.answer()
     choice = query.data
 
-    add_tag_in_telegram_data(context, ["downtime", "info", "pc"], choice, "chat")
+    add_tag_in_telegram_data(context, ["downtime", "info", "healer"], choice, "chat")
 
     tinker_rating = choice.split(": ")[-1]
 
@@ -6622,13 +6633,17 @@ def downtime_adjust_roll(update: Update, context: CallbackContext) -> Optional[i
         pc_name = context.chat_data["downtime"]["info"]["pc"]
         if not controller.has_pc_overindulged(update.effective_message.chat_id, get_user_id(update),
                                               pc_name, outcome):
-            # TODO: commit
-            return downtime_end(update, context)
+            context.chat_data["downtime"]["query_menu"].delete()
+            placeholders = get_lang(context, downtime_notes.__name__)
+            context.chat_data["downtime"]["message"] = \
+                context.chat_data["downtime"]["invocation_message"].reply_text(
+                    placeholders["0"], parse_mode=ParseMode.HTML)
+            return 1
 
         context.chat_data["downtime"]["query_menu"].delete()
         message = context.chat_data["downtime"]["invocation_message"].reply_text(
             placeholders["0"].format(pc_name), reply_markup=custom_kb(placeholders["keyboard"], True, 1,
-                                                      ["brag", "lost", "tapped", "trouble"]))
+                                                                      ["brag", "lost", "tapped", "trouble"]))
         add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
         return 71
 
@@ -6655,25 +6670,50 @@ def downtime_master_choice(update: Update, context: CallbackContext) -> Optional
     context.chat_data["downtime"]["message"].delete()
 
     if choice == "trouble":
-        # TODO commit
         message = context.chat_data["downtime"]["invocation_message"].reply_text(
             placeholders["1"].format(choice), ParseMode.HTML)
         auto_delete_message(message, 25)
-        return downtime_end(update, context)
+        placeholders = get_lang(context, downtime_notes.__name__)
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+        return 1
 
     message = context.chat_data["downtime"]["invocation_message"].reply_text(
         placeholders["0"].format(choice), ParseMode.HTML)
     add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+    return 72
+
+
+def downtime_overindulge_notes(update: Update, context: CallbackContext) -> Optional[int]:
+    if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
+        return
+    placeholders = get_lang(context, downtime_notes.__name__)
+
+    context.chat_data["downtime"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["downtime", "info", "overindulge", "notes"], update.message.text, "chat")
+
+    message = context.chat_data["downtime"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["downtime", "message"], message, "chat")
+
+    update.message.delete()
     return 1
 
 
 def downtime_notes(update: Update, context: CallbackContext) -> Optional[int]:
     if get_user_id(update) != context.chat_data["downtime"]["invoker"]:
         return
+    placeholders = get_lang(context, downtime_notes.__name__)
 
     add_tag_in_telegram_data(context, ["downtime", "info", "notes"], update.message.text, "chat")
 
-    # TODO: controller.commit_downtime_activity()
+    return_dict = controller.commit_downtime_activity(update.effective_message.chat_id, get_user_id(update),
+                                                      context.chat_data["downtime"]["info"])
+
+    for key in return_dict.keys():
+        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+            placeholders[str(key)].format(return_dict[key]), ParseMode.HTML)
+        auto_delete_message(message, 20)
 
     return downtime_end(update, context)
 
