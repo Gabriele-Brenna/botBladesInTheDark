@@ -861,7 +861,7 @@
     },
 
     "downtime_bonus_dice": {
-      "0": "Write how many quality level you want to add (-2 coin for each added level)"
+      "0": "Write how many quality level you want to add (the set minimum quality is {} and the actual quality of your asset is {})"
     },
 
     "downtime_added_quality": {
@@ -880,7 +880,12 @@
     },
 
     "downtime_notes": {
-      "0": "Write some extra description of the activity"
+      "0": "Write some extra description of the activity",
+
+      "filled": "The project clock <i>{}</i> has been completed !",
+      "time_healed": "You healed <i>{}</i> times",
+      "traumas": "You suffered too much stress. <i>{}</i> trauma to add.\n/addTrauma",
+      "wanted_level": "Your crew has now reached wanted level <i>{}</i>"
     },
 
     "downtime_attribute_choice": {
@@ -897,11 +902,13 @@
     },
 
     "downtime_recover_choice": {
+      "1": "Select the NPC that will help you",
+      "2": "Select the PC that will help you",
       "3": "Select the cohort that will help you"
     },
 
     "downtime_npc_selection": {
-      "0":  "Select the cohort that will help you",
+      "0":  "Select the NPC that will help you",
       "404": "Description not found"
     },
 
@@ -1029,7 +1036,7 @@
 	  },
 	  "reduce_heat": {
 		"0": "REDUCE HEAT",
-        "1": "<b><i>{}</i></b> tries to reduce the heat by: {}",
+        "1": "<b><i>{}</i></b> tries to reduce the heat using: {}",
         "2": "The outcome is {}",
 		"3": "<b><i>{}</i></b> reduced the crew's heat by {}"
 	  },
@@ -1039,14 +1046,15 @@
 	  },
 	  "indulge_vice": {
 		"0": "INDULGE VICE",
-		"1": "<b><i>{}</i></b> decided to {} by going to {}",
+		"1": "<b><i>{}</i></b> decided to indulge in their vice",
         "2": "The outcome is {}",
         "3": "<b><i>{}</i></b> cleared {} stress segments",
 		"4": "Oh no! <b><i>{}</i></b> overindulged and {}",
-		"5": "brag about their exploits: {}",
-		"6": "got lost: {}",
-		"7": "tapped: {}",
-		"8": "attracted trouble"
+		"5": "brag about their exploits (your crew takes +2 heat): {}",
+		"6": "got lost (is wandering around Doskvol and cannot find the way home... but their harm will be healed when comes back): {}",
+		"7": "tapped (the vice purveyor cuts them off...): {}",
+		"8": "attracted trouble, there will be consequences...",
+        "CRIT": "all their"
 	  },
 	  "help_cohort": {
 		"0": "HELP COHORT",
@@ -1056,7 +1064,7 @@
 	  },
 	  "replace_cohort": {
 		"0": "REPLACE COHORT",
-		"1": "<b><i>{}</i></b> is replacing {} with {}"
+		"1": "<b><i>{}</i></b> is replacing its cohort: {}"
 	  }
 	},
 	"write_add_claim": {

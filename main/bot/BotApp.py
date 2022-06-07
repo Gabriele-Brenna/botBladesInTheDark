@@ -411,9 +411,10 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
-            entry_points=[CommandHandler(["entanglement".casefold(), "ent".casefold()], entanglement),
-                          CommandHandler(["secretEntanglement".casefold(), "secretEnt".casefold()],
-                                         secret_entanglement)],
+            entry_points=[CommandHandler(["entanglement".casefold(), "ent".casefold(), "entanglements".casefold()],
+                                         entanglement),
+                          CommandHandler(["secretEntanglement".casefold(), "secretEnt".casefold(),
+                                          "secretEntanglements".casefold()], secret_entanglement)],
             states={
                 0: [MessageHandler(Filters.text & ~Filters.command, entanglement_name)],
                 1: [MessageHandler(Filters.text & ~Filters.command, entanglement_description)],
@@ -612,6 +613,7 @@ def start_bot():
                 60: [CallbackQueryHandler(downtime_attribute_train_choice)],
                 70: [CallbackQueryHandler(downtime_adjust_roll)],
                 71: [CallbackQueryHandler(downtime_master_choice)],
+                72: [MessageHandler(Filters.text & ~Filters.command, downtime_overindulge_notes)],
                 80: [ConversationHandler(
                     entry_points=[CallbackQueryHandler(downtime_cohort_choice)],
                     states={
@@ -632,7 +634,7 @@ def start_bot():
                         0: [MessageHandler(Filters.text & ~Filters.command, downtime_minimum_quality)],
                     },
                     fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
-                    name="master_conv_resistanceRoll",
+                    name="conv_acquireAsset_master",
                     persistent=True,
                     map_to_parent={
                         1: 12,
@@ -645,7 +647,7 @@ def start_bot():
                         0: [MessageHandler(Filters.text & ~Filters.command, downtime_minimum_quality)],
                     },
                     fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
-                    name="master_conv_resistanceRoll",
+                    name="conv_crafting_master",
                     persistent=True,
                     map_to_parent={
                         1: 22,
@@ -660,11 +662,11 @@ def start_bot():
                         2: [MessageHandler(Filters.text & ~Filters.command, downtime_item_description)]
                     },
                     fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
-                    name="master_conv_resistanceRoll",
+                    name="conv_crafting",
                     persistent=True,
                     map_to_parent={
                         3: 1,
-                        22: 22,
+                        12: 22,
                         ConversationHandler.END: ConversationHandler.END
                     }
                 )],
@@ -675,7 +677,7 @@ def start_bot():
                         1: [CallbackQueryHandler(downtime_payment)]
                     },
                     fallbacks=[CommandHandler("cancel".casefold(), downtime_end)],
-                    name="master_conv_resistanceRoll",
+                    name="conv_acquireAsset",
                     persistent=True,
                     map_to_parent={
                         3: 1,

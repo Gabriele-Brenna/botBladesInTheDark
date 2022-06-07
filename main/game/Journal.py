@@ -551,7 +551,7 @@ class Journal:
 
         return div_tag
 
-    def create_acquire_asset_tag(self, pc: str, asset: str, quality: int, min_quality: int,
+    def create_acquire_asset_tag(self, pc: str, asset: str, quality: int, minimum_quality: int,
                                  outcome: Union[int, str], extra_quality: int, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "acquire_asset".
@@ -559,7 +559,7 @@ class Journal:
         :param pc: who does the downtime activity
         :param asset: the asset to acquire
         :param quality: quality obtained after the dice roll
-        :param min_quality: minimum quality of the asset
+        :param minimum_quality: minimum quality of the asset
         :param outcome: outcome of the roll
         :param extra_quality: by how much the quality is increased
         :param notes: extra notes
@@ -570,7 +570,7 @@ class Journal:
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(
-            pc, asset, placeholders["2"].format(min_quality) if min_quality > -1 else ".")))
+            pc, asset, placeholders["2"].format(minimum_quality) if minimum_quality > -1 else ".")))
 
         div_tag.append(self.create_p_tag(placeholders["3"].format(outcome)))
 
@@ -579,7 +579,7 @@ class Journal:
         if extra_quality > 0:
             div_tag.append(self.create_p_tag(placeholders["5"].format(pc, quality+extra_quality)))
 
-        if quality >= min_quality:
+        if quality + extra_quality >= minimum_quality:
             div_tag.append(self.create_p_tag(placeholders["6"].format(pc)))
         else:
             div_tag.append(self.create_p_tag(placeholders["7"].format(pc)))
@@ -618,7 +618,7 @@ class Journal:
 
         return div_tag
 
-    def create_crafting_tag(self, pc: str, item: str, min_quality: int, quality: int, outcome: int,
+    def create_crafting_tag(self, pc: str, item: str, minimum_quality: int, quality: int, outcome: int,
                             extra_quality: int, notes: str, item_description: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "crafting".
@@ -626,7 +626,7 @@ class Journal:
         :param pc: who does the downtime activity
         :param item: item to craft
         :param item_description: description of the item
-        :param min_quality: minimum quality of the item to craft
+        :param minimum_quality: minimum quality of the item to craft
         :param quality: quality obtained after the dice roll
         :param outcome: outcome of the roll
         :param extra_quality: by how much the quality is increased
@@ -639,7 +639,7 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(
             pc, item, " ({})".format(item_description) if item_description else ".")))
-        div_tag.append(self.create_p_tag(placeholders["2"].format(min_quality)))
+        div_tag.append(self.create_p_tag(placeholders["2"].format(minimum_quality)))
         div_tag.append(self.create_p_tag(placeholders["3"].format(outcome)))
 
         if extra_quality > 0:
@@ -647,7 +647,7 @@ class Journal:
         else:
             div_tag.append(self.create_p_tag(placeholders["4"].format(quality)))
 
-        if quality+extra_quality >= min_quality:
+        if quality + extra_quality >= minimum_quality:
             div_tag.append(self.create_p_tag(placeholders["7"].format(pc, item)))
         else:
             div_tag.append(self.create_p_tag(placeholders["8"].format(pc, item)))
@@ -656,16 +656,16 @@ class Journal:
 
         return div_tag
 
-    def create_recover_tag(self, pc: str, segments: int, tick: int, notes: str, friend: str = None,
-                           contact: str = None, cohort: str = None):
+    def create_recover_tag(self, pc: str, segments: int, tick: int, notes: str, healer: str = None,
+                           npc: str = None, cohort: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "recover".
 
         :param pc: who does the downtime activity
         :param segments: total segments of the healing clock
         :param tick: advancement of the project's clock
-        :param friend: if not None is the crew's member helping the pc out
-        :param contact: if not None is the npc helping the pc out
+        :param healer: if not None is the crew's member helping the pc out
+        :param npc: if not None is the npc helping the pc out
         :param cohort: if not None is the cohort helping the pc out
         :param notes: extra notes
         :return: the div Tag
@@ -676,11 +676,11 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc)))
 
-        if friend or contact or cohort:
-            if friend:
-                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, friend)))
-            elif contact:
-                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, contact)))
+        if healer or npc or cohort:
+            if healer:
+                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, healer)))
+            elif npc:
+                div_tag.append(self.create_p_tag(placeholders["2"].format(pc, npc)))
             elif cohort:
                 div_tag.append(self.create_p_tag(placeholders["2"].format(pc, cohort)))
         else:
@@ -692,12 +692,12 @@ class Journal:
 
         return div_tag
 
-    def create_reduce_heat_tag(self, pc: str, method: str, outcome: Union[int, str], heat: int, notes):
+    def create_reduce_heat_tag(self, pc: str, action: str, outcome: Union[int, str], heat: int, notes):
         """
         Method used to create and insert a div tag with class attribute set to "reduce_heat".
 
         :param pc: who does the downtime activity
-        :param method: method used by the pc to reduce the heat
+        :param action: method used by the pc to reduce the heat
         :param outcome: outcome of the roll
         :param heat: by how much is the heat reduced
         :param notes: extra notes
@@ -707,7 +707,7 @@ class Journal:
         div_tag = self.create_div_tag({"class": "reduce_heat"})
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
-        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, method)))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, action)))
         div_tag.append(self.create_p_tag(placeholders["2"].format(outcome)))
         div_tag.append(self.create_p_tag(placeholders["3"].format(pc, heat)))
 
@@ -715,12 +715,12 @@ class Journal:
 
         return div_tag
 
-    def create_train_tag(self, pc: str, what: str, points: int, notes: str):
+    def create_train_tag(self, pc: str, attribute: str, points: int, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "train".
 
         :param pc: who does the downtime activity
-        :param what: what has been trained
+        :param attribute: what has been trained
         :param points: amount of the xp gained
         :param notes: extra notes
         :return: the div Tag
@@ -730,22 +730,19 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
-        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, what, points)))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, attribute, points)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
         return div_tag
 
-    def create_indulge_vice_tag(self, pc: str, how: str, purveyor: str, amount: int, outcome: Union[int, str],
+    def create_indulge_vice_tag(self, pc: str, outcome: Union[int, str],
                                 notes: str, brag: str = None, lost: str = None, tapped: str = None,
                                 trouble: bool = False):
         """
         Method used to create and insert a div tag with class attribute set to "indulge_vice".
 
         :param pc: who does the downtime activity
-        :param how: how the pc indulge
-        :param purveyor: who is the purveyor
-        :param amount: stress removed
         :param outcome: outcome of the roll
         :param notes: extra notes
         :param brag: if not None how the pc overindulges
@@ -758,8 +755,12 @@ class Journal:
         div_tag = self.create_div_tag({"class": "indulge_vice"})
 
         div_tag.append(self.create_h2_tag(placeholders["0"]))
-        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, how, purveyor)))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc)))
         div_tag.append(self.create_p_tag(placeholders["2"].format(outcome)))
+        if isinstance(outcome, str):
+            amount = placeholders["CRIT"]
+        else:
+            amount = outcome
         div_tag.append(self.create_p_tag(placeholders["3"].format(pc, amount)))
 
         attr = [brag, lost, tapped]
@@ -798,13 +799,12 @@ class Journal:
 
         return div_tag
 
-    def create_replace_cohort_tag(self, pc: str, old_cohort: str, new_cohort: str, notes: str):
+    def create_replace_cohort_tag(self, pc: str, cohort: str, notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "replace_cohort".
 
         :param pc: who does the downtime activity
-        :param old_cohort: cohort the pc will remove
-        :param new_cohort: new cohort the pc will have
+        :param cohort: new cohort the pc will have
         :param notes: extra notes
         :return: the div Tag
         """
@@ -812,7 +812,7 @@ class Journal:
         div_tag = self.create_div_tag({"class": "replace_cohort"})
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
-        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, old_cohort, new_cohort)))
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, cohort)))
 
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
