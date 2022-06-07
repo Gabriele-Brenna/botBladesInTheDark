@@ -1391,7 +1391,16 @@ class Controller:
         :param game_id: identifier of the game
         :return: the upgrade points
         """
-        return self.get_game_by_id(game_id).crew.crew_exp.points*2
+        return self.get_crew_exp_points(game_id)*2
+
+    def get_crew_exp_points(self, game_id: int) -> int:
+        """
+        Gets the available exp points of the crew.
+
+        :param game_id: identifier of the game
+        :return: the exp points
+        """
+        return self.get_game_by_id(game_id).crew.crew_exp.points
 
     def get_crew_upgrades(self, game_id: int) -> List[dict]:
         """
@@ -1409,6 +1418,7 @@ class Controller:
     def commit_add_upgrade(self, chat_id: int, user_id: int, upgrades: dict, upgrade_points: int):
         """
         Commits the changes made in the model and updates the database.
+
         :param chat_id: the Telegram chat id of the user.
         :param user_id: the Telegram id of the user.
         :param upgrades: dict containing all the information about the upgrades.
@@ -1442,6 +1452,107 @@ class Controller:
             return pc.stress_level - roll_outcome < 0
         else:
             return False
+
+    def get_crew_special_ability(self, chat_id: int, user_id: int) -> List[str]:
+        """
+        Gets the specific abilities for a given crew sheet.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :return: a list of str containing the names of the special abilities.
+        """
+        crew = self.get_game_by_id(query_game_of_user(chat_id, user_id)).crew
+        crew_abilities = crew.abilities
+        abilities_dict = []
+        for ab in crew_abilities:
+            abilities_dict.append(ab.__dict__)
+
+        abilities = query_special_abilities(crew.type, as_dict=True)
+        return self.remove_duplicate_abilities(abilities, abilities_dict)
+
+    def remove_duplicate_abilities(self, abilities: List[dict], to_remove: List[dict]) -> List[str]:
+        """
+        Removes the abilities contained in to_remove from abilities.
+
+        :param abilities: list containing all the abilities.
+        :param to_remove: list containing the abilities to remove.
+        :return: list of abilities cleaned from abilities in to_remove.
+        """
+        new_abilities = []
+        for ability in abilities:
+            if not to_remove.__contains__(ability):
+                new_abilities.append(ability["name"])
+        return new_abilities
+
+    def get_pc_special_ability(self, chat_id: int, user_id: int, pc_name: str) -> List[str]:
+        """
+        Gets the specific abilities for a given character sheet.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: a list of str containing the names of the special abilities.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        abilities_dict = []
+        for ab in pc.abilities:
+            abilities_dict.append(ab.__dict__)
+
+        pc_abilities = query_special_abilities(self.get_pc_class(chat_id, user_id, pc_name), as_dict=True)
+        return self.remove_duplicate_abilities(pc_abilities, abilities_dict)
+
+    def get_all_abilities(self, chat_id: int, user_id: int, selection: str, pc_name: str) -> List[str]:
+        """
+        Method used to get all the special abilities for a character or crew.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param selection: allows to get the abilities for character or crew.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: a list of str containing the names of the special abilities.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        if selection == "pc":
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            abilities = query_special_abilities(pc=True, as_dict=True)
+            pc_abilities = pc.abilities
+            abilities_dict = []
+            for ab in pc_abilities:
+                abilities_dict.append(ab.__dict__)
+            return self.remove_duplicate_abilities(abilities, abilities_dict)
+        elif selection == "crew":
+            crew = game.crew
+            abilities = query_special_abilities(pc=False, as_dict=True)
+            crew_abilities = crew.abilities
+            abilities_dict = []
+            for ab in crew_abilities:
+                abilities_dict.append(ab.__dict__)
+            return self.remove_duplicate_abilities(abilities, abilities_dict)
+
+    def commit_add_ability(self, chat_id: int, user_id: int, add_ability: dict, pc_name: str = None):
+        """
+        Commits the changes made in the model and updates the database.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param add_ability: dict of the conversation.
+        :param pc_name: name of the character to update the right pc from the model.
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        if pc_name is not None and add_ability["selection"].lower() == "pc":
+            game.get_player_by_id(user_id).get_character_by_name(pc_name).abilities.append(
+                query_special_abilities(special_ability=add_ability["ability"])[0])
+            game.get_player_by_id(user_id).get_character_by_name(pc_name).playbook.points -= 1
+            update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+        else:
+            ability = query_special_abilities(add_ability["ability"])
+            game.crew.abilities.append(query_special_abilities(special_ability=add_ability["ability"])[0])
+            game.crew.crew_exp.points -= 1
+            insert_crew_json(game.identifier, save_to_json(game.crew))
+
+
 
     def __repr__(self) -> str:
         return str(self.games)

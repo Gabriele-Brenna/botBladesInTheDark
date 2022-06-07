@@ -802,6 +802,25 @@
       "1": "Select the group of the upgrade you want to choose"
     },
 
+    "add_ability": {
+      "0": "Select where you want to add a special ability",
+      "1": "You don't have any point available to spend for a special ability",
+      "err": "You can't add a special ability without being in a game... /join to take part in a game."
+    },
+
+    "add_ability_owner": {
+      "0": "Select the special ability you want to add"
+    },
+
+    "add_ability_selection": {
+      "0": "Select the special ability you want to add",
+      "1": "Your new special ability has been added",
+      "2": "{}: {}",
+      "3": "Allows you to select special abilities from other {} types",
+      "pc": "character",
+      "crew": "crew"
+    },
+
     "downtime": {
       "0": "Select the downtime activity you want to do",
       "err": "You don't do a downtime activity without being in a game... /join to take part in a game.",

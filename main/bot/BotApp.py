@@ -705,6 +705,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addSpecialAbility".casefold(), "addAbility".casefold(), "asa".casefold()],
+                                         add_ability)],
+            states={
+                0: [CallbackQueryHandler(add_ability_owner)],
+                1: [CallbackQueryHandler(add_ability_selection)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_ability_end)],
+            name="conv_addAbility",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
