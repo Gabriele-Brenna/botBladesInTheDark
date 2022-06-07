@@ -804,7 +804,7 @@
 
     "downtime": {
       "0": "Select the downtime activity you want to do",
-      "err": "You don't do a downtime activity without being in a game... /join to take part in a game.",
+      "err": "You can't do a downtime activity without being in a game... /join to take part in a game.",
       "err2": "You don't have an active pc in this game... /join to take part in a game.",
       "keyboard": ["Acquire Asset", "Crafting", "Long-Term Project", "Recover", "Reduce Heat", "Train", "Indulge Vice", "Help Cohort", "Replace Cohort"],
       "callbacks": [1,2,3,4,5,6,7,8,9]
@@ -901,6 +901,20 @@
     "downtime_master_choice": {
       "0": "The GM selected <i>{}</i>.\nWrite what happened",
       "1": "The GM selected <i>{}</i>. There will be consequences...\n/entanglements"
+    },
+
+    "add_harm_cohort": {
+      "0": "Select the cohort",
+      "err": "You can't harm a cohort without being in a game... /join to take part in a game.",
+      "err2": "You don't have any alive cohort..."
+    },
+
+    "add_harm_cohort_choice": {
+      "0": "Write how may harm levels the cohort takes\n(negative number are acceptable if you want to reduce the harm level)"
+    },
+
+    "add_harm_cohort_level": {
+      "err": "You should write a number..."
     }
 
   },
