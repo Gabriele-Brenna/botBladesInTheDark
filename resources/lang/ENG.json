@@ -1017,11 +1017,8 @@
 	  },
 	  "long_term_project": {
 		"0": "LONG TERM PROJECT",
-		"1": "<b><i>{}</i></b> is working on a new long term project: <i>{}</i>",
-        "2": "<b><i>{}</i></b> is working on <i>{}</i>",
-        "3": "The new project has a clock with {} segments.",
-        "4": "The project clock has {} segments ticked out of {}",
-        "5": "The project <i>{}</i> has been completed"
+		"1": "<b><i>{}</i></b> is working on a project: <i>{}</i>",
+        "2": "The project has been completed"
 	  },
 	  "recover": {
 		"0": "RECOVER",

@@ -37,7 +37,7 @@ def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
         return result[0]
 
 
-def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None,
+def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None, pc: bool = None,
                             as_dict: bool = False) -> Union[List[SpecialAbility], List[Dict[str, str]]]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
@@ -46,40 +46,50 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
     :param peculiar: if True, the search is restricted to peculiar abilities only.
     :param special_ability: represents the name of the ability to get;
         if it is None, the complete list of special abilities is retrieved;
+    :param pc: if True, the search is restricted to the character's abilities,
+        if False, the search is restricted to the crew's abilities
     :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of SpecialAbility objects
     """
     connection = establish_connection()
     cursor = connection.cursor()
 
-    q_select = "SELECT Name, Description"
-
-    q_from = "\nFROM SpecialAbility"
-
-    q_where = "\n"
-
+    query = "SELECT Name, Description\n"
     if special_ability is not None:
-        q_where += "WHERE Name = ?"
-        cursor.execute(q_select + q_from + q_where, (special_ability,))
-
+        query += """FROM SpecialAbility WHERE Name = ?"""
+        cursor.execute(query, (special_ability,))
+    elif sheet is not None and peculiar is not None:
+        if exists_crew(sheet):
+            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbility\nWHERE Crew = ? AND Peculiar is ?"
+        elif exists_character(sheet):
+            query += """FROM SpecialAbility JOIN Char_SA ON Name = SpecialAbility
+            WHERE Character = ? AND Peculiar is ?"""
+        else:
+            return []
+        cursor.execute(query, (sheet, peculiar))
+    elif sheet is not None:
+        if exists_crew(sheet):
+            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbility\nWHERE Crew = ?"
+        elif exists_character(sheet):
+            query += "FROM SpecialAbility JOIN Char_SA ON Name = SpecialAbility\nWHERE Character = ?"
+        else:
+            return []
+        cursor.execute(query, (sheet,))
+    elif peculiar is not None:
+        query += """FROM (SpecialAbility S LEFT JOIN Crew_SA CREW ON S.Name = CREW.SpecialAbility) 
+        LEFT JOIN
+        Char_SA CHAR ON S.Name = CHAR.SpecialAbility
+        WHERE CREW.peculiar is ? OR CHAR.peculiar is ?"""
+        cursor.execute(query, (peculiar, peculiar))
+    elif pc is not None:
+        if pc:
+            query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility"""
+        elif not pc:
+            query += """FROM Crew_SA CREW LEFT JOIN SpecialAbility S on S.Name = CREW.SpecialAbility"""
+        cursor.execute(query)
     else:
-        if sheet is not None:
-            if exists_crew(sheet):
-                q_from += " JOIN Crew_SA ON Name = SpecialAbility"
-                q_where += "WHERE Crew = '{}'".format(sheet)
-            elif exists_character(sheet):
-                q_from += " JOIN Char_SA ON Name = SpecialAbility"
-                q_where += "WHERE Character = '{}'".format(sheet)
-            else:
-                return []
-            if peculiar is not None:
-                q_where += " AND peculiar is {}".format(peculiar)
-        elif peculiar is not None:
-            q_from = "\nFROM (SpecialAbility S LEFT JOIN Crew_SA CREW ON S.Name = CREW.SpecialAbility) LEFT JOIN " \
-                     "Char_SA CHAR ON S.Name = CHAR.SpecialAbility "
-            q_where += "WHERE CREW.peculiar is {} OR CHAR.peculiar is {}".format(peculiar, peculiar)
-
-        cursor.execute(q_select + q_from + q_where)
+        query += """FROM SpecialAbility"""
+        cursor.execute(query)
 
     rows = cursor.fetchall()
 
