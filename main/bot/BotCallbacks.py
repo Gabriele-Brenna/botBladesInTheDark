@@ -7085,7 +7085,7 @@ def add_harm_cohort_level(update: Update, context: CallbackContext) -> int:
     :return: call to add_harm_cohort_end
     """
 
-    placeholders = get_lang(context, add_harm_cohort_choice.__name__)
+    placeholders = get_lang(context, add_harm_cohort_level.__name__)
     context.user_data["harm_cohort"]["message"].delete()
 
     try:

@@ -933,7 +933,7 @@
     },
 
     "add_harm_cohort_level": {
-      "err": "You should write a number..."
+      "err": "You should write an integer number..."
     },
 
     "add_harm": {
