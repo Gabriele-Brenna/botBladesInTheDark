@@ -1630,5 +1630,25 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(crew))
 
+    def commit_add_harm(self, chat_id: int, user_id: int, harm_info: dict) -> Optional[int]:
+        """
+        Adds the given harm to the selected pc and updates it in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param harm_info: a dictionary with the info used to add the harm
+        :return: an int representing the level where the harm is added if different from the one specified
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        user = game.get_player_by_id(user_id)
+        pc = user.get_character_by_name(harm_info["pc"])
+        harm_info.pop("pc")
+        level = pc.add_harm(**harm_info)
+
+        update_user_characters(user_id, game.identifier, save_to_json(user.characters))
+
+        if level != harm_info["level"]:
+            return level
+
     def __repr__(self) -> str:
         return str(self.games)

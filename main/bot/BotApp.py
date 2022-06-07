@@ -720,6 +720,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addHarm".casefold(), "harm".casefold()], add_harm)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, add_harm_description)],
+                1: [CallbackQueryHandler(add_harm_level)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_harm_end)],
+            name="conv_addHarm",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

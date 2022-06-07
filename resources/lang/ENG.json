@@ -915,6 +915,23 @@
 
     "add_harm_cohort_level": {
       "err": "You should write a number..."
+    },
+
+    "add_harm": {
+      "0": "Describe the harm",
+      "err": "You can't add an harm without being in a game... /join to take part in a game.",
+      "err2": "You don't have any active pc..."
+    },
+
+    "add_harm_description": {
+      "0": "Select the level of the harm",
+      "keyboard": ["Lesser (1)", "Moderate (2)", "Severe (3)"],
+      "callbacks": [1,2,3]
+    },
+
+    "add_harm_level": {
+      "0": "The selected level of harm was already full... the harm has been added at level <i>{}</i>",
+      "1": "You exceeded the level 3 of harm...\nIt is a fatal harm? /die or /migratePC"
     }
 
   },
