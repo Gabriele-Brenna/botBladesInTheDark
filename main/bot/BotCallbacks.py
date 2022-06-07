@@ -6933,6 +6933,34 @@ def add_harm_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_addHarm----------------------------------------------------------------
 
 
+def add_reputation(update: Update, context: CallbackContext) -> None:
+    """
+    Adds the given reputation to the active pc of the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, add_reputation.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return
+
+    chat_id = update.effective_message.chat_id
+
+    try:
+        rep = int(context.args[0])
+    except (ValueError, IndexError, AttributeError):
+        rep = 1
+
+    coins = controller.add_rep_to_crew(query_game_of_user(chat_id, get_user_id(update)), rep)
+
+    if coins is not None:
+        auto_delete_message(update.message.reply_text(placeholders["0"].format(coins),
+                                                      parse_mode=ParseMode.HTML), 20)
+
+    update.message.reply_text(placeholders["1"].format(rep), ParseMode.HTML)
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

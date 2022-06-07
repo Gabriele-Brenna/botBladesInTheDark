@@ -932,6 +932,12 @@
     "add_harm_level": {
       "0": "The selected level of harm was already full... the harm has been added at level <i>{}</i>",
       "1": "You exceeded the level 3 of harm...\nIt is a fatal harm? /die or /migratePC"
+    },
+
+    "add_reputation": {
+      "0": "You reached the maximum level of reputation.\nUse /upgradeCrew to increase your crew tier or change your hold; don't forget to pay <i>{}</i> coins before.\nYou can use /coin to manage your possession",
+      "1": "<i>{}</i> reputation added to the crew",
+      "err": "You can't add reputation without being in a game... /join to take part in a game."
     }
 
   },

@@ -1650,5 +1650,13 @@ class Controller:
         if level != harm_info["level"]:
             return level
 
+    def add_rep_to_crew(self, game_id: int, reputation: int) -> Optional[int]:
+        crew = self.get_game_by_id(game_id).crew
+        coins = crew.add_rep(reputation)
+
+        insert_crew_json(game_id, save_to_json(crew))
+        return coins
+
+
     def __repr__(self) -> str:
         return str(self.games)

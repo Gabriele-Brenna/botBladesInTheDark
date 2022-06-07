@@ -733,6 +733,8 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["addRep".casefold(), "addReputation".casefold()], add_reputation))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
