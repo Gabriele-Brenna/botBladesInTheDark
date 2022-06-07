@@ -934,6 +934,19 @@
       "1": "You exceeded the level 3 of harm...\nIt is a fatal harm? /die or /migratePC"
     },
 
+    "end_downtime": {
+      "err": "You can't end the downtime activities without being in a game... /join to take part in a game.",
+      "0": "The downtime activities are ended.\n/changeState to move the game to the next phase.",
+      "trauma": "<i>{}</i> suffered too much stress. /trauma to add <b>{}</b> trauma."
+    },
+
+    "change_vice_purveyor": {
+      "err": "You can't change your vice purveyor without being in a game... /join to take part in a game.",
+      "0": "Who will provide you assistance to take care of your vice?",
+      "1": "You don't have any active PC in this game... /join to add a PC of yours in this game.",
+      "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
+    },
+
     "add_reputation": {
       "0": "You reached the maximum level of reputation.\nUse /upgradeCrew to increase your crew tier or change your hold; don't forget to pay <i>{}</i> coins before.\nYou can use /coin to manage your possession",
       "1": "<i>{}</i> reputation added to the crew",
@@ -1129,6 +1142,14 @@
     "write_use_item": {
       "0": "USE ITEM",
       "1": "<b><i>{}</i></b> used <i>{}</i> for this reason: {}"
+    },
+    "write_end_downtime": {
+      "0": "END OF DOWNTIME",
+      "1": "The scoundrels should go back to work now..."
+    },
+    "write_change_vice_purveyor": {
+      "0": "CHANGE OF VICE PURVEYOR",
+      "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
     },
     "results": {
       "action": {
