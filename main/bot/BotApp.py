@@ -705,6 +705,22 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["endDowntime".casefold(), "downtimeEnd".casefold(),
+                                          "endDT".casefold(), "DTEnd".casefold()], end_downtime))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changePurveyor".casefold(), "changeVicePurveyor".casefold(),
+                                          "vicePurveyor".casefold()], change_vice_purveyor)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, change_vice_purveyor_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
+            name="conv_changeVicePurveyor",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
