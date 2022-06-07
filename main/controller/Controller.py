@@ -1720,6 +1720,24 @@ class Controller:
             insert_crew_json(game.identifier, save_to_json(game.crew))
 
 
+    def commit_add_cohort_harm(self, game_id: int, cohort_harm_info: dict):
+        """
+        Adds the given harm to the selected cohort and updates the crew in the DB.
+
+        :param game_id: the id of the game.
+        :param cohort_harm_info: a dictionary with the info used to add the harm
+        """
+
+        crew = self.get_game_by_id(game_id).crew
+
+        cohorts_alive = []
+        for cohort in crew.cohorts:
+            if cohort.harm < 4:
+                cohorts_alive.append(cohort)
+        cohort = cohorts_alive[cohort_harm_info["cohort"]]
+        cohort.add_harm(cohort_harm_info["harm"])
+
+        insert_crew_json(game_id, save_to_json(crew))
 
     def __repr__(self) -> str:
         return str(self.games)

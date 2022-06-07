@@ -6940,6 +6940,105 @@ def add_ability_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_addAbility-------------------------------------------------------------
 
 
+# ------------------------------------------conv_addHarmCohort----------------------------------------------------------
+
+
+def add_harm_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation that handles the adding of harm to a cohort.
+    Adds the dict "harm_cohort" in user_data.
+    Finally, sends the inline keyboard to choose the cohort.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_harm_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_harm_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["harm_cohort", "invocation_message"], update.message)
+
+    cohorts = controller.get_cohorts_of_crew(update.message.chat_id, get_user_id(update))
+    if not cohorts:
+        message = context.user_data["harm_cohort"]["invocation_message"].reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_harm_cohort_end(update, context)
+    cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+    callbacks = [i + 1 for i in range(len(cohorts))]
+    message = context.user_data["harm_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+    add_tag_in_telegram_data(context, ["harm_cohort", "message"], message)
+
+    return 0
+
+
+def add_harm_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort and send the request of the harm, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_harm_cohort_choice.__name__)
+    context.user_data["harm_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data) - 1
+
+    add_tag_in_telegram_data(context, ["harm_cohort", "info", "cohort"], choice)
+
+    message = context.user_data["harm_cohort"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["harm_cohort", "message"], message)
+    return 1
+
+
+def add_harm_cohort_level(update: Update, context: CallbackContext) -> int:
+    """
+    If the user writes a valid value, calls the controller method commit_add_cohort_harm, then calls add_harm_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_harm_cohort_end
+    """
+
+    placeholders = get_lang(context, add_harm_cohort_choice.__name__)
+    context.user_data["harm_cohort"]["message"].delete()
+
+    try:
+        harm = int(update.message.text)
+    except:
+        message = context.user_data["harm_cohort"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["harm_cohort", "message"], message)
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["harm_cohort", "info", "harm"], harm)
+
+    controller.commit_add_cohort_harm(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                      context.user_data["harm_cohort"]["info"])
+    return add_harm_cohort_end(update, context)
+
+
+def add_harm_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add harm cohort conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "harm_cohort", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addHarmCohort----------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.
