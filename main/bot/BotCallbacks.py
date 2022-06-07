@@ -4956,14 +4956,10 @@ def use_item_name(update: Update, context: CallbackContext) -> int:
                 return use_item_end(update, context)
         else:
             name = item_name.split(": ")[0]
-            item_dict = query_items(item_name=name, as_dict=True)[0]
-            description = item_dict["description"]
-            # TODO: fetch from model
-            if description is None:
-                description = ""
-            info = placeholders["3"].format(description, item_dict["weight"], item_dict["usages"],
-                                            controller.get_crew_tier(query_game_of_user(
-                                                update.effective_message.chat_id, get_user_id(update))))
+            description, weight, usages, quality = controller.get_item_description(
+                update.effective_message.chat_id, get_user_id(update), name,
+                context.user_data["use_item"]["info"]["pc"])
+            info = placeholders["3"].format(description, weight, usages, quality)
             auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
             return 0
 
@@ -5567,15 +5563,10 @@ def fortune_roll_item(update: Update, context: CallbackContext) -> int:
             return send_fortune_roll_bonus_dice(context)
         else:
             name = name.split(":")[0]
-            item_dict = query_items(item_name=name, as_dict=True)[0]
-            description = item_dict["description"]
-            # TODO: fetch from model
-            if description is None:
-                description = ""
-            info = placeholders["1"].format(description, item_dict["weight"], item_dict["usages"],
-                                            controller.get_crew_tier(query_game_of_user(
-                                                update.effective_message.chat_id, get_user_id(update))))
-
+            description, weight, usages, quality = controller.get_item_description(
+                update.effective_message.chat_id, get_user_id(update), name,
+                context.user_data["active_PCs"][update.effective_message.chat_id])
+            info = placeholders["1"].format(description, weight, usages, quality)
             auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
             return 30
 

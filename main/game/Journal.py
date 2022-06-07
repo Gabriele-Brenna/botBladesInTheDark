@@ -588,10 +588,12 @@ class Journal:
 
         return div_tag
 
-    def create_long_term_project_tag(self, pc: str, clock: Clock, notes: str):
+    def create_long_term_project_tag(self, pc: str, clock: Clock, notes: str, tick: int, action: str):
         """
         Method used to create and insert a div tag with class attribute set to "long_term_project".
 
+        :param action: action rolled by the pc
+        :param tick: by how much the clock advances
         :param pc: who does the downtime activity
         :param clock: project clock
         :param notes: extra notes
@@ -607,6 +609,9 @@ class Journal:
 
         one_tag.append(self.create_p_tag(placeholders["1"].format(pc, clock.name.split("] ")[1])))
 
+        one_tag.append(self.create_p_tag(placeholders["3"].format(
+            pc, action.split(": ")[0], action.split(": ")[1], tick)))
+
         if clock.progress == clock.segments:
             one_tag.append(self.create_p_tag(placeholders["2"]))
 
@@ -618,7 +623,7 @@ class Journal:
 
         return div_tag
 
-    def create_crafting_tag(self, pc: str, item: str, minimum_quality: int, quality: int, outcome: int,
+    def create_crafting_tag(self, pc: str, item: str, minimum_quality: int, quality: int, outcome: Union[int, str],
                             extra_quality: int, notes: str, item_description: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "crafting".

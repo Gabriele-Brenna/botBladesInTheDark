@@ -1205,7 +1205,7 @@ class Controller:
 
         :param game_id: the id of the game.
         :param pc_class: the class of the pc.
-        :return: a list of tuple with a string representing the name of the item and an int which is its quality.
+        :return: a list of tuple with a string representing the name of the item and an int which its quality.
         """
         return [(item.name, item.quality) for item in self.get_items(game_id, pc_class)]
 
@@ -1231,6 +1231,21 @@ class Controller:
         :return: the tier of the crew
         """
         return self.get_game_by_id(game_id).crew.tier
+
+    def get_item_description(self, chat_id: int, user_id: int,
+                             item_name: str, pc_name: str) -> Tuple[str, int, int, int]:
+        """
+        Gets the description of a given item
+
+        :param pc_name:  name of the pc.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param item_name: name of the item .
+        :return: str representing the description of the item.
+        """
+        item = self.get_item_by_name(query_game_of_user(chat_id, user_id),
+                                     self.get_pc_class(chat_id, user_id, pc_name), item_name)
+        return item.description, item.weight, item.usages, item.quality
 
     def use_item(self, chat_id: int, user_id: int, use_item: dict) -> bool:
         """
@@ -1506,12 +1521,11 @@ class Controller:
             downtime_info.pop("outcome")
             downtime_info["tick"] = ticks
 
-            filled, downtime_info["new_clock"] = self.tick_clock_of_game(chat_id, user_id, downtime_info["clock"],
+            filled, new_clock = self.tick_clock_of_game(chat_id, user_id, downtime_info["clock"],
                                                                          ticks, False)
-            downtime_info["new_clock"] = Clock(**downtime_info["new_clock"])
-            downtime_info["clock"] = Clock(**downtime_info["clock"])
+            downtime_info["clock"] = Clock(**new_clock)
             if filled:
-                return_dict["filled"] = downtime_info["clock"]["name"]
+                return_dict["filled"] = downtime_info["clock"].name
 
         elif activity == "recover":
             traumas = 0

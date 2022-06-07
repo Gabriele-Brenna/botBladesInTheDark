@@ -28,9 +28,9 @@ class TestJournal(TestCase):
         temp.write_entanglement("reprisal of the dead", "very very long description")
         temp.write_secret_entanglement("reprisal of the dead", "super long description")
         temp.write_activity({"activity": "acquire_asset", "pc": "User", "asset": "the asset",
-                             "quality": 3, "min_quality": 5, "outcome": 6, "extra_quality": 2, "notes": "extra notes"})
+                             "quality": 3, "minimum_quality": 5, "outcome": 6, "extra_quality": 2, "notes": "extra notes"})
         temp.write_activity({"activity": "crafting", "pc": "User", "item": "the item", "item_description": "description",
-                             "min_quality": 4, "quality": 3, "outcome": "CRIT", "extra_quality": 2, "notes": "notes"})
+                             "minimum_quality": 4, "quality": 3, "outcome": "CRIT", "extra_quality": 2, "notes": "notes"})
         temp.write_activity({"activity": "long_term_project", "pc": "user", "clock": Clock("[project] clock of the project", 6, 6), "notes": "some extra notes"})
         temp.write_add_claim(True, "LAIR CLAIM", "description")
         temp.write_add_claim(False, "PRISON CLAIM", "description")

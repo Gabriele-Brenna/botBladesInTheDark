@@ -1038,8 +1038,9 @@
 	  },
 	  "long_term_project": {
 		"0": "LONG TERM PROJECT",
-		"1": "<b><i>{}</i></b> is working on a project: <i>{}</i>",
-        "2": "The project has been completed"
+		"1": "<b><i>{}</i></b> is working on a project: <br> <i>{}</i>",
+        "2": "The project has been completed",
+        "3": "<b><i>{}</i></b> rolled {}({}) and ticked the project clock by {}"
 	  },
 	  "recover": {
 		"0": "RECOVER",
@@ -1110,10 +1111,10 @@
 	  "6": "Your stress isn't changed"
 	},
 	"write_clock": {
-	  "0": "{} created a new clock: '{}'",
-	  "1": "{} modified the clock '{}'",
-	  "2": "{} ticked the clock '{}' by {} segments",
-	  "3": "{} completed the clock '{}'"
+	  "0": "<b><i>{}</i></b> created a new clock: <br><i>{}</i>",
+	  "1": "<b><i>{}</i></b> modified the clock: <br><i>{}</i>",
+	  "2": "<b><i>{}</i></b> ticked the clock '{}' by {} segments",
+	  "3": "<b><i>{}</i></b> completed the clock '{}'"
 	},
     "write_armor_use": {
       "0": "ARMOR USE",

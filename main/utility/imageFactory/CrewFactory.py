@@ -7,7 +7,7 @@ from organization.Claim import Claim
 from organization.Cohort import Cohort
 from organization.Lair import Lair
 from organization.Upgrade import Upgrade
-from utility.FilesManager import path_finder
+from utility.FilesManager import path_finder, get_font
 from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
@@ -18,7 +18,7 @@ def paste_crew_name(name: str, sheet: Image):
     name_box = Image.new('RGBA', name_box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(name_box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), name, align="left", fill="black", font=font)
 
     coordinates = (50, 66)
@@ -30,7 +30,7 @@ def paste_crew_reputation(reputation: str, sheet: Image):
     name_box = Image.new('RGBA', name_box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(name_box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), reputation, align="left", fill="black", font=font)
 
     coordinates = (348, 66)
@@ -46,11 +46,11 @@ def paste_lair_description(location: str, description: str, sheet: Image):
     lair_text = location + " - " + description
 
     if len(lair_text) <= 80:
-        font = ImageFont.truetype("verdana.ttf", 12)
+        font = ImageFont.truetype(get_font("verdana.ttf"), 12)
         box_dim = (490, 17)
         coordinates = (80, 110)
     else:
-        font = ImageFont.truetype("verdana.ttf", 10)
+        font = ImageFont.truetype(get_font("verdana.ttf"), 10)
         box_dim = (490, 27)
         coordinates = (80, 100)
 
@@ -72,9 +72,9 @@ def paste_lair_claims(claims: List[Claim], sheet: Image):
 
 
 def paste_claims(claims: List[Claim], sheet: Image, starting_x: int, starting_y: int, split: int, group: str):
-    title_font = ImageFont.truetype("verdanab.ttf", 12)
-    name_font = ImageFont.truetype("verdanab.ttf", 9)
-    description_font = ImageFont.truetype("ariali.ttf", 9)
+    title_font = ImageFont.truetype(get_font("verdanab.ttf"), 12)
+    name_font = ImageFont.truetype(get_font("verdanab.ttf"), 9)
+    description_font = ImageFont.truetype(get_font("ariali.ttf"), 9)
 
     box_dim = (86, 56)
     box = Image.new('RGBA', box_dim, (119, 120, 123, 255))
@@ -129,7 +129,7 @@ def paste_crew_description(description: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("times.ttf", 14)
+    font = ImageFont.truetype(get_font("times.ttf"), 14)
 
     lines = textwrap.wrap(description, width=int((box_dim[0] - 15) / average_char_size(description, font)))
 
@@ -261,7 +261,7 @@ def paste_vault(coins: int, vault_capacity: int, sheet: Image):
     starting_y = 442
     cell_x = starting_x
     cell_y = starting_y
-    font = ImageFont.truetype("verdanab.ttf", 8)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 8)
 
     for i in range(vault_capacity):
 
@@ -310,7 +310,7 @@ def paste_crew_type(crew_type: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    bold = ImageFont.truetype("verdanab.ttf", 42)
+    bold = ImageFont.truetype(get_font("verdanab.ttf"), 42)
 
     draw.text((box_dim[0] / 2, box_dim[1] / 2), text=crew_type.upper(), font=bold, fill="black", anchor="mm")
 
@@ -325,7 +325,7 @@ def paste_crew_type_description(crew_type: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("verdana.ttf", 9)
+    font = ImageFont.truetype(get_font("verdana.ttf"), 9)
 
     lines = textwrap.wrap(description, width=int((box_dim[0] - 15) / average_char_size(description, font)))
 
@@ -343,7 +343,7 @@ def paste_special_abilities(abilities: List[SpecialAbility], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdana.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdana.ttf"), 10)
 
     y = 1
     for ability in abilities:
@@ -373,7 +373,7 @@ def paste_xp_triggers(xp_triggers: List[str], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 9)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 9)
 
     y = 1
     for trigger in xp_triggers:
@@ -405,7 +405,7 @@ def paste_contact(contact: NPC, crew_type: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("verdanai.ttf", 10)
+    font = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     y = 2
 
@@ -442,7 +442,7 @@ def paste_crew_upgrades(owned_upgrades: List[Upgrade], sheet: Image):
 
 
 def paste_upgrades_list(upgrades_list: List[Upgrade], queried_upgrades: List[Upgrade], draw: ImageDraw, box_x: int):
-    font = ImageFont.truetype("verdana.ttf", 8)
+    font = ImageFont.truetype(get_font("verdana.ttf"), 8)
 
     y = 0
     for specific_upgrade in queried_upgrades:
@@ -588,7 +588,7 @@ def paste_playbook_exp(playbook: Playbook, sheet: Image):
 
 
 def paste_playbook_points(playbook: Playbook, sheet: Image):
-    font = ImageFont.truetype("verdanab.ttf", 14)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 14)
 
     box_dim = (20, 20)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -625,8 +625,8 @@ def paste_cohort_header(cohort: Cohort, sheet: Image, coordinates: Tuple[int, in
     box = Image.new('RGBA', box_dim, (0, 0, 0, 255))
     draw = ImageDraw.Draw(box)
 
-    header_font = ImageFont.truetype("verdanab.ttf", 10)
-    gang_expert_font = ImageFont.truetype("arial.ttf", 8)
+    header_font = ImageFont.truetype(get_font("verdanab.ttf"), 10)
+    gang_expert_font = ImageFont.truetype(get_font("arial.ttf"), 8)
 
     if cohort.elite:
         fill = "orange"
@@ -671,7 +671,7 @@ def paste_cohort_harm(cohort: Cohort, sheet: Image, coordinates: Tuple[int, int]
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 9)
+    font = ImageFont.truetype(get_font("arial.ttf"), 9)
 
     status = ["WEAK", "IMPAIRED", "BROKEN", "DEAD"]
 
@@ -693,8 +693,8 @@ def paste_cohort_types(cohort: Cohort, sheet: Image, coordinates: Tuple[int, int
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    type_font = ImageFont.truetype("comici.ttf", 12)
-    title_font = ImageFont.truetype("verdanab.ttf", 12)
+    type_font = ImageFont.truetype(get_font("comici.ttf"), 12)
+    title_font = ImageFont.truetype(get_font("verdanab.ttf"), 12)
 
     shape = ((0, 0), (box_dim[0] - 1, box_dim[1] - 1))
     draw.rectangle(shape, outline="black", width=1)
@@ -730,7 +730,7 @@ def paste_hunting_grounds(crew_type: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("timesi.ttf", 15)
+    font = ImageFont.truetype(get_font("timesi.ttf"), 15)
 
     lines = textwrap.wrap(hunting_grounds, width=int((box_dim[0] - 15) / average_char_size(hunting_grounds, font)))
 
