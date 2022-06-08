@@ -964,6 +964,27 @@
       "0": "Who will provide you assistance to take care of your vice?",
       "1": "You don't have any active PC in this game... /join to add a PC of yours in this game.",
       "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
+    },
+
+    "retire": {
+      "err": "You can't add an harm without being in a game... /join to take part in a game.",
+      "err2": "You don't have any active pc..",
+      "0": "Your pc is moving on to a better life... which one is it?",
+      "keyboard": ["Death", "Retirement"],
+      "callbacks": ["die", "retire"]
+    },
+
+    "retire_choice": {
+      "0": "\u26A0\uFE0F Are you sure you want to your pc to <i><b>{}</b></i>?\nBy pressing 'YES' your pc will vanish into thin air and your won't be able to use it again.\nIf you changed your mind... /cancel",
+      "keyboard": ["YES"]
+    },
+
+    "retire_disclaimer": {
+      "0": "Describe how your pc {}d"
+    },
+
+    "retire_description": {
+      "0": "You must do:\n- /changePc to set a new pc as active if you have another pc;\n- /join  if you want to continue as a new scoundrel"
     }
 
   },
@@ -1127,9 +1148,12 @@
 	},
 	"write_flashback": {
 	  "0": "FLASHBACK",
-	  "1": "<b>{}</b> had the following {}flashback:",
-	  "2": "<b>{}</b> rolls {} obtaining {}",
-	  "3": "downtime "
+	  "1": "<b><i>{}</i></b> had the following flashback: {}",
+      "2": "The GM set <b>{}</b> as the stress cost",
+      "3": "This flashback will be resolved with {}",
+      "True": "an action roll",
+      "False": "a fortune roll",
+      "4": "The flashback is accomplished simply paying the stress cost"
 	},
 	"write_resistance_roll": {
 	  "0": "RESISTANCE ROLL",
@@ -1161,6 +1185,16 @@
     "write_change_vice_purveyor": {
       "0": "CHANGE OF VICE PURVEYOR",
       "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
+    },
+    "write_retire": {
+      "die": {
+        "0": "DEATH",
+        "1": "<b><i>{}</i></b> moved on to a better life by <i>dying</i>"
+      },
+      "retire": {
+        "0": "RETIRE",
+        "1": "<b><i>{}</i></b> moved on to a better life by <i>going to retirement</i>"
+      }
     },
     "results": {
       "action": {

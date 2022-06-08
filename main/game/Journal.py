@@ -876,28 +876,29 @@ class Journal:
 
         return div_tag
 
-    def create_flashback_tag(self, pc: str, notes: str, roll: Union[str, int], roll_info: str,
-                             downtime_flashback: bool):
+    def create_flashback_tag(self, pc: str, goal: str, stress: int, entail: bool = None):
         """
         Method used to create and insert a div tag with class attribute set to "flashback".
 
-        :param pc: who has the flashback
-        :param notes: description of the flashback
-        :param roll: roll of the dice
-        :param roll_info: type of roll made by the user
-        :param downtime_flashback: True if it is a downtime flashback, False otherwise
-        :return: the div Tag
+        :param pc: who does the flashback
+        :param goal: goal of the flashback
+        :param stress: amount of stress gained
+        :param entail: what the flashback entails
         """
         placeholder = self.get_lang(self.write_flashback.__name__)
-        div_tag = self.create_div_tag({"class": "flashback"})
+        div_tag = self.create_div_tag({"class": "flashback",
+                                       "style": "margin-left: {}%".format(self.get_indentation())})
 
         div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        div_tag.append(self.create_p_tag(placeholder["1"].format(pc, placeholder["3"] if downtime_flashback else "")))
+        div_tag.append(self.create_p_tag(placeholder["1"].format(pc, goal)))
 
-        div_tag.append(self.create_p_tag('"{}"'.format(notes), {"class": "user"}))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(stress)))
 
-        div_tag.append(self.create_p_tag(placeholder["2"].format(pc, roll_info, roll)))
+        if entail is not None:
+            div_tag.append(self.create_p_tag(placeholder["3"].format(placeholder[str(entail)])))
+        else:
+            div_tag.append(self.create_p_tag(placeholder["4"]))
 
         return div_tag
 
@@ -1083,6 +1084,28 @@ class Journal:
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc, new_purveyor)))
+
+        return div_tag
+
+    def create_retire_tag(self, pc: str, description: str, choice: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "retire".
+
+        :param pc: is the pc of interest.
+        :param description: is the description of the death or retirement.
+        :param choice: if the pcs dies or retire
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_retire.__name__)
+
+        div_tag = self.create_div_tag({"class": "retire",
+                                       "style": "margin-left: {}%".format(self.get_indentation())})
+
+        div_tag.append(self.create_h2_tag(placeholders[choice.lower()]["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders[choice.lower()]["1"].format(pc)))
+
+        div_tag.append(self.create_p_tag(description))
 
         return div_tag
 
@@ -1366,18 +1389,17 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_flashback(self, pc: str, notes: str, roll: Union[str, int], roll_info: str,
-                        downtime_flashback: bool):
+    def write_flashback(self, pc: str, goal: str, stress: int, entail: bool = None):
         """
-        Method used to write a flashback in the attribute journal representing the html file of the journal.
+        Method used to write the flashback in the attribute journal representing
+        the html file of the journal.
 
-        :param pc: who has the flashback
-        :param notes: description of the flashback
-        :param roll: roll of the dice
-        :param roll_info: type of roll made by the user
-        :param downtime_flashback: True if it is a downtime flashback, False otherwise
+        :param pc: who does the flashback
+        :param goal: goal of the flashback
+        :param stress: amount of stress gained
+        :param entail: what the flashback entails
         """
-        tag = self.create_flashback_tag(pc, notes, roll, roll_info, downtime_flashback)
+        tag = self.create_flashback_tag(pc, goal, stress, entail)
 
         self.write_general(tag)
 
@@ -1452,6 +1474,19 @@ class Journal:
         :return:
         """
         tag = self.create_change_vice_purveyor_tag(pc, new_purveyor)
+
+        self.write_general(tag)
+
+    def write_retire(self, pc: str, description: str, choice: str):
+        """
+        Method used to write the retirement or death of a pc in the attribute journal representing
+        the html file of the journal.
+
+        :param pc: is the pc of interest.
+        :param description: is the description of the death or retirement.
+        :param choice: if the pcs dies or retire
+        """
+        tag = self.create_retire_tag(pc, description, choice)
 
         self.write_general(tag)
 
