@@ -789,6 +789,21 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["addRep".casefold(), "addReputation".casefold()], add_reputation))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addArmorCohort".casefold(), "armorCohort".casefold()], add_armor_cohort)],
+            states={
+                0: [CallbackQueryHandler(add_armor_cohort_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_armor_cohort_level)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_armor_cohort_end)],
+            name="conv_addArmorCohort",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

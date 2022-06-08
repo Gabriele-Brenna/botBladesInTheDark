@@ -7303,6 +7303,135 @@ def migrate_pc_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_migratePC--------------------------------------------------------------
 
+def add_reputation(update: Update, context: CallbackContext) -> None:
+    """
+    Adds the given reputation to the active pc of the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, add_reputation.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return
+
+    chat_id = update.effective_message.chat_id
+
+    try:
+        rep = int(context.args[0])
+    except (ValueError, IndexError, AttributeError):
+        rep = 1
+
+    coins = controller.add_rep_to_crew(query_game_of_user(chat_id, get_user_id(update)), rep)
+
+    if coins is not None:
+        auto_delete_message(update.message.reply_text(placeholders["0"].format(coins),
+                                                      parse_mode=ParseMode.HTML), 20)
+
+    update.message.reply_text(placeholders["1"].format(rep), ParseMode.HTML)
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+
+
+def add_armor_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of armor to a cohort.
+    Adds the dict "armor_cohort" in user_data.
+    Finally, sends the inline keyboard to choose the cohort.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_armor_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_armor_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "invocation_message"], update.message)
+
+    cohorts = controller.get_cohorts_of_crew(update.message.chat_id, get_user_id(update))
+    if not cohorts:
+        message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_armor_cohort_end(update, context)
+    cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+    callbacks = [i + 1 for i in range(len(cohorts))]
+    message = context.user_data["armor_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+    add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+
+    return 0
+
+
+def add_armor_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort and send the request of the harm, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_armor_cohort_choice.__name__)
+    context.user_data["armor_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data) - 1
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "info", "cohort"], choice)
+
+    message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+    return 1
+
+
+def add_armor_cohort_level(update: Update, context: CallbackContext) -> int:
+    """
+    If the user writes a valid value, calls the controller method commit_add_cohort_armor, then calls
+    add_armor_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_armor_cohort_end
+    """
+
+    placeholders = get_lang(context, add_armor_cohort_level.__name__)
+    context.user_data["armor_cohort"]["message"].delete()
+
+    try:
+        armor = int(update.message.text)
+    except:
+        message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["err"],
+                                                                                     ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "info", "armor"], armor)
+
+    controller.commit_add_cohort_armor(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                       context.user_data["armor_cohort"]["info"])
+    return add_armor_cohort_end(update, context)
+
+
+def add_armor_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add armor cohort conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_harm", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+
+
 # ------------------------------------------conv_changePCClass----------------------------------------------------------
 
 def change_pc_class(update: Update, context: CallbackContext) -> int:

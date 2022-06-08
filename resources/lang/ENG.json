@@ -983,6 +983,26 @@
       "Vampire": "Vampire"
     },
 
+    "add_reputation": {
+      "0": "You reached the maximum level of reputation.\nUse /upgradeCrew to increase your crew tier or change your hold; don't forget to pay <i>{}</i> coins before.\nYou can use /coin to manage your possession",
+      "1": "<i>{}</i> reputation added to the crew",
+      "err": "You can't add reputation without being in a game... /join to take part in a game."
+    },
+
+    "add_armor_cohort": {
+      "0": "Select the cohort",
+      "err": "You can't add armor to a cohort without being in a game... /join to take part in a game.",
+      "err2": "You don't have any alive cohort..."
+    },
+
+    "add_armor_cohort_choice": {
+      "0": "Write how many armor levels you want to add to the cohort (write a negative number if you want to remove the armor instead)"
+    },
+
+    "add_armor_cohort_level": {
+      "err": "You should write a number..."
+    },
+
     "change_pc_class": {
       "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
       "0": "Select or write your new class.",

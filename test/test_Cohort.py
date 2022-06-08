@@ -28,3 +28,9 @@ class TestCohort(TestCase):
     def test_add_edge(self):
         self.expert.add_edge("Independent")
         self.assertEqual(self.expert.edges, ["Loyal", "Tenacious", "Independent"])
+
+    def test_add_armor(self):
+        self.gang.add_armor(1000)
+        self.assertEqual(self.gang.armor, 99)
+        self.gang.add_armor(-100)
+        self.assertEqual(self.gang.armor, 0)

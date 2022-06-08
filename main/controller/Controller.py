@@ -1194,6 +1194,13 @@ class Controller:
 
         if not game.crew.add_tier():
             game.crew.change_hold()
+        else:
+            coins = 2 + game.crew.tier
+            for pc in game.get_owners_list():
+                for i in range(coins):
+                    pc.stash_coins(1)
+            for user in game.users:
+                update_user_characters(user.player_id, game_id, save_to_json(user.characters))
         insert_crew_json(game.identifier, save_to_json(game.crew))
         return game.crew.hold, game.crew.tier
 
@@ -1917,6 +1924,30 @@ class Controller:
 
         game.journal.write_pc_migration(**migration)
 
+    def add_rep_to_crew(self, game_id: int, reputation: int) -> Optional[int]:
+        crew = self.get_game_by_id(game_id).crew
+        coins = crew.add_rep(reputation)
+
+        insert_crew_json(game_id, save_to_json(crew))
+        return coins
+
+    def commit_add_cohort_armor(self, game_id: int, cohort_armor_info: dict):
+        """
+        Adds the given armor to the selected cohort and updates the crew in the DB.
+
+        :param game_id: the id of the game.
+        :param cohort_armor_info: a dictionary with the info used to add the harm
+        """
+        crew = self.get_game_by_id(game_id).crew
+
+        cohorts_alive = []
+        for cohort in crew.cohorts:
+            if cohort.harm < 4:
+                cohorts_alive.append(cohort)
+        cohort = cohorts_alive[cohort_armor_info["cohort"]]
+        cohort.add_armor(cohort_armor_info["armor"])
+
+        insert_crew_json(game_id, save_to_json(crew))
         insert_journal(game.identifier, game.journal.get_log_string())
 
     def commit_change_pc_class(self, chat_id: int, user_id: int, class_change: Dict[str, str]):
