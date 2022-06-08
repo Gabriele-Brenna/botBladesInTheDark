@@ -570,7 +570,7 @@ class Controller:
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         if not isinstance(pc, Owner):
             return None
-        return int(pc.stash/10)
+        return int(pc.stash / 10)
 
     def commit_resistance_roll(self, chat_id: int, user_id: int, resistance_roll: dict) -> Tuple[str, int]:
         """
@@ -1151,7 +1151,8 @@ class Controller:
             if isinstance(pc, Owner):
                 pc.add_coins(add_coin["coins"])
                 pc.stash_coins(add_coin["stash"])
-                update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+                update_user_characters(user_id, game.identifier,
+                                       save_to_json(game.get_player_by_id(user_id).characters))
         insert_crew_json(game.identifier, save_to_json(crew))
 
     def get_vault_capacity_of_crew(self, game_id: int) -> int:
@@ -1193,6 +1194,13 @@ class Controller:
 
         if not game.crew.add_tier():
             game.crew.change_hold()
+        else:
+            coins = 2 + game.crew.tier
+            for pc in game.get_owners_list():
+                for i in range(coins):
+                    pc.stash_coins(1)
+            for user in game.users:
+                update_user_characters(user.player_id, game_id, save_to_json(user.characters))
         insert_crew_json(game.identifier, save_to_json(game.crew))
         return game.crew.hold, game.crew.tier
 
@@ -1204,10 +1212,12 @@ class Controller:
         :param game_id: the game's id.
         :param factions: dictionary thet contains all the factions' names and their status to update.
         """
+
         def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
             for elem in factions_list:
                 if elem.name.lower() == name.lower():
                     return elem
+
         game = self.get_game_by_id(game_id)
 
         for key in factions.keys():
@@ -1395,7 +1405,7 @@ class Controller:
                 attr = pc.get_attribute_by_name(key)
                 if attr:
                     if attr.add_exp(add_exp[key]):
-                        points.append((key+"_points", attr.points))
+                        points.append((key + "_points", attr.points))
             update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
         insert_crew_json(game.identifier, save_to_json(crew))
 
@@ -1470,7 +1480,7 @@ class Controller:
         :param game_id: identifier of the game
         :return: the upgrade points
         """
-        return self.get_game_by_id(game_id).crew.crew_exp.points*2
+        return self.get_game_by_id(game_id).crew.crew_exp.points * 2
 
     def get_crew_upgrades(self, game_id: int) -> List[dict]:
         """
@@ -1501,7 +1511,7 @@ class Controller:
             # if not crew.upgrades.__contains__(upg):
             crew.upgrades.append(upg)
 
-        crew.crew_exp.points = int(upgrade_points/2)
+        crew.crew_exp.points = int(upgrade_points / 2)
 
         insert_crew_json(game.identifier, save_to_json(crew))
 
@@ -1604,7 +1614,8 @@ class Controller:
             insert_crew_json(game.identifier, save_to_json(game.crew))
 
         elif activity == "train":
-            points = 1 + (downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
+            points = 1 + (
+                        downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
             attr = pc.get_attribute_by_name(downtime_info["attribute"])
             if attr is None:
                 pc.playbook.add_exp(points)
@@ -1765,7 +1776,6 @@ class Controller:
 
         game.journal.write_change_vice_purveyor(**change_purveyor)
 
-
     def add_rep_to_crew(self, game_id: int, reputation: int) -> Optional[int]:
         crew = self.get_game_by_id(game_id).crew
         coins = crew.add_rep(reputation)
@@ -1773,6 +1783,23 @@ class Controller:
         insert_crew_json(game_id, save_to_json(crew))
         return coins
 
+    def commit_add_cohort_armor(self, game_id: int, cohort_armor_info: dict):
+        """
+        Adds the given armor to the selected cohort and updates the crew in the DB.
+
+        :param game_id: the id of the game.
+        :param cohort_armor_info: a dictionary with the info used to add the harm
+        """
+        crew = self.get_game_by_id(game_id).crew
+
+        cohorts_alive = []
+        for cohort in crew.cohorts:
+            if cohort.harm < 4:
+                cohorts_alive.append(cohort)
+        cohort = cohorts_alive[cohort_armor_info["cohort"]]
+        cohort.add_armor(cohort_armor_info["armor"])
+
+        insert_crew_json(game_id, save_to_json(crew))
 
     def __repr__(self) -> str:
         return str(self.games)

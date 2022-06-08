@@ -61,6 +61,18 @@ class Cohort:
         """
         self.edges.append(new_edge)
 
+    def add_armor(self, armor: int):
+        """
+        Adds the specified amount of armor to the cohort (0 is the minimum value for the armor attribute)
+
+        :param armor: an int representing the armor levels to add
+        """
+        self.armor += armor
+        if self.armor < 0:
+            self.armor = 0
+        if self.armor > 99:
+            self.armor = 99
+
     @classmethod
     def from_json(cls, data):
         """
