@@ -7219,6 +7219,128 @@ def add_harm_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_addHarm----------------------------------------------------------------
 
 
+# ------------------------------------------conv_retire-----------------------------------------------------------------
+
+
+def retire(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the retirement of the PC.
+    Adds the dict "retire" in user_data.
+    Finally, sends the request of the type of retirement to the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, retire.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return retire_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return add_harm_end(update, context)
+
+    add_tag_in_telegram_data(context, ["retire", "info", "pc"], context.user_data["active_PCs"][chat_id])
+
+    add_tag_in_telegram_data(context, ["retire", "invocation_message"], update.message)
+
+    query_menu = context.user_data["retire"]["invocation_message"].reply_text(
+        placeholders["0"], parse_mode=ParseMode.HTML, reply_markup=custom_kb(
+            placeholders["keyboard"], inline=True, split_row=1, callback_data=placeholders["callbacks"]))
+
+    add_tag_in_telegram_data(context, ["retire", "query_menu"], query_menu)
+
+    return 0
+
+
+def retire_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the selected choice in the user_data, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, retire_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["retire", "info", "choice"], choice)
+
+    context.user_data["retire"]["query_menu"].delete()
+
+    query_menu = context.user_data["retire"]["invocation_message"].reply_text(
+        placeholders["0"].format(choice), parse_mode=ParseMode.HTML, reply_markup=custom_kb(
+            placeholders["keyboard"], inline=True, split_row=1))
+
+    add_tag_in_telegram_data(context, ["retire", "query_menu"], query_menu)
+
+    return 1
+
+
+def retire_disclaimer(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the selected choice in the user_data, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, retire_disclaimer.__name__)
+
+    context.user_data["retire"]["query_menu"].delete()
+
+    message = context.user_data["retire"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.user_data["retire"]["info"]["choice"]), parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["retire", "message"], message)
+
+    return 2
+
+
+def retire_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the description sent by the user in user_data and calls commit_retire in the controller and calls retire_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls retire_end.
+    """
+    placeholders = get_lang(context, retire_description.__name__)
+
+    add_tag_in_telegram_data(context, ["retire", "info", "description"], update.effective_message.text)
+
+    context.user_data["retire"]["message"].delete()
+
+    controller.retire(update.effective_message.chat_id, get_user_id(update), context.user_data["retire"]["info"])
+
+    context.user_data["active_PCs"].pop(update.effective_message.chat_id)
+
+    message = context.user_data["retire"]["invocation_message"].reply_text(placeholders["0"], parse_mode=ParseMode.HTML)
+
+    auto_delete_message(message, 10)
+
+    return retire_end(update, context)
+
+
+def retire_end(update: Update, context: CallbackContext) -> int:
+    """
+        Ends the retire conversation and deletes all the saved information from the user_data.
+
+        :param update: instance of Update sent by the user.
+        :param context: instance of CallbackContext linked to the user.
+        :return: ConversationHandler.END
+        """
+    delete_conv_from_telegram_data(context, "retire", "user")
+
+    return end_conv(update, context)
+
+# ------------------------------------------conv_retire-----------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

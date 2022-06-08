@@ -1888,6 +1888,23 @@ class Controller:
 
         game.journal.write_change_vice_purveyor(**change_purveyor)
 
+    def retire(self, chat_id: int, user_id: int, retire: dict):
+        """
+        Remove the selected pc from the model, adds a tag in the journal and updates it in the DB.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param retire: a dictionary with the info used to retire
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        player = game.get_player_by_id(user_id)
+        player.characters.remove(player.get_character_by_name(retire["pc"]))
+
+        game.journal.write_retire(**retire)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        update_user_characters(user_id, game.identifier, save_to_json(player.characters))
 
     def __repr__(self) -> str:
         return str(self.games)

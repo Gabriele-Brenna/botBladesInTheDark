@@ -763,6 +763,21 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["die".casefold(), "retire".casefold(), "pass".casefold(),
+                                          "changeLife".casefold()], retire)],
+            states={
+                0: [CallbackQueryHandler(retire_choice)],
+                1: [CallbackQueryHandler(retire_disclaimer)],
+                2: [MessageHandler(Filters.text & ~Filters.command, retire_description)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), retire_end)],
+            name="conv_retire",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
