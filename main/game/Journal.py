@@ -1105,6 +1105,25 @@ class Journal:
 
         return div_tag
 
+    def create_change_pc_class_tag(self, pc: str, new_class: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "changeClass".
+
+        :param pc: is the pc of interest.
+        :param new_class: is the new class of the pc.
+        :return: the div tag.
+        """
+
+        placeholders = self.get_lang(self.write_change_pc_class.__name__)
+
+        div_tag = self.create_div_tag({"class": "changeClass"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, new_class)))
+
+        return div_tag
+
     def get_indentation(self) -> int:
         """
         Method used to get the percentage indentation based on the value of the attribute indentation
@@ -1482,6 +1501,18 @@ class Journal:
         :param migration_pc: is the new type of the pc.
         """
         tag = self.create_pc_migration_tag(pc, migration_pc)
+
+        self.write_general(tag)
+
+    def write_change_pc_class(self, pc: str, new_class: str):
+        """
+        Method used to write the change of a PC's class in the attribute journal representing
+        the html file of the journal.
+
+        :param pc: is the pc of interest.
+        :param new_class: is the new type of the pc.
+        """
+        tag = self.create_change_pc_class_tag(pc, new_class)
 
         self.write_general(tag)
 

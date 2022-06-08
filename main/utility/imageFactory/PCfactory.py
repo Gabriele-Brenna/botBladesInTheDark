@@ -389,28 +389,51 @@ def paste_strange_friends(friend: NPC, enemy: NPC, pc_class: str, sheet: Image):
     query_strange_friends = query_char_strange_friends(pc_class=pc_class)
 
     y = 2
-
-    for npc in query_strange_friends:
+    if friend not in query_strange_friends or enemy not in query_strange_friends:
         x = 2
-        if npc == friend and npc == enemy:
-            box.paste(complex_mark, (x, y))
-        elif npc == friend:
-            box.paste(friend_mark, (x, y))
-        elif npc == enemy:
-            box.paste(enemy_mark, (x, y))
-        else:
-            box.paste(neutral_mark, (x, y))
-
+        box.paste(friend_mark, (x, y))
         x += 30
-
-        npc_description = npc.name + ", " + npc.role
+        npc_description = friend.name + ", " + friend.role
         lines = textwrap.wrap(npc_description,
                               width=int((box_dim[0] - 30) / average_char_size(npc_description, normal)))
         for line in lines:
             draw.text((x, y), text=line, font=normal, fill="black")
             y += normal.getsize("Text")[1]
-
         y += normal.getsize("Text")[1]
+
+        x = 2
+        box.paste(enemy_mark, (x, y))
+        x += 30
+        npc_description = enemy.name + ", " + enemy.role
+        lines = textwrap.wrap(npc_description,
+                              width=int((box_dim[0] - 30) / average_char_size(npc_description, normal)))
+        for line in lines:
+            draw.text((x, y), text=line, font=normal, fill="black")
+            y += normal.getsize("Text")[1]
+        y += normal.getsize("Text")[1]
+
+    else:
+        for npc in query_strange_friends:
+            x = 2
+            if npc == friend and npc == enemy:
+                box.paste(complex_mark, (x, y))
+            elif npc == friend:
+                box.paste(friend_mark, (x, y))
+            elif npc == enemy:
+                box.paste(enemy_mark, (x, y))
+            else:
+                box.paste(neutral_mark, (x, y))
+
+            x += 30
+
+            npc_description = npc.name + ", " + npc.role
+            lines = textwrap.wrap(npc_description,
+                                  width=int((box_dim[0] - 30) / average_char_size(npc_description, normal)))
+            for line in lines:
+                draw.text((x, y), text=line, font=normal, fill="black")
+                y += normal.getsize("Text")[1]
+
+            y += normal.getsize("Text")[1]
 
     coordinates = (542, 470)
 

@@ -7224,7 +7224,7 @@ def migrate_pc(update: Update, context: CallbackContext) -> int:
     """
     Handles the conversation to migrate character type.
     Checks if the user has an active PC for the game in this chat.
-    Gets from the controller the PC's type to give the usere the possible choices of the new PC.
+    Gets from the controller the PC's type to give the users the possible choices of the new PC.
     Stores in the user_data the name of the PC and sends the InlineKeyboard with the possible choices.
 
     :param update: instance of Update sent by the user.
@@ -7302,6 +7302,87 @@ def migrate_pc_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_migratePC--------------------------------------------------------------
+
+# ------------------------------------------conv_changePCClass----------------------------------------------------------
+
+def change_pc_class(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation to change a character's class.
+    Checks if the user has an active PC for the game in this chat.
+    Checks if the active PC is a Human.
+    Stores in the user_data the name of the PC and sends the ReplyKeyboard with the suggestions.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_pc_class.__name__)
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or (
+            "active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]):
+        auto_delete_message(update.effective_message.reply_text(placeholders["err"]))
+        return change_pc_class_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "invocation_message"], value=update.message)
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    pc_type = controller.get_pc_type(chat_id, get_user_id(update), pc_name)
+
+    if pc_type != "Human":
+        auto_delete_message(update.effective_message.reply_text(placeholders["1"], parse_mode=ParseMode.HTML), 10)
+        return change_pc_class_end(update, context)
+    else:
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          query_character_sheets(canon=True, spirit=False),
+                                                          inline=False))
+        add_tag_in_telegram_data(context, tags=["change_pc_class", "info", "pc"], value=pc_name)
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "message"], value=message)
+
+    return 0
+
+
+def change_pc_class_selection(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, change_pc_class_selection.__name__)
+    context.user_data["change_pc_class"]["message"].delete()
+
+    new_class = update.effective_message.text
+
+    if not exists_character(new_class):
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          query_character_sheets(canon=True, spirit=False),
+                                                          inline=False))
+        add_tag_in_telegram_data(context, tags=["change_pc_class", "message"], value=message)
+        return 0
+
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "info", "new_class"], value=new_class)
+
+    controller.commit_change_pc_class(update.effective_message.chat_id, get_user_id(update),
+                                      context.user_data["change_pc_class"]["info"])
+
+    auto_delete_message(context.user_data["change_pc_class"]["invocation_message"].reply_text(
+        placeholders["1"].format(context.user_data["change_pc_class"]["info"]["pc"], new_class),
+        parse_mode=ParseMode.HTML), 10)
+
+    return change_pc_class_end(update, context)
+
+
+def change_pc_class_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the change PC's class conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "change_pc_class")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_changePCClass----------------------------------------------------------
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """

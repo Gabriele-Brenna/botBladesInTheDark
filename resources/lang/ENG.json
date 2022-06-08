@@ -977,10 +977,21 @@
     },
 
     "migrate_pc_selection": {
-      "0": "<i>{}</i> change its nature: now it's a <i>{}</i>!",
+      "0": "<i>{}</i> changed its nature: now it's a <i>{}</i>!",
       "Ghost": "Ghost",
       "Hull": "Hull",
       "Vampire": "Vampire"
+    },
+
+    "change_pc_class": {
+      "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
+      "0": "Select or write your new class.",
+      "1": "You are an <i>Unquiet Dead</i>: you cannot change your class, you can only /migrate to another form..."
+    },
+
+    "change_pc_class_selection": {
+      "0": "This class doesn't exist yet...\nSelect or write an existing one.",
+      "1": "<i>{}</i> changed the class: now he's a <i>{}</i>!"
     }
 
   },
@@ -1182,6 +1193,10 @@
     "write_pc_migration": {
       "0": "MIGRATION",
       "1": "<b><i>{}</i></b> changed their nature: now it's a <b><i>{}</i></b>!"
+    },
+    "write_change_pc_class": {
+      "0": "CHANGE OF CLASS",
+      "1": "<b><i>{}</i></b> changed their class into: <b><i>{}</i></b>!"
     },
     "results": {
       "action": {

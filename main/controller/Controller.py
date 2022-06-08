@@ -570,7 +570,7 @@ class Controller:
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         if not isinstance(pc, Owner):
             return None
-        return int(pc.stash/10)
+        return int(pc.stash / 10)
 
     def commit_resistance_roll(self, chat_id: int, user_id: int, resistance_roll: dict) -> Tuple[str, int]:
         """
@@ -1151,7 +1151,8 @@ class Controller:
             if isinstance(pc, Owner):
                 pc.add_coins(add_coin["coins"])
                 pc.stash_coins(add_coin["stash"])
-                update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+                update_user_characters(user_id, game.identifier,
+                                       save_to_json(game.get_player_by_id(user_id).characters))
         insert_crew_json(game.identifier, save_to_json(crew))
 
     def get_vault_capacity_of_crew(self, game_id: int) -> int:
@@ -1204,10 +1205,12 @@ class Controller:
         :param game_id: the game's id.
         :param factions: dictionary thet contains all the factions' names and their status to update.
         """
+
         def get_faction_by_name(name: str, factions_list: List[Faction]) -> Faction:
             for elem in factions_list:
                 if elem.name.lower() == name.lower():
                     return elem
+
         game = self.get_game_by_id(game_id)
 
         for key in factions.keys():
@@ -1410,7 +1413,7 @@ class Controller:
                 attr = pc.get_attribute_by_name(key)
                 if attr:
                     if attr.add_exp(add_exp[key]):
-                        points.append((key+"_points", attr.points))
+                        points.append((key + "_points", attr.points))
             update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
         insert_crew_json(game.identifier, save_to_json(crew))
 
@@ -1485,7 +1488,7 @@ class Controller:
         :param game_id: identifier of the game
         :return: the upgrade points
         """
-        return self.get_crew_exp_points(game_id)*2
+        return self.get_crew_exp_points(game_id) * 2
 
     def get_crew_exp_points(self, game_id: int) -> int:
         """
@@ -1520,13 +1523,20 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         crew = game.crew
+
+        # differenza di dizionari
+        # for sulle chiavi del dizionario ottenuto: se valore è positivo il nome va N volte nella lista to_add
+        # se valore è negativo il nome va N volte nella lista to_remove
+
+        # for sulle 2 liste e add_upgrade per to_add e remove_upgrade(fix: rimozione livello invece di Upgrade) per to_remove
+
         crew.upgrades.clear()
         for upgrade in upgrades:
             upg = Upgrade(**upgrade)
             # if not crew.upgrades.__contains__(upg):
             crew.upgrades.append(upg)
 
-        crew.crew_exp.points = int(upgrade_points/2)
+        crew.crew_exp.points = int(upgrade_points / 2)
 
         insert_crew_json(game.identifier, save_to_json(crew))
 
@@ -1595,7 +1605,7 @@ class Controller:
             downtime_info["tick"] = ticks
 
             filled, new_clock = self.tick_clock_of_game(chat_id, user_id, downtime_info["clock"],
-                                                                         ticks, False)
+                                                        ticks, False)
             downtime_info["clock"] = Clock(**new_clock)
             if filled:
                 return_dict["filled"] = downtime_info["clock"].name
@@ -1628,7 +1638,8 @@ class Controller:
             insert_crew_json(game.identifier, save_to_json(game.crew))
 
         elif activity == "train":
-            points = 1 + (downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
+            points = 1 + (
+                        downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
             attr = pc.get_attribute_by_name(downtime_info["attribute"])
             if attr is None:
                 pc.playbook.add_exp(points)
@@ -1806,7 +1817,6 @@ class Controller:
             game.crew.crew_exp.points -= 1
             insert_crew_json(game.identifier, save_to_json(game.crew))
 
-
     def commit_add_cohort_harm(self, game_id: int, cohort_harm_info: dict):
         """
         Adds the given harm to the selected cohort and updates the crew in the DB.
@@ -1869,6 +1879,8 @@ class Controller:
 
         game.journal.write_end_downtime()
 
+        insert_journal(game.identifier, game.journal.get_log_string())
+
         return trauma_suffers
 
     def change_vice_purveyor(self, chat_id: int, user_id: int, change_purveyor: Dict[str, str]):
@@ -1888,6 +1900,8 @@ class Controller:
 
         game.journal.write_change_vice_purveyor(**change_purveyor)
 
+        insert_journal(game.identifier, game.journal.get_log_string())
+
     def commit_pc_migration(self, chat_id: int, user_id: int, migration: Dict[str, str]):
         """
         Applies the effect of a PC migration to another type of Character.
@@ -1903,6 +1917,24 @@ class Controller:
 
         game.journal.write_pc_migration(**migration)
 
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+    def commit_change_pc_class(self, chat_id: int, user_id: int, class_change: Dict[str, str]):
+        """
+        Applies the effect of a PC class change.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param class_change: dictionary that contains all the information needed (the PC's name and the new class)
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game.get_player_by_id(user_id).change_character_class(class_change["pc"], class_change["new_class"])
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        game.journal.write_change_pc_class(**class_change)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)

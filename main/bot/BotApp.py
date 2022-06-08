@@ -770,8 +770,21 @@ def start_bot():
             states={
                 0: [CallbackQueryHandler(migrate_pc_selection)],
             },
-            fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
+            fallbacks=[CommandHandler("cancel".casefold(), migrate_pc_end)],
             name="conv_migratePC",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changeClass".casefold(), "ChangePCClass".casefold(),
+                                          "pcClass".casefold()], change_pc_class)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, change_pc_class_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_pc_class_end)],
+            name="conv_changePCClass",
             persistent=True
         )
     )
