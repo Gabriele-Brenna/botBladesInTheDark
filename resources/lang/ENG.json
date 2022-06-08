@@ -964,6 +964,23 @@
       "0": "Who will provide you assistance to take care of your vice?",
       "1": "You don't have any active PC in this game... /join to add a PC of yours in this game.",
       "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
+    },
+
+    "migrate_pc": {
+      "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
+      "0": "As a <i>Ghost</i>, you can choose which <i>Unquiet Dead</i> you want to become.",
+      "1": "As a <i>{}</i>, if you decide to migrate you will become a: ",
+      "GhostKeyboard": ["Hull", "Vampire"],
+      "GhostCallbacks": ["Hull", "Vampire"],
+      "OthersKeyboard": ["Ghost"],
+      "OthersCallbacks": ["Ghost"]
+    },
+
+    "migrate_pc_selection": {
+      "0": "<i>{}</i> change its nature: now it's a <i>{}</i>!",
+      "Ghost": "Ghost",
+      "Hull": "Hull",
+      "Vampire": "Vampire"
     }
 
   },
@@ -1161,6 +1178,10 @@
     "write_change_vice_purveyor": {
       "0": "CHANGE OF VICE PURVEYOR",
       "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
+    },
+    "write_pc_migration": {
+      "0": "MIGRATION",
+      "1": "<b><i>{}</i></b> changed their nature: now it's a <b><i>{}</i></b>!"
     },
     "results": {
       "action": {

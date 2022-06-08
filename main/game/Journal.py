@@ -1086,6 +1086,25 @@ class Journal:
 
         return div_tag
 
+    def create_pc_migration_tag(self, pc: str, migration_pc: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "pcMigration".
+
+        :param pc: is the pc of interest.
+        :param migration_pc: is the new type of the pc.
+        :return: the div tag.
+        """
+
+        placeholders = self.get_lang(self.write_pc_migration.__name__)
+
+        div_tag = self.create_div_tag({"class": "pcMigration"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, migration_pc)))
+
+        return div_tag
+
     def get_indentation(self) -> int:
         """
         Method used to get the percentage indentation based on the value of the attribute indentation
@@ -1449,9 +1468,20 @@ class Journal:
 
         :param pc: is the pc of interest.
         :param new_purveyor: is the new purveyor of the pc.
-        :return:
         """
         tag = self.create_change_vice_purveyor_tag(pc, new_purveyor)
+
+        self.write_general(tag)
+
+    def write_pc_migration(self, pc: str, migration_pc: str):
+        """
+        Method used to write the migration of a PC's type in the attribute journal representing
+        the html file of the journal.
+
+        :param pc: is the pc of interest.
+        :param migration_pc: is the new type of the pc.
+        """
+        tag = self.create_pc_migration_tag(pc, migration_pc)
 
         self.write_general(tag)
 

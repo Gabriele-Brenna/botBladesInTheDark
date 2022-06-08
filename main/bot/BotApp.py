@@ -763,6 +763,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["migrate".casefold(), "migratePC".casefold(),
+                                          "migrateCharacter".casefold()], migrate_pc)],
+            states={
+                0: [CallbackQueryHandler(migrate_pc_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
+            name="conv_migratePC",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

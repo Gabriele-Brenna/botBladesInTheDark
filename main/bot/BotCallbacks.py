@@ -7218,6 +7218,90 @@ def add_harm_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_addHarm----------------------------------------------------------------
 
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
+
+def migrate_pc(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation to migrate character type.
+    Checks if the user has an active PC for the game in this chat.
+    Gets from the controller the PC's type to give the usere the possible choices of the new PC.
+    Stores in the user_data the name of the PC and sends the InlineKeyboard with the possible choices.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc.__name__)
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or (
+            "active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]):
+        auto_delete_message(update.effective_message.reply_text(placeholders["err"]))
+        return migrate_pc_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "invocation_message"], value=update.message)
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "pc"], value=pc_name)
+
+    pc_type = controller.get_pc_type(chat_id, get_user_id(update), pc_name)
+
+    if pc_type == "Ghost":
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["GhostKeyboard"], inline=True,
+                                                          callback_data=placeholders["GhostCallbacks"]))
+    else:
+        message = update.effective_message.reply_text(placeholders["1"].format(pc_type), parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["OthersKeyboard"], inline=True,
+                                                          callback_data=placeholders["OthersCallbacks"]))
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+
+    return 0
+
+
+def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the user's selection in the user_data and calls the controller method to apply the migration process.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc_selection.__name__)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "migration_pc"], value=choice)
+
+    controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                   context.user_data["migrate_pc"]["info"])
+
+    auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+        parse_mode=ParseMode.HTML), 10)
+
+    return migrate_pc_end(update, context)
+
+
+def migrate_pc_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the migrate pc conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "migrate_pc")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """

@@ -1888,6 +1888,21 @@ class Controller:
 
         game.journal.write_change_vice_purveyor(**change_purveyor)
 
+    def commit_pc_migration(self, chat_id: int, user_id: int, migration: Dict[str, str]):
+        """
+        Applies the effect of a PC migration to another type of Character.
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param migration: dictionary that contains all the information needed (the PC's name and the migration type)
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game.get_player_by_id(user_id).migrate_character_type(migration["pc"], migration["migration_pc"])
+
+        update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
+
+        game.journal.write_pc_migration(**migration)
+
 
     def __repr__(self) -> str:
         return str(self.games)
