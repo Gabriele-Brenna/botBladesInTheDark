@@ -185,8 +185,15 @@ def setup(game: Game) -> None:
     for u in users:
         characters = characters_from_json(characters_dict[u.player_id])
         for c in characters:
-            c.friend = find_obj(c.friend, game.NPCs)
-            c.enemy = find_obj(c.enemy, game.NPCs)
+            if isinstance(c, Human):
+                c.friend = find_obj(c.friend, game.NPCs)
+                c.enemy = find_obj(c.enemy, game.NPCs)
+            elif isinstance(c, Vampire):
+                servants = []
+                for servant in c.dark_servants:
+                    servant = find_obj(servant, game.NPCs)
+                    servants.append(servant)
+                c.dark_servants = servants
         u.characters = characters
 
     game.users = users

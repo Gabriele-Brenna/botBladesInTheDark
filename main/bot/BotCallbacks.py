@@ -4857,6 +4857,7 @@ def factions_status_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_factions_status--------------------------------------------------------
 
+
 # ------------------------------------------conv_use_item---------------------------------------------------------------
 
 
@@ -4955,14 +4956,10 @@ def use_item_name(update: Update, context: CallbackContext) -> int:
                 return use_item_end(update, context)
         else:
             name = item_name.split(": ")[0]
-            item_dict = query_items(item_name=name, as_dict=True)[0]
-            description = item_dict["description"]
-            # TODO: fetch from model
-            if description is None:
-                description = ""
-            info = placeholders["3"].format(description, item_dict["weight"], item_dict["usages"],
-                                            controller.get_crew_tier(query_game_of_user(
-                                                update.effective_message.chat_id, get_user_id(update))))
+            description, weight, usages, quality = controller.get_item_description(
+                update.effective_message.chat_id, get_user_id(update), name,
+                context.user_data["use_item"]["info"]["pc"])
+            info = placeholders["3"].format(description, weight, usages, quality)
             auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
             return 0
 
@@ -5007,6 +5004,12 @@ def use_item_end(update: Update, context: CallbackContext) -> int:
     delete_conv_from_telegram_data(context, "use_item")
 
     return end_conv(update, context)
+
+
+# ------------------------------------------conv_use_item---------------------------------------------------------------
+
+
+# ------------------------------------------conv_add_action_dots--------------------------------------------------------
 
 
 def add_action_dots(update: Update, context: CallbackContext) -> int:
@@ -5132,7 +5135,7 @@ def add_action_dots_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_use_item---------------------------------------------------------------
+# ------------------------------------------conv_add_action_dots--------------------------------------------------------
 
 
 # ------------------------------------------conv_fortune_roll-----------------------------------------------------------
@@ -5560,15 +5563,10 @@ def fortune_roll_item(update: Update, context: CallbackContext) -> int:
             return send_fortune_roll_bonus_dice(context)
         else:
             name = name.split(":")[0]
-            item_dict = query_items(item_name=name, as_dict=True)[0]
-            description = item_dict["description"]
-            # TODO: fetch from model
-            if description is None:
-                description = ""
-            info = placeholders["1"].format(description, item_dict["weight"], item_dict["usages"],
-                                            controller.get_crew_tier(query_game_of_user(
-                                                update.effective_message.chat_id, get_user_id(update))))
-
+            description, weight, usages, quality = controller.get_item_description(
+                update.effective_message.chat_id, get_user_id(update), name,
+                context.user_data["active_PCs"][update.effective_message.chat_id])
+            info = placeholders["1"].format(description, weight, usages, quality)
             auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
             return 30
 
@@ -6823,6 +6821,205 @@ def change_vice_purveyor_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
+# ------------------------------------------conv_addAbility-------------------------------------------------------------
+
+
+def add_ability(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in a game and in the correct phase, then starts the conversation that handles the ability
+    and sends the user the inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_ability.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_ability_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_ability", "invocation_message"], update.message)
+
+    buttons = build_add_ability_buttons(update, context)
+    if len(buttons) == 0:
+        auto_delete_message(update.effective_message.reply_text(placeholders["1"]), 10)
+        return add_ability_end(update, context)
+    query_menu = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        build_add_ability_buttons(update, context), inline=True, split_row=1))
+
+    add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
+
+    return 0
+
+
+def build_add_ability_buttons(update: Update, context: CallbackContext) -> List[str]:
+    """
+    Builds the list of buttons used to select between pc and crew in conv_addAbility.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: list of str representing the buttons.
+    """
+    chat_id = update.effective_message.chat_id
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+    buttons = []
+    if controller.get_crew_exp_points(query_game_of_user(chat_id, get_user_id(update))) > 0:
+        buttons.append("Crew")
+    if pc_name and controller.get_pc_points(chat_id, get_user_id(update), pc_name)["Playbook"] > 0:
+        buttons.append("Pc")
+
+    return buttons
+
+
+def add_ability_owner(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the choice made in the user_data and asks for which ability the user wants to add.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_ability_owner.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+
+    add_tag_in_telegram_data(context, ["add_ability", "info", "selection"], choice.lower())
+
+    if choice.lower() == "crew":
+        abilities = controller.get_crew_special_ability(chat_id, get_user_id(update))
+    elif choice.lower() == "pc":
+        abilities = controller.get_pc_special_ability(chat_id, get_user_id(update),
+                                                      context.user_data["active_PCs"][chat_id])
+    abilities.append("Veteran")
+    buttons_list = []
+    buttons = []
+    for i in range(len(abilities)):
+        buttons.append(abilities[i])
+        if (i + 1) % 3 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+    add_tag_in_telegram_data(context, ["add_ability", "buttons_list"], buttons_list)
+    add_tag_in_telegram_data(context, ["add_ability", "query_menu_index"], 0)
+
+    query_menu = context.user_data["add_ability"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(buttons_list[0])
+    )
+    context.user_data["add_ability"]["query_menu"].delete()
+
+    add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
+    return 1
+
+
+def add_ability_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the choice in the user_data and calls commit_add_ability in the controller that updates the model.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_ability_selection.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+    index = context.user_data["add_ability"]["query_menu_index"]
+
+    chat_id = update.effective_message.chat_id
+    user_id = get_user_id(update)
+    try:
+        pc_name = context.user_data["active_PCs"][chat_id]
+    except:
+        pc_name = None
+
+    if choice == "RIGHT":
+        index += 1
+        if index >= len(context.user_data["add_ability"]["buttons_list"]):
+            index = 0
+        context.user_data["add_ability"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index < -len(context.user_data["add_ability"]["buttons_list"]):
+            index = 0
+        context.user_data["add_ability"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        if "$" in choice:
+            if name.lower() == "veteran":
+                abilities = controller.get_all_abilities(
+                    chat_id, user_id, context.user_data["add_ability"]["info"]["selection"].lower(), pc_name)
+                buttons_list = []
+                buttons = []
+                for i in range(len(abilities)):
+                    buttons.append(abilities[i])
+                    if (i + 1) % 8 == 0:
+                        buttons_list.append(buttons.copy())
+                        buttons.clear()
+                if buttons:
+                    buttons_list.append(buttons.copy())
+                context.user_data["add_ability"]["buttons_list"] = buttons_list
+                context.user_data["add_ability"]["query_menu_index"] = 0
+
+                query_menu = context.user_data["add_ability"]["invocation_message"].reply_text(
+                    placeholders["0"], reply_markup=build_multi_page_kb(buttons_list[0])
+                )
+                context.user_data["add_ability"]["query_menu"].delete()
+
+                add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
+                return 1
+
+            else:
+                add_tag_in_telegram_data(context, ["add_ability", "info", "ability"], name)
+                controller.commit_add_ability(update.effective_message.chat_id, get_user_id(update),
+                                              context.user_data["add_ability"]["info"], pc_name)
+                message = context.user_data["add_ability"]["invocation_message"].reply_text(placeholders["1"])
+                auto_delete_message(message, placeholders["1"])
+                return add_ability_end(update, context)
+        else:
+            name = name.split(": ")[0]
+            if name.lower() == "veteran":
+                description = placeholders["3"].format(context.user_data["add_ability"]["info"]["selection"])
+            else:
+                description = query_special_abilities(special_ability=name, as_dict=True)[0]["description"]
+            if description is None:
+                description = ""
+            info = placeholders["2"].format(name, description)
+            auto_delete_message(update.effective_message.reply_text(text=info, quote=False), info)
+            return 1
+
+    context.user_data["add_ability"]["query_menu"].edit_text(
+        placeholders["0"],
+        reply_markup=build_multi_page_kb(
+            context.user_data["add_ability"]["buttons_list"][context.user_data["add_ability"]["query_menu_index"]]))
+    return 1
+
+
+def add_ability_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add ability  conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "downtime", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addAbility-------------------------------------------------------------
+
+
 # ------------------------------------------conv_addHarmCohort----------------------------------------------------------
 
 
@@ -6888,7 +7085,7 @@ def add_harm_cohort_level(update: Update, context: CallbackContext) -> int:
     :return: call to add_harm_cohort_end
     """
 
-    placeholders = get_lang(context, add_harm_cohort_choice.__name__)
+    placeholders = get_lang(context, add_harm_cohort_level.__name__)
     context.user_data["harm_cohort"]["message"].delete()
 
     try:
@@ -7021,6 +7218,90 @@ def add_harm_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_addHarm----------------------------------------------------------------
 
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
+
+def migrate_pc(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation to migrate character type.
+    Checks if the user has an active PC for the game in this chat.
+    Gets from the controller the PC's type to give the usere the possible choices of the new PC.
+    Stores in the user_data the name of the PC and sends the InlineKeyboard with the possible choices.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc.__name__)
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or (
+            "active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]):
+        auto_delete_message(update.effective_message.reply_text(placeholders["err"]))
+        return migrate_pc_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "invocation_message"], value=update.message)
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "pc"], value=pc_name)
+
+    pc_type = controller.get_pc_type(chat_id, get_user_id(update), pc_name)
+
+    if pc_type == "Ghost":
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["GhostKeyboard"], inline=True,
+                                                          callback_data=placeholders["GhostCallbacks"]))
+    else:
+        message = update.effective_message.reply_text(placeholders["1"].format(pc_type), parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["OthersKeyboard"], inline=True,
+                                                          callback_data=placeholders["OthersCallbacks"]))
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+
+    return 0
+
+
+def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the user's selection in the user_data and calls the controller method to apply the migration process.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc_selection.__name__)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "migration_pc"], value=choice)
+
+    controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                   context.user_data["migrate_pc"]["info"])
+
+    auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+        parse_mode=ParseMode.HTML), 10)
+
+    return migrate_pc_end(update, context)
+
+
+def migrate_pc_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the migrate pc conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "migrate_pc")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
 
 def add_reputation(update: Update, context: CallbackContext) -> None:
     """

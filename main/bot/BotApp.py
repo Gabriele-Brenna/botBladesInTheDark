@@ -709,6 +709,20 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
+            entry_points=[CommandHandler(["addSpecialAbility".casefold(), "addAbility".casefold(), "asa".casefold()],
+                                         add_ability)],
+            states={
+                0: [CallbackQueryHandler(add_ability_owner)],
+                1: [CallbackQueryHandler(add_ability_selection)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_ability_end)],
+            name="conv_addAbility",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
             entry_points=[CommandHandler(["addHarmCohort".casefold(), "harmCohort".casefold()], add_harm_cohort)],
             states={
                 0: [CallbackQueryHandler(add_harm_cohort_choice)],
@@ -745,6 +759,19 @@ def start_bot():
             },
             fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
             name="conv_changeVicePurveyor",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["migrate".casefold(), "migratePC".casefold(),
+                                          "migrateCharacter".casefold()], migrate_pc)],
+            states={
+                0: [CallbackQueryHandler(migrate_pc_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_vice_purveyor_end)],
+            name="conv_migratePC",
             persistent=True
         )
     )

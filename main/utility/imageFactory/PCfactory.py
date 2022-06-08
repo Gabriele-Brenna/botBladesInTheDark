@@ -5,7 +5,7 @@ from PIL import ImageFont
 
 from character.Playbook import Playbook
 from component.Clock import Clock
-from utility.FilesManager import path_finder
+from utility.FilesManager import path_finder, get_font
 from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
@@ -16,7 +16,7 @@ def paste_name(name: str, sheet: Image):
     name_box = Image.new('RGBA', name_box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(name_box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), name, align="left", fill="black", font=font)
 
     coordinates = (40, 95)
@@ -28,7 +28,7 @@ def paste_alias(alias: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), alias, align="left", fill="black", font=font)
 
     coordinates = (350, 95)
@@ -40,7 +40,7 @@ def paste_crew(crew_name: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), crew_name, align="left", fill="black", font=font)
 
     coordinates = (350, 55)
@@ -52,7 +52,7 @@ def paste_look(look: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), look, align="left", fill="black", font=font)
 
     coordinates = (40, 135)
@@ -64,7 +64,7 @@ def paste_heritage(heritage: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), heritage, align="left", fill="black", font=font)
 
     coordinates = (40, 180)
@@ -76,7 +76,7 @@ def paste_background(background: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("arial.ttf", 16)
+    font = ImageFont.truetype(get_font("arial.ttf"), 16)
     draw.text((0, 0), background, align="left", fill="black", font=font)
 
     coordinates = (295, 180)
@@ -89,13 +89,13 @@ def paste_vice(vice: Vice, sheet: Image):
     y = 0
 
     if len(vice_text) <= 80:
-        font = ImageFont.truetype("verdana.ttf", 12)
+        font = ImageFont.truetype(get_font("verdana.ttf"), 12)
         box_dim = (490, 27)
     elif len(vice_text) <= 150:
-        font = ImageFont.truetype("verdana.ttf", 10)
+        font = ImageFont.truetype(get_font("verdana.ttf"), 10)
         box_dim = (490, 27)
     else:
-        font = ImageFont.truetype("arial.ttf", 9)
+        font = ImageFont.truetype(get_font("arial.ttf"), 9)
         box_dim = (490, 32)
         y = 4
 
@@ -124,13 +124,13 @@ def paste_hull_functions(functions: List[str], sheet: Image):
     y = 0
 
     if len(function_text) <= 80:
-        font = ImageFont.truetype("times.ttf", 12)
+        font = ImageFont.truetype(get_font("times.ttf"), 12)
         box_dim = (490, 27)
     elif len(function_text) <= 150:
-        font = ImageFont.truetype("times.ttf", 10)
+        font = ImageFont.truetype(get_font("times.ttf"), 10)
         box_dim = (490, 27)
     else:
-        font = ImageFont.truetype("times.ttf", 9)
+        font = ImageFont.truetype(get_font("times.ttf"), 9)
         box_dim = (490, 32)
         y = 4
 
@@ -195,7 +195,7 @@ def paste_traumas_names(traumas: List[str], sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("verdana.ttf", 14)
+    font = ImageFont.truetype(get_font("verdana.ttf"), 14)
 
     text = ""
     for trauma in traumas:
@@ -217,7 +217,7 @@ def paste_harms(harms: List[List[str]], sheet: Image):
     last_box = Image.new('RGBA', last_box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(last_box)
 
-    font = ImageFont.truetype("verdanab.ttf", 16)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 16)
     if harms[len(harms) - 1]:
         last_harm = harms[len(harms) - 1][0]
     else:
@@ -236,7 +236,7 @@ def paste_harms(harms: List[List[str]], sheet: Image):
             box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
             draw = ImageDraw.Draw(box)
 
-            font = ImageFont.truetype("verdanai.ttf", 12)
+            font = ImageFont.truetype(get_font("verdanai.ttf"), 12)
             draw.text((box_dim[0] / 2, box_dim[1] / 2), harms[i - 1][j], anchor="mm", fill="black", font=font)
 
             coordinates = (x_harm, y_harm)
@@ -271,7 +271,7 @@ def paste_armor_uses(armors: List[bool], sheet: Image):
     box_dim = (10, 10)
     cell_x = 518
     cell_y = 383
-    font = ImageFont.truetype("verdanab.ttf", 8)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 8)
 
     for armor in armors:
         cell = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -292,7 +292,7 @@ def paste_description(description: str, sheet: Image, width: int = 510, height: 
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("times.ttf", 14)
+    font = ImageFont.truetype(get_font("times.ttf"), 14)
 
     lines = textwrap.wrap(description, width=int((box_dim[0] - 15) / average_char_size(description, font)))
 
@@ -315,7 +315,7 @@ def paste_pc_class(pc_class: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    bold = ImageFont.truetype("verdanab.ttf", 50)
+    bold = ImageFont.truetype(get_font("verdanab.ttf"), 50)
 
     draw.text((box_dim[0] / 2, box_dim[1] / 2), text=pc_class.upper(), font=bold, fill="black", anchor="mm")
 
@@ -331,7 +331,7 @@ def paste_class_description(pc_class: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    font = ImageFont.truetype("verdana.ttf", 9)
+    font = ImageFont.truetype(get_font("verdana.ttf"), 9)
 
     lines = textwrap.wrap(description, width=int((box_dim[0] - 15) / average_char_size(description, font)))
 
@@ -349,7 +349,7 @@ def paste_special_abilities(abilities: List[SpecialAbility], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdana.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdana.ttf"), 10)
 
     y = 1
     for ability in abilities:
@@ -384,7 +384,7 @@ def paste_strange_friends(friend: NPC, enemy: NPC, pc_class: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     query_strange_friends = query_char_strange_friends(pc_class=pc_class)
 
@@ -422,7 +422,7 @@ def paste_ghost_enemies(enemies: List[str], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     y = 2
 
@@ -449,7 +449,7 @@ def paste_vampire_servants(servants: List[NPC], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     query_strange_friends = query_char_strange_friends("Vampire")
 
@@ -486,7 +486,7 @@ def paste_hull_frame(frame: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     hull_frames = [
         "Small (cat size, -1 scale): A metal orb, a mechanical doll, a clockwork spider. Levitation—Reflexes",
@@ -529,7 +529,7 @@ def paste_hull_frame_features(features: List[SpecialAbility], sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanab.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanab.ttf"), 10)
 
     y = 1
     for feature_group in frame_features:
@@ -565,7 +565,7 @@ def paste_vampire_strictures(strictures: List[SpecialAbility],
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     y = 1
     for stricture in strictures:
@@ -595,7 +595,7 @@ def paste_xp_triggers(triggers: List[str], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdanai.ttf", 9)
+    normal = ImageFont.truetype(get_font("verdanai.ttf"), 9)
 
     y = 1
     for trigger in triggers:
@@ -641,8 +641,8 @@ def paste_items_right(items: List[Item], sheet: Image):
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdana.ttf", 10)
-    italic = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdana.ttf"), 10)
+    italic = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     y = 0
     for item in items:
@@ -677,8 +677,8 @@ def paste_items_peculiar(items: List[Item], sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    normal = ImageFont.truetype("verdana.ttf", 10)
-    italic = ImageFont.truetype("verdanai.ttf", 10)
+    normal = ImageFont.truetype(get_font("verdana.ttf"), 10)
+    italic = ImageFont.truetype(get_font("verdanai.ttf"), 10)
 
     y = 0
     for item in items:
@@ -716,8 +716,8 @@ def paste_load(load: int, sheet: Image):
     box = Image.new('RGBA', box_dim, (188, 190, 192, 255))
     draw = ImageDraw.Draw(box)
 
-    bold = ImageFont.truetype("verdanab.ttf", 9)
-    italic = ImageFont.truetype("verdanai.ttf", 9)
+    bold = ImageFont.truetype(get_font("verdanab.ttf"), 9)
+    italic = ImageFont.truetype(get_font("verdanai.ttf"), 9)
 
     draw.text((2, box_dim[1] / 2), text="LOAD", font=bold, fill="black", anchor="lm")
 
@@ -748,7 +748,7 @@ def paste_coin(coin: int, sheet: Image):
     starting_y = 68
     cell_x = starting_x
     cell_y = starting_y
-    font = ImageFont.truetype("verdanab.ttf", 8)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 8)
 
     for i in range(4):
         cell = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -775,7 +775,7 @@ def paste_stash(stash: int, sheet: Image):
     starting_y = 43
     cell_x = starting_x
     cell_y = starting_y
-    font = ImageFont.truetype("verdanab.ttf", 8)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 8)
 
     gray = (199, 200, 202, 255)
     white = (255, 255, 255, 255)
@@ -830,7 +830,7 @@ def paste_playbook_exp(playbook: Playbook, sheet: Image):
 
 
 def paste_playbook_points(playbook: Playbook, sheet: Image):
-    font = ImageFont.truetype("verdanab.ttf", 14)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 14)
 
     box_dim = (30, 20)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -880,7 +880,7 @@ def paste_attribute_exp(attributes: List[Attribute], sheet: Image):
 def paste_attribute_points(attributes: List[Attribute], sheet: Image):
     y_box = 135
 
-    font = ImageFont.truetype("verdanab.ttf", 14)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 14)
 
     for attribute in attributes:
         box_dim = (30, 20)
@@ -902,7 +902,7 @@ def paste_attribute_points(attributes: List[Attribute], sheet: Image):
 def paste_attribute_actions_dots(attributes: List[Attribute], sheet: Image):
     dot_empty = Image.open(path_finder("images/ActionDotEmpty.png"))
     dot_full = Image.open(path_finder("images/ActionDotFull.png"))
-    font = ImageFont.truetype("verdanab.ttf", 11)
+    font = ImageFont.truetype(get_font("verdanab.ttf"), 11)
 
     y_box = 154
 

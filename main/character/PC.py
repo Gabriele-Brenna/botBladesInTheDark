@@ -412,4 +412,3 @@ def paste_common_attributes(pc: PC, sheet: Image, **kwargs):
     paste_playbook(pc.playbook, sheet)
     paste_attributes(pc.attributes, sheet)
 
-    paste_items(pc.items, pc.pc_class, sheet)

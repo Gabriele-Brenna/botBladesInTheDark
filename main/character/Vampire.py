@@ -131,6 +131,8 @@ class Vampire(Owner, ISavable):
         paste_coin(self.coin, sheet)
         paste_stash(self.stash, sheet)
 
+        paste_items(self.items, self.__class__.__name__, sheet)
+
         return image_to_bytes(sheet)
 
     def __repr__(self) -> str:

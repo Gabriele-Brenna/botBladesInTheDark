@@ -802,6 +802,25 @@
       "1": "Select the group of the upgrade you want to choose"
     },
 
+    "add_ability": {
+      "0": "Select where you want to add a special ability",
+      "1": "You don't have any point available to spend for a special ability",
+      "err": "You can't add a special ability without being in a game... /join to take part in a game."
+    },
+
+    "add_ability_owner": {
+      "0": "Select the special ability you want to add"
+    },
+
+    "add_ability_selection": {
+      "0": "Select the special ability you want to add",
+      "1": "Your new special ability has been added",
+      "2": "{}: {}",
+      "3": "Allows you to select special abilities from other {} types",
+      "pc": "character",
+      "crew": "crew"
+    },
+
     "downtime": {
       "0": "Select the downtime activity you want to do",
       "err": "You can't do a downtime activity without being in a game... /join to take part in a game.",
@@ -914,7 +933,7 @@
     },
 
     "add_harm_cohort_level": {
-      "err": "You should write a number..."
+      "err": "You should write an integer number..."
     },
 
     "add_harm": {
@@ -945,6 +964,23 @@
       "0": "Who will provide you assistance to take care of your vice?",
       "1": "You don't have any active PC in this game... /join to add a PC of yours in this game.",
       "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
+    },
+
+    "migrate_pc": {
+      "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
+      "0": "As a <i>Ghost</i>, you can choose which <i>Unquiet Dead</i> you want to become.",
+      "1": "As a <i>{}</i>, if you decide to migrate you will become a: ",
+      "GhostKeyboard": ["Hull", "Vampire"],
+      "GhostCallbacks": ["Hull", "Vampire"],
+      "OthersKeyboard": ["Ghost"],
+      "OthersCallbacks": ["Ghost"]
+    },
+
+    "migrate_pc_selection": {
+      "0": "<i>{}</i> change its nature: now it's a <i>{}</i>!",
+      "Ghost": "Ghost",
+      "Hull": "Hull",
+      "Vampire": "Vampire"
     },
 
     "add_reputation": {
@@ -1069,11 +1105,9 @@
 	  },
 	  "long_term_project": {
 		"0": "LONG TERM PROJECT",
-		"1": "<b><i>{}</i></b> is working on a new long term project: <i>{}</i>",
-        "2": "<b><i>{}</i></b> is working on <i>{}</i>",
-        "3": "The new project has a clock with {} segments.",
-        "4": "The project clock has {} segments ticked out of {}",
-        "5": "The project <i>{}</i> has been completed"
+		"1": "<b><i>{}</i></b> is working on a project: <br> <i>{}</i>",
+        "2": "The project has been completed",
+        "3": "<b><i>{}</i></b> rolled {}({}) and ticked the project clock by {}"
 	  },
 	  "recover": {
 		"0": "RECOVER",
@@ -1144,10 +1178,10 @@
 	  "6": "Your stress isn't changed"
 	},
 	"write_clock": {
-	  "0": "{} created a new clock: '{}'",
-	  "1": "{} modified the clock '{}'",
-	  "2": "{} ticked the clock '{}' by {} segments",
-	  "3": "{} completed the clock '{}'"
+	  "0": "<b><i>{}</i></b> created a new clock: <br><i>{}</i>",
+	  "1": "<b><i>{}</i></b> modified the clock: <br><i>{}</i>",
+	  "2": "<b><i>{}</i></b> ticked the clock '{}' by {} segments",
+	  "3": "<b><i>{}</i></b> completed the clock '{}'"
 	},
     "write_armor_use": {
       "0": "ARMOR USE",
@@ -1164,6 +1198,10 @@
     "write_change_vice_purveyor": {
       "0": "CHANGE OF VICE PURVEYOR",
       "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
+    },
+    "write_pc_migration": {
+      "0": "MIGRATION",
+      "1": "<b><i>{}</i></b> changed their nature: now it's a <b><i>{}</i></b>!"
     },
     "results": {
       "action": {

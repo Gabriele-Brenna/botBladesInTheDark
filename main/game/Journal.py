@@ -588,38 +588,42 @@ class Journal:
 
         return div_tag
 
-    def create_long_term_project_tag(self, pc: str, project: str, segments: int, tick: int,
-                                     notes: str, new: bool = False):
+    def create_long_term_project_tag(self, pc: str, clock: Clock, notes: str, tick: int, action: str):
         """
         Method used to create and insert a div tag with class attribute set to "long_term_project".
 
+        :param action: action rolled by the pc
+        :param tick: by how much the clock advances
         :param pc: who does the downtime activity
-        :param project: name of the project
-        :param segments: total segments of the project's clock
-        :param tick: advancement of the project's clock
+        :param clock: project clock
         :param notes: extra notes
-        :param new: True if the project is new, False otherwise
         :return: the div Tag
         """
         placeholders = self.get_lang(self.write_activity.__name__)["long_term_project"]
 
-        div_tag = self.create_div_tag({"class": "long_term_project"})
-        div_tag.append(self.create_h2_tag(placeholders["0"]))
+        div_tag = self.create_div_tag({"class": ["long_term_project", "clock"]})
 
-        div_tag.append(self.create_p_tag(placeholders[str(1 + new)].format(pc, project)))
-        if new:
-            div_tag.append(self.create_p_tag(placeholders["3"].format(segments)))
+        one_tag = self.create_div_tag({"class": "one"})
 
-        if tick < segments:
-            div_tag.append(self.create_p_tag(placeholders["4"].format(tick, segments)))
-        else:
-            div_tag.append(self.create_p_tag(placeholders["5"].format(project)))
+        one_tag.append(self.create_h2_tag(placeholders["0"]))
 
-        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+        one_tag.append(self.create_p_tag(placeholders["1"].format(pc, clock.name.split("] ")[1])))
+
+        one_tag.append(self.create_p_tag(placeholders["3"].format(
+            pc, action.split(": ")[0], action.split(": ")[1], tick)))
+
+        if clock.progress == clock.segments:
+            one_tag.append(self.create_p_tag(placeholders["2"]))
+
+        one_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        div_tag.append(one_tag)
+
+        div_tag.append(self.create_clock_tag(clock))
 
         return div_tag
 
-    def create_crafting_tag(self, pc: str, item: str, minimum_quality: int, quality: int, outcome: int,
+    def create_crafting_tag(self, pc: str, item: str, minimum_quality: int, quality: int, outcome: Union[int, str],
                             extra_quality: int, notes: str, item_description: str = None):
         """
         Method used to create and insert a div tag with class attribute set to "crafting".
@@ -935,6 +939,40 @@ class Journal:
 
         return div_tag
 
+    def create_clock_tag(self, clock: Clock):
+        """
+        Method used to create a div tag used to represent a clock.
+
+        :param clock: clock to represent
+        :return: the div tag
+        """
+        divider_size = 4
+
+        black = "black {}deg {}deg"
+        white = "white {}deg {}deg"
+        red = "red {}deg {}deg"
+        conic_gradient = ""
+
+        segment_size = int((360 - (divider_size * clock.segments)) / clock.segments)
+        count = -2
+        for i in range(clock.segments):
+            next_count = count + divider_size
+            conic_gradient += white.format(count, next_count) + ", "
+
+            count = next_count + segment_size
+            if i < clock.progress:
+                conic_gradient += red.format(next_count, count) + ", "
+            else:
+                conic_gradient += black.format(next_count, count) + ", "
+
+        conic_gradient += "white 0"
+
+        style = "background-image: conic-gradient({});".format(conic_gradient)
+
+        clock_tag = self.create_div_tag({"class": "piechart", "style": style})
+
+        return clock_tag
+
     def create_clock(self, pc: str, new_clock: Clock, old_clock: Clock = None):
         """
         Method used to create and insert a div tag with class attribute set to "clock".
@@ -947,31 +985,6 @@ class Journal:
 
         placeholder = self.get_lang(self.write_clock.__name__)
 
-        # This first part is used to draw the clock with a div tag
-        divider_size = 4
-
-        black = "black {}deg {}deg"
-        white = "white {}deg {}deg"
-        red = "red {}deg {}deg"
-        conic_gradient = ""
-
-        segment_size = int((360 - (divider_size * new_clock.segments)) / new_clock.segments)
-        count = -2
-        for i in range(new_clock.segments):
-            next_count = count + divider_size
-            conic_gradient += white.format(count, next_count) + ", "
-
-            count = next_count + segment_size
-            if i < new_clock.progress:
-                conic_gradient += red.format(next_count, count) + ", "
-            else:
-                conic_gradient += black.format(next_count, count) + ", "
-
-        conic_gradient += "white 0"
-
-        style = "background-image: conic-gradient({});".format(conic_gradient)
-
-        # This part is used to create the div tag
         one_tag = self.create_div_tag({"class": "one"})
 
         if old_clock is None:
@@ -992,9 +1005,7 @@ class Journal:
         div_tag = self.create_div_tag({"class": "clock"})
         div_tag.append(one_tag)
 
-        clock_tag = self.create_div_tag({"class": "piechart", "style": style})
-
-        div_tag.append(clock_tag)
+        div_tag.append(self.create_clock_tag(new_clock))
 
         return div_tag
 
@@ -1072,6 +1083,25 @@ class Journal:
         div_tag.append(self.create_h2_tag(placeholders["0"]))
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc, new_purveyor)))
+
+        return div_tag
+
+    def create_pc_migration_tag(self, pc: str, migration_pc: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "pcMigration".
+
+        :param pc: is the pc of interest.
+        :param migration_pc: is the new type of the pc.
+        :return: the div tag.
+        """
+
+        placeholders = self.get_lang(self.write_pc_migration.__name__)
+
+        div_tag = self.create_div_tag({"class": "pcMigration"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(placeholders["1"].format(pc, migration_pc)))
 
         return div_tag
 
@@ -1438,9 +1468,20 @@ class Journal:
 
         :param pc: is the pc of interest.
         :param new_purveyor: is the new purveyor of the pc.
-        :return:
         """
         tag = self.create_change_vice_purveyor_tag(pc, new_purveyor)
+
+        self.write_general(tag)
+
+    def write_pc_migration(self, pc: str, migration_pc: str):
+        """
+        Method used to write the migration of a PC's type in the attribute journal representing
+        the html file of the journal.
+
+        :param pc: is the pc of interest.
+        :param migration_pc: is the new type of the pc.
+        """
+        tag = self.create_pc_migration_tag(pc, migration_pc)
 
         self.write_general(tag)
 

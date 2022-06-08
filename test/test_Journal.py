@@ -28,9 +28,10 @@ class TestJournal(TestCase):
         temp.write_entanglement("reprisal of the dead", "very very long description")
         temp.write_secret_entanglement("reprisal of the dead", "super long description")
         temp.write_activity({"activity": "acquire_asset", "pc": "User", "asset": "the asset",
-                             "quality": 3, "min_quality": 5, "outcome": 6, "extra_quality": 2, "notes": "extra notes"})
+                             "quality": 3, "minimum_quality": 5, "outcome": 6, "extra_quality": 2, "notes": "extra notes"})
         temp.write_activity({"activity": "crafting", "pc": "User", "item": "the item", "item_description": "description",
-                             "min_quality": 4, "quality": 3, "outcome": "CRIT", "extra_quality": 2, "notes": "notes"})
+                             "minimum_quality": 4, "quality": 3, "outcome": "CRIT", "extra_quality": 2, "notes": "notes"})
+        temp.write_activity({"activity": "long_term_project", "pc": "user", "clock": Clock("[project] clock of the project", 6, 6), "notes": "some extra notes"})
         temp.write_add_claim(True, "LAIR CLAIM", "description")
         temp.write_add_claim(False, "PRISON CLAIM", "description")
         temp.write_incarceration("User1", 2, "Extra information", "Extra notes")
@@ -41,6 +42,7 @@ class TestJournal(TestCase):
         temp.write_resistance_roll("User1", "description of the resistance roll", "avoided", "Skirmish", 1, "notes", -3)
         temp.write_clock("User1", Clock("project clock", 2, 0))
         temp.write_clock("User1", Clock("project clock", 6, 6), Clock("project clock", 4, 0))
+        temp.write_clock("User1", Clock("project clock", 6, 3), Clock("project clock", 4, 0))
         temp.write_action("User1", "goal of the action", "Skirmish", "controlled", "effect of the action", 5,
                           "extra notes", [{"name": "user2", "push": True, "outcome": 5},
                                           {"name": "user3", "push": True, "devil_bargain": "a general bargain", "outcome": 4},

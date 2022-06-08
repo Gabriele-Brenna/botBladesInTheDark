@@ -17,7 +17,7 @@ from utility.ISavable import ISavable, pop_dict_items
 from PIL import Image
 
 from utility.imageFactory.PCfactory import paste_vice, paste_description, paste_strange_friends, paste_coin, \
-    paste_stash, paste_pc_class, paste_class_description
+    paste_stash, paste_pc_class, paste_class_description, paste_items
 
 
 class Human(Owner, ISavable):
@@ -34,7 +34,7 @@ class Human(Owner, ISavable):
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0, vice: Vice = Vice(),
                  pc_class: str = "", friend: NPC = NPC(), enemy: NPC = NPC()) -> None:
         if xp_triggers is None and pc_class != "":
-            xp_triggers = query_xp_triggers(self.__class__.__name__)
+            xp_triggers = query_xp_triggers(pc_class)
 
         super().__init__(name, alias, look, heritage, background, stress_level, stress_limit, traumas,
                          items, harms, healing, armors, abilities, playbook, attributes, load,
@@ -104,6 +104,8 @@ class Human(Owner, ISavable):
 
         paste_coin(self.coin, sheet)
         paste_stash(self.stash, sheet)
+
+        paste_items(self.items, self.pc_class, sheet)
 
         return image_to_bytes(sheet)
 
