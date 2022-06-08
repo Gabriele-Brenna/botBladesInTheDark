@@ -7218,6 +7218,300 @@ def add_harm_end(update: Update, context: CallbackContext) -> int:
 
 # ------------------------------------------conv_addHarm----------------------------------------------------------------
 
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
+
+def migrate_pc(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation to migrate character type.
+    Checks if the user has an active PC for the game in this chat.
+    Gets from the controller the PC's type to give the users the possible choices of the new PC.
+    Stores in the user_data the name of the PC and sends the InlineKeyboard with the possible choices.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc.__name__)
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or (
+            "active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]):
+        auto_delete_message(update.effective_message.reply_text(placeholders["err"]))
+        return migrate_pc_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "invocation_message"], value=update.message)
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "pc"], value=pc_name)
+
+    pc_type = controller.get_pc_type(chat_id, get_user_id(update), pc_name)
+
+    if pc_type == "Ghost":
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["GhostKeyboard"], inline=True,
+                                                          callback_data=placeholders["GhostCallbacks"]))
+    else:
+        message = update.effective_message.reply_text(placeholders["1"].format(pc_type), parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          placeholders["OthersKeyboard"], inline=True,
+                                                          callback_data=placeholders["OthersCallbacks"]))
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+
+    return 0
+
+
+def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the user's selection in the user_data and calls the controller method to apply the migration process.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, migrate_pc_selection.__name__)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "migration_pc"], value=choice)
+
+    controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                   context.user_data["migrate_pc"]["info"])
+
+    auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+        parse_mode=ParseMode.HTML), 10)
+
+    return migrate_pc_end(update, context)
+
+
+def migrate_pc_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the migrate pc conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "migrate_pc")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_migratePC--------------------------------------------------------------
+
+def add_reputation(update: Update, context: CallbackContext) -> None:
+    """
+    Adds the given reputation to the active pc of the user.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    """
+    placeholders = get_lang(context, add_reputation.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return
+
+    chat_id = update.effective_message.chat_id
+
+    try:
+        rep = int(context.args[0])
+    except (ValueError, IndexError, AttributeError):
+        rep = 1
+
+    coins = controller.add_rep_to_crew(query_game_of_user(chat_id, get_user_id(update)), rep)
+
+    if coins is not None:
+        auto_delete_message(update.message.reply_text(placeholders["0"].format(coins),
+                                                      parse_mode=ParseMode.HTML), 20)
+
+    update.message.reply_text(placeholders["1"].format(rep), ParseMode.HTML)
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+
+
+def add_armor_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of armor to a cohort.
+    Adds the dict "armor_cohort" in user_data.
+    Finally, sends the inline keyboard to choose the cohort.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_armor_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_armor_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "invocation_message"], update.message)
+
+    cohorts = controller.get_cohorts_of_crew(update.message.chat_id, get_user_id(update))
+    if not cohorts:
+        message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_armor_cohort_end(update, context)
+    cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+    callbacks = [i + 1 for i in range(len(cohorts))]
+    message = context.user_data["armor_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+    add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+
+    return 0
+
+
+def add_armor_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort and send the request of the harm, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_armor_cohort_choice.__name__)
+    context.user_data["armor_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data) - 1
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "info", "cohort"], choice)
+
+    message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+    return 1
+
+
+def add_armor_cohort_level(update: Update, context: CallbackContext) -> int:
+    """
+    If the user writes a valid value, calls the controller method commit_add_cohort_armor, then calls
+    add_armor_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_armor_cohort_end
+    """
+
+    placeholders = get_lang(context, add_armor_cohort_level.__name__)
+    context.user_data["armor_cohort"]["message"].delete()
+
+    try:
+        armor = int(update.message.text)
+    except:
+        message = context.user_data["armor_cohort"]["invocation_message"].reply_text(placeholders["err"],
+                                                                                     ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["armor_cohort", "message"], message)
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["armor_cohort", "info", "armor"], armor)
+
+    controller.commit_add_cohort_armor(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                       context.user_data["armor_cohort"]["info"])
+    return add_armor_cohort_end(update, context)
+
+
+def add_armor_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add armor cohort conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_harm", "chat")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+
+
+# ------------------------------------------conv_changePCClass----------------------------------------------------------
+
+def change_pc_class(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation to change a character's class.
+    Checks if the user has an active PC for the game in this chat.
+    Checks if the active PC is a Human.
+    Stores in the user_data the name of the PC and sends the ReplyKeyboard with the suggestions.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_pc_class.__name__)
+    chat_id = update.effective_message.chat_id
+
+    if "active_PCs" not in context.user_data or (
+            "active_PCs" in context.user_data and chat_id not in context.user_data["active_PCs"]):
+        auto_delete_message(update.effective_message.reply_text(placeholders["err"]))
+        return change_pc_class_end(update, context)
+
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "invocation_message"], value=update.message)
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    pc_type = controller.get_pc_type(chat_id, get_user_id(update), pc_name)
+
+    if pc_type != "Human":
+        auto_delete_message(update.effective_message.reply_text(placeholders["1"], parse_mode=ParseMode.HTML), 10)
+        return change_pc_class_end(update, context)
+    else:
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          query_character_sheets(canon=True, spirit=False),
+                                                          inline=False))
+        add_tag_in_telegram_data(context, tags=["change_pc_class", "info", "pc"], value=pc_name)
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "message"], value=message)
+
+    return 0
+
+
+def change_pc_class_selection(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, change_pc_class_selection.__name__)
+    context.user_data["change_pc_class"]["message"].delete()
+
+    new_class = update.effective_message.text
+
+    if not exists_character(new_class):
+        message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
+                                                      reply_markup=custom_kb(
+                                                          query_character_sheets(canon=True, spirit=False),
+                                                          inline=False))
+        add_tag_in_telegram_data(context, tags=["change_pc_class", "message"], value=message)
+        return 0
+
+    add_tag_in_telegram_data(context, tags=["change_pc_class", "info", "new_class"], value=new_class)
+
+    controller.commit_change_pc_class(update.effective_message.chat_id, get_user_id(update),
+                                      context.user_data["change_pc_class"]["info"])
+
+    auto_delete_message(context.user_data["change_pc_class"]["invocation_message"].reply_text(
+        placeholders["1"].format(context.user_data["change_pc_class"]["info"]["pc"], new_class),
+        parse_mode=ParseMode.HTML), 10)
+
+    return change_pc_class_end(update, context)
+
+
+def change_pc_class_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the change PC's class conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "change_pc_class")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_changePCClass----------------------------------------------------------
 
 # ------------------------------------------conv_retire-----------------------------------------------------------------
 

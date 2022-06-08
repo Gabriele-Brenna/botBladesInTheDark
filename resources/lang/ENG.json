@@ -966,6 +966,54 @@
       "2": "You are not human anymore...\nNo one will give you help to relief yourself...voluntarily.\nYou are your own purveyor."
     },
 
+    "migrate_pc": {
+      "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
+      "0": "As a <i>Ghost</i>, you can choose which <i>Unquiet Dead</i> you want to become.",
+      "1": "As a <i>{}</i>, if you decide to migrate you will become a: ",
+      "GhostKeyboard": ["Hull", "Vampire"],
+      "GhostCallbacks": ["Hull", "Vampire"],
+      "OthersKeyboard": ["Ghost"],
+      "OthersCallbacks": ["Ghost"]
+    },
+
+    "migrate_pc_selection": {
+      "0": "<i>{}</i> changed its nature: now it's a <i>{}</i>!",
+      "Ghost": "Ghost",
+      "Hull": "Hull",
+      "Vampire": "Vampire"
+    },
+
+    "add_reputation": {
+      "0": "You reached the maximum level of reputation.\nUse /upgradeCrew to increase your crew tier or change your hold; don't forget to pay <i>{}</i> coins before.\nYou can use /coin to manage your possession",
+      "1": "<i>{}</i> reputation added to the crew",
+      "err": "You can't add reputation without being in a game... /join to take part in a game."
+    },
+
+    "add_armor_cohort": {
+      "0": "Select the cohort",
+      "err": "You can't add armor to a cohort without being in a game... /join to take part in a game.",
+      "err2": "You don't have any alive cohort..."
+    },
+
+    "add_armor_cohort_choice": {
+      "0": "Write how many armor levels you want to add to the cohort (write a negative number if you want to remove the armor instead)"
+    },
+
+    "add_armor_cohort_level": {
+      "err": "You should write a number..."
+    },
+
+    "change_pc_class": {
+      "err": "You don't have any active PC in the game yet... /join to take part in a game with your PC.",
+      "0": "Select or write your new class.",
+      "1": "You are an <i>Unquiet Dead</i>: you cannot change your class, you can only /migrate to another form..."
+    },
+
+    "change_pc_class_selection": {
+      "0": "This class doesn't exist yet...\nSelect or write an existing one.",
+      "1": "<i>{}</i> changed the class: now he's a <i>{}</i>!"
+    },
+
     "retire": {
       "err": "You can't add an harm without being in a game... /join to take part in a game.",
       "err2": "You don't have any active pc..",
@@ -1185,6 +1233,14 @@
     "write_change_vice_purveyor": {
       "0": "CHANGE OF VICE PURVEYOR",
       "1": "<b><i>{}</i></b> found a new purveyor for his vice: <b><i>{}</i></b> will take good care of this scoundrel."
+    },
+    "write_pc_migration": {
+      "0": "MIGRATION",
+      "1": "<b><i>{}</i></b> changed their nature: now it's a <b><i>{}</i></b>!"
+    },
+    "write_change_pc_class": {
+      "0": "CHANGE OF CLASS",
+      "1": "<b><i>{}</i></b> changed their class into: <b><i>{}</i></b>!"
     },
     "write_retire": {
       "die": {

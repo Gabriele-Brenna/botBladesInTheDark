@@ -765,6 +765,47 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
+            entry_points=[CommandHandler(["migrate".casefold(), "migratePC".casefold(),
+                                          "migrateCharacter".casefold()], migrate_pc)],
+            states={
+                0: [CallbackQueryHandler(migrate_pc_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), migrate_pc_end)],
+            name="conv_migratePC",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changeClass".casefold(), "ChangePCClass".casefold(),
+                                          "pcClass".casefold()], change_pc_class)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, change_pc_class_selection)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_pc_class_end)],
+            name="conv_changePCClass",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(CommandHandler(["addRep".casefold(), "addReputation".casefold()], add_reputation))
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addArmorCohort".casefold(), "armorCohort".casefold()], add_armor_cohort)],
+            states={
+                0: [CallbackQueryHandler(add_armor_cohort_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_armor_cohort_level)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_armor_cohort_end)],
+            name="conv_addArmorCohort",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
             entry_points=[CommandHandler(["die".casefold(), "retire".casefold(), "pass".casefold(),
                                           "changeLife".casefold()], retire)],
             states={
