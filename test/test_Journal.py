@@ -34,8 +34,8 @@ class TestJournal(TestCase):
         temp.write_activity({"activity": "long_term_project", "pc": "user", "clock": Clock("[project] clock of the project", 6, 6), "notes": "some extra notes", "tick": 4, "action": "action: prowess"})
         temp.write_add_claim(True, "LAIR CLAIM", "description")
         temp.write_add_claim(False, "PRISON CLAIM", "description")
-        temp.write_incarceration("User1", 2, "Extra information", "Extra notes")
-        temp.write_incarceration("User1", 10, "Extra information", "Extra notes")
+        temp.write_incarceration("User1", 2, "Extra notes")
+        temp.write_incarceration("User1", "CRIT", "Extra notes")
         temp.write_flashback("User1", "what happened during the flashback", 4, True)
         temp.write_resistance_roll("User1", "description of the resistance roll", "avoided", "Skirmish", 10, "notes", 0)
         temp.write_resistance_roll("User1", "description of the resistance roll", "reduced", "Skirmish", 1, "notes", 10)
@@ -50,6 +50,11 @@ class TestJournal(TestCase):
                           assistants=["user5", "user6"], push=True)
         temp.write_action("User1", "goal of the action", "Skirmish", "controlled", "effect of the action", 5,
                           "extra notes", cohort="Thugs", assistants=["user5", "user6"], push=True)
+        temp.write_use_item("User", "Long rifle", "use of the long rifle")
+
+        temp.edit_note("another use of the long rifle", 1)
+
+        self.assertEqual("another use of the long rifle", temp.read_note(1))
 
         with open("resources_test/journalTest.html", 'w+') as f:
             f.write(temp.get_log_string())

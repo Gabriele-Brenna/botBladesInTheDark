@@ -1190,9 +1190,12 @@
 	},
 	"write_incarceration": {
 	  "0": "INCARCERATION",
-	  "1": "<b><i>{}</i></b> is going to jail!",
+	  "1": "<b><i>{}</i></b> went to jail!",
 	  "2": "They roll a {}",
-	  "3": "<b><i>{}</i></b> got a new trauma: {}"
+      "3": "You make a name for yourself. You gain <b>+3 REP</b> for your crew, <b>1 prison claim</b> and <b>+1 faction status</b> with a faction that you assisted while your served your time.",
+      "4": "You do your time well. Your crew gains <b>1 prison claim</b> and <b>+1 faction status</b> with a faction that you assisted while your served your time.",
+      "5": "You keep your head down and do your time without incident.",
+      "6": "It's horrific. You suffer a level of <b>TRAUMA</b> from the experience."
 	},
 	"write_flashback": {
 	  "0": "FLASHBACK",
@@ -1224,7 +1227,7 @@
     },
     "write_use_item": {
       "0": "USE ITEM",
-      "1": "<b><i>{}</i></b> used <i>{}</i> for this reason: {}"
+      "1": "<b><i>{}</i></b> used <i>{}</i> for this reason: <span class=\"user\">{}</span>"
     },
     "write_end_downtime": {
       "0": "END OF DOWNTIME",

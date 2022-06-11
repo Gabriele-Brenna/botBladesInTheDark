@@ -1,6 +1,6 @@
 import json
 import math
-from typing import List, Union, Literal, Tuple
+from typing import List, Union, Tuple
 
 from bs4.element import Doctype
 from bs4 import *
@@ -26,15 +26,40 @@ class Journal:
         self.score_tag = None
         self.write_heading()
 
-    def edit_note(self, note: str, number: int = 1):
+    def get_note(self, number: int):
+        """
+        Method used to get a note in a given position.
+
+        :param number: is the position of the note. It's given starting from the most recent to the oldest one,
+        meaning the note 1 is the last note written
+        :return: the note in the given position.
+        """
+        notes = self.log.find_all(attrs={"class": "user"}, recursive=True)
+        number = - number
+        return notes[number] if len(notes) > 0 else None
+
+    def read_note(self, number: int = 1) -> str:
+        """
+        Method used to get the text inside a note in a given position.
+
+        :param number: position of the note
+        :return: content of the note tag
+        """
+        note = self.get_note(number)
+        return note.text
+
+    def edit_note(self, new_note: str, number: int = 1):
         """
         Allows to change a specified note, depending on its position inside the list of description.
 
-        :param note: is the new note that will be written
+        :param new_note: is the new note that will be written
         :param number: is the position of the note. It's given starting from the most recent to the oldest one,
         meaning the note 1 is the last note written
         """
-        # TODO:
+        note = self.get_note(number)
+        if note:
+            note.clear()
+            note.append(new_note)
 
     def read_journal(self) -> bytes:
         """
@@ -234,7 +259,7 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(title))
 
-        div_tag.append(self.create_p_tag(notes))
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
         return div_tag
 
@@ -518,7 +543,7 @@ class Journal:
 
         div_tag.append(self.create_p_tag(name))
 
-        div_tag.append(self.create_p_tag(description))
+        div_tag.append(self.create_p_tag(description, {"class": "user"}))
 
         return div_tag
 
@@ -535,15 +560,14 @@ class Journal:
 
         div_tag.append(self.create_h2_tag(placeholder["0"]))
 
-        details_tag = self.log.new_tag("details")
+        details_tag = self.create_details_tag()
 
-        summary_tag = self.log.new_tag("summary")
-        summary_tag.append(BeautifulSoup(placeholder["1"], 'html.parser'))
+        summary_tag = self.create_summary_tag(placeholder["1"])
         details_tag.append(summary_tag)
 
         details_tag.append(self.create_p_tag(name))
 
-        details_tag.append(self.create_p_tag(description))
+        details_tag.append(self.create_p_tag(description, {"class": "user"}))
 
         div_tag.append(details_tag)
 
@@ -841,14 +865,12 @@ class Journal:
 
         return div_tag
 
-    def create_incarceration_tag(self, pc: str, roll: Union[str, int], extra_info: str, notes: str):
+    def create_incarceration_tag(self, pc: str, outcome: Union[str, int], notes: str):
         """
         Method used to create and insert a div tag with class attribute set to "incarceration".
 
         :param pc: who is going to jail
-        :param roll: what he rolls
-        :param extra_info: if the roll is equal or higher than 6 (CRITICAL) it's the name of the new prison claim,
-        otherwise is the name of the trauma
+        :param outcome: what he rolls
         :param notes: extra notes
         :return: the div Tag
         """
@@ -859,20 +881,19 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholder["1"].format(pc)))
 
-        div_tag.append(self.create_p_tag(placeholder["2"].format(roll)))
+        div_tag.append(self.create_p_tag(placeholder["2"].format(outcome)))
 
-        p_tag = self.log.new_tag("p")
-        p_tag.string = notes
+        if isinstance(outcome, int):
+            if 0 < outcome < 4:
+                div_tag.append(self.create_p_tag(placeholder["6"]))
+            elif 3 < outcome < 6:
+                div_tag.append(self.create_p_tag(placeholder["5"]))
+            elif outcome == 6:
+                div_tag.append(self.create_p_tag(placeholder["4"]))
+        else:
+            div_tag.append(self.create_p_tag(placeholder["3"]))
+
         div_tag.append(self.create_p_tag(notes, {"class": "user"}))
-
-        if (isinstance(roll, str) and roll == "CRITICAL") or (isinstance(roll, int) and roll >= 6):
-            self.indentation += 1
-            div_tag.append(self.create_add_claim_tag(False, extra_info))
-            self.indentation -= 1
-
-        elif isinstance(roll, int) and 1 <= roll < 3:
-            div_tag.append(self.create_p_tag(placeholder["3"].format(
-                pc, extra_info)))
 
         return div_tag
 
@@ -1028,7 +1049,7 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholders["1"].format(pc, armor_type)))
 
-        div_tag.append(self.create_p_tag(notes))
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
 
         return div_tag
 
@@ -1143,7 +1164,7 @@ class Journal:
 
         div_tag.append(self.create_p_tag(placeholders[choice.lower()]["1"].format(pc)))
 
-        div_tag.append(self.create_p_tag(description))
+        div_tag.append(self.create_p_tag(description, {"class": "user"}))
 
         return div_tag
 
@@ -1225,6 +1246,34 @@ class Journal:
             p_tag = self.log.new_tag("p")
         p_tag.append(BeautifulSoup(content, 'html.parser'))
         return p_tag
+
+    def create_details_tag(self, attrs: dict = None):
+        """
+        Method used to create a "details" tag.
+
+        :param attrs: attributes of the details tag. If there are no attributes is set to None
+        :return: a "details" Tag
+        """
+        if attrs:
+            d_tag = self.log.new_tag("details", attrs=attrs)
+        else:
+            d_tag = self.log.new_tag("details")
+        return d_tag
+
+    def create_summary_tag(self, content: str, attrs: dict = None):
+        """
+        Method used to create a "summary" tag.
+
+        :param content: content of the summary tag
+        :param attrs: attributes of the summary tag. If there are no attributes is set to None
+        :return: a "summary Tag
+        """
+        if attrs:
+            s_tag = self.log.new_tag("summary", attrs=attrs)
+        else:
+            s_tag = self.log.new_tag("summary")
+        s_tag.append(BeautifulSoup(content, 'html.parser'))
+        return s_tag
 
     def write_general(self, tag):
         """
@@ -1413,17 +1462,15 @@ class Journal:
 
         self.write_general(tag)
 
-    def write_incarceration(self, pc: str, roll: Union[str, int], extra_info: str, notes: str):
+    def write_incarceration(self, pc: str, outcome: Union[str, int], notes: str):
         """
         Method used to write the incarceration in the attribute journal representing the html file of the journal.
 
         :param pc: who is going to jail
-        :param roll: what he rolls
-        :param extra_info: if the roll is equal or higher than 6 (CRITICAL) it's the name of the new prison claim,
-        otherwise is the name of the trauma
+        :param outcome: what he rolls
         :param notes: extra notes
         """
-        tag = self.create_incarceration_tag(pc, roll, extra_info, notes)
+        tag = self.create_incarceration_tag(pc, outcome, notes)
 
         self.write_general(tag)
 
