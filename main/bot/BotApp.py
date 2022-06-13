@@ -916,6 +916,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addTypeCohort".casefold(), "typeCohort".casefold()], add_type_cohort)],
+            states={
+                0: [CallbackQueryHandler(add_type_cohort_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_type_cohort_type)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_type_cohort_end)],
+            name="conv_addTypeCohort",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

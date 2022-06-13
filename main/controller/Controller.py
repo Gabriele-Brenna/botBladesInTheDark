@@ -1649,7 +1649,7 @@ class Controller:
 
         elif activity == "train":
             points = 1 + (
-                        downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
+                    downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
             attr = pc.get_attribute_by_name(downtime_info["attribute"])
             if attr is None:
                 pc.playbook.add_exp(points)
@@ -2152,6 +2152,42 @@ class Controller:
         if isinstance(pc, Hull):
             pc.select_frame(frame_size)
             update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+    def is_pc_name_already_present(self, game_id: int, pc_name: str) -> bool:
+        """
+        Checks if the name selected is already taken by another pc in the game.
+
+        :param game_id: the id of the game.
+        :param pc_name: the name of the pc.
+        :return: True if the name is already present, False otherwise
+        """
+        game = self.get_game_by_id(game_id)
+
+        if pc_name.lower() in [pc.name.lower() for pc in game.get_pcs_list()]:
+            return True
+        return False
+
+    def commit_add_cohort_type(self, game_id: int, cohort_type_info: dict):
+        """
+        Adds the given type to the selected cohort and updates the crew in the DB.
+
+        :param game_id: the id of the game.
+        :param cohort_type_info: a dictionary with the info used to add the harm
+        """
+        game = self.get_game_by_id(game_id)
+        crew = self.get_game_by_id(game_id).crew
+
+        cohorts_alive = []
+        for cohort in crew.cohorts:
+            if cohort.harm < 4:
+                cohorts_alive.append(cohort)
+        cohort = cohorts_alive[cohort_type_info["cohort"]]
+        cohort.type.append(cohort_type_info["type"])
+
+        crew.crew_exp.add_points(-1)
+
+        insert_crew_json(game_id, save_to_json(crew))
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)
