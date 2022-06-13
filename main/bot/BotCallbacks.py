@@ -2182,7 +2182,11 @@ def roll_dice(update: Update, context: CallbackContext, dice_to_roll: int = None
         time.sleep(3)
 
     if dice != 1:
-        t = Thread(target=execute, kwargs={"r": rolls})
+        try:
+            dice_to_send = rolls[0: ([i for i, dice in enumerate(rolls) if dice == 6][1] + 1)]
+        except IndexError:
+            dice_to_send = rolls.copy()
+        t = Thread(target=execute, kwargs={"r": dice_to_send})
         t.start()
         t.join()
 
@@ -6709,9 +6713,8 @@ def downtime_notes(update: Update, context: CallbackContext) -> Optional[int]:
                                                       context.chat_data["downtime"]["info"])
 
     for key in return_dict.keys():
-        message = context.chat_data["downtime"]["invocation_message"].reply_text(
+        context.chat_data["downtime"]["invocation_message"].reply_text(
             placeholders[str(key)].format(return_dict[key]), ParseMode.HTML)
-        auto_delete_message(message, 20)
 
     return downtime_end(update, context)
 
@@ -7634,6 +7637,389 @@ def retire_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_retire-----------------------------------------------------------------
+
+
+# ------------------------------------------conv_flashback--------------------------------------------------------------
+
+
+def flashback(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user controls a PC in this chat and starts the conversation of the flashback roll.
+    Adds the dict "flashback" in chat_data and stores the ID of the invoker and his active PC in it.
+    Finally, sends the goal request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, flashback.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"], 3):
+        return flashback_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        update.message.reply_text(placeholders["err2"], parse_mode=ParseMode.HTML)
+        return flashback_end(update, context)
+
+    add_tag_in_telegram_data(context, ["flashback", "invoker"], get_user_id(update), "chat")
+
+    add_tag_in_telegram_data(context, ["flashback", "info", "pc"], context.user_data["active_PCs"][chat_id], "chat")
+
+    add_tag_in_telegram_data(context, ["flashback", "invocation_message"], update.message, "chat")
+
+    message = context.chat_data["flashback"]["invocation_message"].reply_text(
+        placeholders["0"], parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["flashback", "message"], message, "chat")
+
+    return 0
+
+
+def flashback_goal(update: Update, context: CallbackContext) -> Optional[int]:
+    """
+    Stores the goal's description in the chat_data and sends the master the stress request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: he next state of the conversation.
+    """
+    placeholders = get_lang(context, flashback_goal.__name__)
+    if context.chat_data["flashback"]["invoker"] != get_user_id(update):
+        return
+
+    add_tag_in_telegram_data(context, ["flashback", "info", "goal"], update.message.text, "chat")
+
+    message = context.chat_data["flashback"]["invocation_message"].reply_text(
+        placeholders["0"].format(context.chat_data["flashback"]["info"]["pc"], update.message.text),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["flashback", "message"], message, "chat")
+
+    return 1
+
+
+def flashback_stress(update: Update, context: CallbackContext) -> Optional[int]:
+    """
+    Stores the amount of stress to pay selected by the GM and asks him what the flashback will entail.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    if not controller.is_master(get_user_id(update), update.effective_message.chat_id):
+        return
+
+    placeholders = get_lang(context, flashback_stress.__name__)
+    context.chat_data["flashback"]["message"].delete()
+    try:
+        stress = int(update.message.text)
+    except:
+        message = context.chat_data["flashback"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["flashback", "message"], message, "chat")
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["flashback", "info", "stress"], stress, "chat")
+
+    message = context.chat_data["flashback"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML,
+        reply_markup=custom_kb(placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+    add_tag_in_telegram_data(context, ["flashback", "message"], message, "chat")
+
+    return 0
+
+
+def flashback_entail(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the entailment selected by the GM, then calls the commit_flashback method of the controller
+    and ends the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, flashback_entail.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    if choice == "/actionRoll" or choice == "/fortuneRoll":
+        entail = choice == "/actionRoll"
+        add_tag_in_telegram_data(context, ["flashback", "info", "entail"], entail, "chat")
+
+        context.chat_data["flashback"]["invocation_message"].reply_text(placeholders["0"].format(choice),
+                                                                        ParseMode.HTML)
+    else:
+        context.chat_data["flashback"]["invocation_message"].reply_text(placeholders["1"], ParseMode.HTML)
+
+    traumas = controller.commit_flashback(update.effective_message.chat_id, context.chat_data["flashback"]["invoker"],
+                                          context.chat_data["flashback"]["info"])
+
+    if traumas is not None:
+        message = context.chat_data["flashback"]["invocation_message"].reply_text(
+            placeholders["2"].format(traumas), ParseMode.HTML)
+        auto_delete_message(message, 20)
+
+    return flashback_end(update, context)
+
+
+def flashback_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the flashback conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "flashback", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_flashback--------------------------------------------------------------
+
+
+# ------------------------------------------conv_incarceration----------------------------------------------------------
+
+
+def incarceration_roll(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the conversation of the incarceration roll.
+    Adds the dict "incarceration" and sends the inline keyboard used to choose the "target" of the roll: an NPC or the
+    active pc of the user (if present).
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, incarceration_roll.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return incarceration_roll_end(update, context)
+
+    chat_id = update.effective_message.chat_id
+    keyboard = placeholders["keyboard"].copy()
+    callbacks = placeholders["callbacks"].copy()
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        keyboard.pop(0)
+        callbacks.pop(0)
+
+    add_tag_in_telegram_data(context, ["incarceration", "invocation_message"], update.message)
+
+    message = context.user_data["incarceration"]["invocation_message"].reply_text(
+        placeholders["0"], parse_mode=ParseMode.HTML, reply_markup=custom_kb(keyboard, True, 1, callbacks))
+
+    add_tag_in_telegram_data(context, ["incarceration", "message"], message)
+
+    return 0
+
+
+def incarceration_roll_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the choice of the user and sends the bonus dice request if the choice was its active pc,
+    or the inline keyboard to select the npc for the roll.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, incarceration_roll_choice.__name__)
+    context.user_data["incarceration"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    chat_id = update.effective_message.chat_id
+    game_id = query_game_of_user(chat_id, get_user_id(update))
+
+    crew_tier = controller.get_crew_tier(game_id)
+    add_tag_in_telegram_data(context, ["incarceration", "tier"], crew_tier)
+
+    add_tag_in_telegram_data(context, ["incarceration", "bonus_dice"], 0)
+
+    # Active PC
+    if choice == 1:
+        add_tag_in_telegram_data(context, ["incarceration", "roll", "type"], "pc")
+        placeholders = get_lang(context, "bonus_dice")
+        add_tag_in_telegram_data(context, ["incarceration", "roll", "pc"],
+                                 context.user_data["active_PCs"][chat_id])
+        query_menu = context.user_data["incarceration"]["invocation_message"].reply_text(
+            placeholders["message"].format(crew_tier), parse_mode=ParseMode.HTML,
+            reply_markup=build_plus_minus_keyboard(
+                [placeholders["button"].format(0)], done_button=True, back_button=False))
+
+        add_tag_in_telegram_data(context, ["incarceration", "query_menu"], query_menu)
+        return 2
+    # NPC
+    else:
+        add_tag_in_telegram_data(context, ["incarceration", "roll", "type"], "npc")
+        npcs = controller.get_npcs_contacts(game_id)
+        buttons_list = []
+        buttons = []
+        for i in range(len(npcs)):
+            buttons.append(npcs[i])
+            if (i + 1) % 5 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        add_tag_in_telegram_data(context, tags=["incarceration", "buttons_list"], value=buttons_list)
+        add_tag_in_telegram_data(context, tags=["incarceration", "query_menu_index"], value=0)
+
+        context.user_data["incarceration"]["query_menu"] = \
+            context.user_data["incarceration"]["invocation_message"].reply_text(placeholders["0"],
+                                                                                parse_mode=ParseMode.HTML,
+                                                                                reply_markup=build_multi_page_kb(
+                                                                                    buttons_list[0]))
+        return 1
+
+
+def incarceration_roll_npc(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the npc selected and sends the bonus dice request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, incarceration_roll_npc.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["incarceration"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index >= len(context.user_data["incarceration"]["buttons_list"]):
+            index = 0
+        context.user_data["incarceration"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["incarceration"]["buttons_list"]):
+            index = 0
+
+        context.user_data["incarceration"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        if "$" in choice:
+            placeholders = get_lang(context, "bonus_dice")
+            add_tag_in_telegram_data(context,  tags=["incarceration", "roll", "pc"], value=name)
+            context.user_data["incarceration"]["query_menu"].delete()
+            query_menu = context.user_data["incarceration"]["invocation_message"].reply_text(
+                placeholders["message"].format(context.user_data["incarceration"]["tier"]),
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_plus_minus_keyboard(
+                    [placeholders["button"].format(0)], done_button=True, back_button=False))
+
+            add_tag_in_telegram_data(context, ["incarceration", "query_menu"], query_menu)
+            return 2
+        else:
+            npc_name = name.split(", ")[0]
+            npc_role = name.split(", ")[1]
+            description = query_npcs(name=npc_name,
+                                     role=npc_role, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 1
+
+    context.user_data["incarceration"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["incarceration"]["buttons_list"][context.user_data["incarceration"]["query_menu_index"]]))
+    return 1
+
+
+def incarceration_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the addition or removal of bonus dice and updates the related Keyboard.
+    When the user confirms, the number of dice to roll is passed to roll_dice method.
+    Then, the outcome is stored in the user_data and the final description request is sent.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation when the "DONE" button is pressed.
+    """
+    placeholders = get_lang(context, incarceration_roll_bonus_dice.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    bonus_dice = context.user_data["incarceration"]["bonus_dice"]
+    tier = context.user_data["incarceration"]["tier"]
+
+    choice = query.data
+    if "+" in choice or "-" in choice:
+        tags = ["incarceration", "bonus_dice"]
+        bonus_dice += int(choice.split(" ")[2])
+        add_tag_in_telegram_data(context, tags=tags, value=bonus_dice)
+
+        update_bonus_dice_kb(context, tags, bonus_dice + tier, "user")
+
+    elif choice == "DONE":
+        dice_to_roll = bonus_dice + tier
+
+        context.user_data["incarceration"]["query_menu"].delete()
+
+        roll_dice(update, context, dice_to_roll, ["incarceration", "roll", "outcome"], "user")
+
+        context.user_data["incarceration"]["message"] = \
+            context.user_data["incarceration"]["invocation_message"].reply_text(
+                placeholders["0"], parse_mode=ParseMode.HTML)
+        return 3
+
+    else:
+        bonus_dice_lang = get_lang(context, "bonus_dice")
+        auto_delete_message(update.effective_message.reply_text(bonus_dice_lang["extended"], parse_mode=ParseMode.HTML),
+                            bonus_dice_lang["extended"])
+
+    return 2
+
+
+def incarceration_roll_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the final description of the incarceration roll in the user_data,
+    calls the controller method to apply the roll's
+    effects and eventually sends the notification about the effect of thhe roll.
+    Finally, calls resistance_roll_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to incarceration_roll_end
+    """
+    placeholders = get_lang(context, incarceration_roll_notes.__name__)
+
+    add_tag_in_telegram_data(context, ["incarceration", "roll", "notes"], update.message.text)
+
+    return_dict = controller.commit_incarceration_roll(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                                       context.user_data["incarceration"]["roll"])
+    for key in return_dict.keys():
+        context.user_data["incarceration"]["invocation_message"].reply_text(
+            placeholders[str(key)].format(return_dict[key]), ParseMode.HTML)
+
+    return incarceration_roll_end(update, context)
+
+
+def incarceration_roll_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the incarceration roll conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "incarceration", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_incarceration----------------------------------------------------------
 
 
 # ------------------------------------------conv_addNote----------------------------------------------------------------

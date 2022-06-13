@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 
 from character.Human import Human
 from character.Owner import Owner
+from character.Vampire import Vampire
 from component.Clock import Clock
 from controller.DBreader import *
 from controller.DBwriter import *
@@ -1940,6 +1941,7 @@ class Controller:
         :param game_id: the id of the game.
         :param cohort_armor_info: a dictionary with the info used to add the harm
         """
+        game = self.get_game_by_id(game_id)
         crew = self.get_game_by_id(game_id).crew
 
         cohorts_alive = []
@@ -1986,6 +1988,84 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+    def commit_flashback(self, chat_id: int, user_id: int, flashback: dict) -> Optional[int]:
+        """
+        Adds the stress to pay to the pc who is performing the flashback, then updates the database
+
+        :param chat_id: the Telegram id of the user.
+        :param user_id: the Telegram chat id of the user.
+        :param flashback: a dictionary with the info of the flashback
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        player = game.get_player_by_id(user_id)
+
+        traumas = player.get_character_by_name(flashback["pc"]).add_stress(flashback["stress"])
+
+        update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+        game.journal.write_flashback(**flashback)
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        if traumas > 0:
+            return traumas
+
+    def get_npcs_contacts(self, game_id: int) -> List[str]:
+        """
+        Get the NPCs that are friend, enemies or servants of the PCs of the crew, or the crew's contact.
+
+        :param game_id: id of the Game.
+        :return: a list of strings representing the name of the NPCs affiliated with the crew and its members.
+        """
+        game = self.get_game_by_id(game_id)
+
+        contacts = {game.crew.contact.name + ", " + game.crew.contact.role}
+
+        for pc in game.get_pcs_list():
+            if isinstance(pc, Human):
+                contacts.add(pc.friend.name + ", " + pc.friend.role)
+                contacts.add(pc.enemy.name + ", " + pc.enemy.role)
+            elif isinstance(pc, Vampire):
+                for servant in pc.dark_servants:
+                    contacts.add(servant.name + ", " + servant.role)
+
+        return list(contacts)
+
+    def commit_incarceration_roll(self, game_id: int, incarceration: dict) -> dict:
+        """
+        Applies the effects of the incarceration roll to the game: clears the crew's heat, reduces its wanted level, and
+        depending on the roll result, increase the rep of the crew.
+
+        :param game_id: id of the Game.
+        :param incarceration: a dictionary containing the info about the roll
+        :return: a dictionary (eventually an empty) with the some info used to notify the user of some changes .
+        """
+        game = self.get_game_by_id(game_id)
+
+        crew = game.crew
+
+        crew.clear_heat()
+        crew.add_wanted_level(-1)
+        return_dict = {}
+
+        if isinstance(incarceration["outcome"], str):
+            coins = crew.add_rep(3)
+            return_dict["coins"] = coins
+            return_dict["prison_claim"] = 1
+            return_dict["status"] = 1
+        elif incarceration["outcome"] == 6:
+            return_dict["prison_claim"] = 1
+            return_dict["status"] = 1
+            insert_crew_json(game_id, save_to_json(crew))
+        elif incarceration["outcome"] <= 3 and incarceration["type"] != "npc":
+            return_dict["traumas"] = 1
+
+        incarceration.pop("type")
+
+        game.journal.write_incarceration(**incarceration)
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        return return_dict
 
     def commit_add_note(self, chat_id: int, user_id: int, add_note: dict):
         """

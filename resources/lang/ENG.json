@@ -1035,6 +1035,57 @@
       "0": "You must do:\n- /changePc to set a new pc as active if you have another pc;\n- /join  if you want to continue as a new scoundrel"
     },
 
+    "flashback": {
+      "err": "You can't perform a flashback without being in a game... /join to take part in a game.",
+      "err2": "You don't have any active pc...",
+      "0": "What do you want to accomplish with this flashback ?"
+    },
+
+    "flashback_goal": {
+      "0": "<u>{}</u> is having a flashback: <i>{}</i>\nThe GM has to decide how much stress this flashback will cost",
+      "keyboard": [0,1,2,3,4,5]
+    },
+
+    "flashback_stress": {
+      "err": "You should write a number...",
+      "0": "The GM also has to set what this flashback entails",
+      "keyboard": ["Action Roll", "Fortune Roll", "Already accomplished"],
+      "callbacks": ["/actionRoll", "/fortuneRoll", "None"]
+    },
+
+    "flashback_entail": {
+      "0": "The flashback will be resolved with\n{}",
+      "1": "The flashback is already accomplished simply paying the stress cost",
+      "2": "You suffered too much stress. {} trauma to add.\n/addTrauma"
+    },
+
+    "incarceration_roll": {
+      "err": "You can't perform an incarceration roll without being in a game... /join to take part in a game.",
+      "0": "Select who is performing the action",
+      "keyboard": ["Active PC", "NPC"],
+      "callbacks": [1,2]
+    },
+
+    "incarceration_roll_choice": {
+      "0": "Select the contact of yours"
+    },
+
+    "incarceration_roll_bonus_dice": {
+      "0": "Write some extra notes about the incarceration"
+    },
+
+    "incarceration_roll_npc": {
+      "0": "Select the contact of yours",
+      "404": "Description not found"
+    },
+
+    "incarceration_roll_notes": {
+      "prison_claim": "You conquered <i>{}</i> new claim in prison.\n/addClaim",
+      "coins": "You reached the maximum level of reputation.\nUse /upgradeCrew to increase your crew tier or change your hold; don't forget to pay <i>{}</i> coins before.\nYou can use /coin to manage your possession",
+      "traumas": "You are traumatized by the experience in prison and got <i>{}</i> trauma. \n/addTrauma",
+      "status": "You get to add <i>+{}</i> faction status with a faction that you assisted while you served your time"
+    },
+
     "add_note": {
       "0": "Write the title of your note"
     },
