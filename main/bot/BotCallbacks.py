@@ -8319,12 +8319,83 @@ def end_game_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END
     """
-    delete_conv_from_telegram_data(context, "incarceration", "user")
+    delete_conv_from_telegram_data(context, "end_game", "user")
 
     return end_conv(update, context)
 
 
 # ------------------------------------------conv_endGame----------------------------------------------------------------
+
+
+# ------------------------------------------conv_change_frame_size------------------------------------------------------
+
+
+def change_frame_size(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation to change the frame size and sends the user the inline keyboard with the options if
+    their active pc is an Hull.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_frame_size.__name__)
+
+    chat_id = update.message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        auto_delete_message(update.message.reply_text(placeholders["err"], ParseMode.HTML))
+        return change_frame_size_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+    if controller.get_pc_type(chat_id, get_user_id(update), pc_name) != "Hull":
+        auto_delete_message(update.message.reply_text(placeholders["err2"], ParseMode.HTML))
+        return change_frame_size_end(update, context)
+
+    add_tag_in_telegram_data(context, ["frame_size", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["frame_size", "pc"], pc_name)
+
+    message = update.message.reply_text(placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+        placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+
+    add_tag_in_telegram_data(context, ["frame_size", "message"], message)
+
+    return 0
+
+
+def change_frame_size_choice(update: Update, context: CallbackContext) -> int:
+    """
+    If the users it's confident the request of the final notes is sent; the conversation is ended otherwise
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    controller.commit_change_frame_size(update.effective_message.chat_id, get_user_id(update),
+                                        context.user_data["frame_size"]["pc"], choice)
+
+    return change_frame_size_end(update, context)
+
+
+def change_frame_size_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the end change frame size end and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "frame_size", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_change_frame_size------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

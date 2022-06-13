@@ -903,6 +903,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changeFrameSize".casefold(), "FrameSize".casefold(),
+                                          "changeFS".casefold()], change_frame_size)],
+            states={
+                0: [CallbackQueryHandler(change_frame_size_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_frame_size_end)],
+            name="conv_change_frame_size",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

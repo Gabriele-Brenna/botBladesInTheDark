@@ -1124,6 +1124,14 @@
 
     "end_game_notes": {
       "0": "The game has been canceled.\n/createGame and /join to start a new one.\nThese are all the files of the last game: "
+    },
+
+    "change_frame_size": {
+      "0": "Select the frame size",
+      "err": "You don't have an active PC in this chat... /join to take part in a game",
+      "err2": "You cant' chang the frame size if you are not an Hull",
+      "keyboard": ["Small", "Medium", "Heavy"],
+      "callbacks": ["S","M","H"]
     }
 
   },

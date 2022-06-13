@@ -19,7 +19,7 @@ class Hull(PC, ISavable):
                  healing: Clock = None, armors: List[bool] = None, abilities: List[SpecialAbility] = None,
                  playbook: Playbook = Playbook(8), attributes: List[Attribute] = None, load: int = 0,
                  xp_triggers: List[str] = None, description: str = "",
-                 downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "small",
+                 downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "S",
                  frame_features: List[SpecialAbility] = None, migrating_character: PC = None) -> None:
 
         if migrating_character is not None:
@@ -68,10 +68,10 @@ class Hull(PC, ISavable):
         """
         Allows the selection of the frame for your Hull.
 
-        :param frame_type: is the selected type of frame
+        :param frame_type: is the selected type of framee
         :return: True if a correct frame type was given, False otherwise
         """
-        if frame_type.lower() == "small" or "medium" or "large" or "s" or "m" or "l":
+        if frame_type.lower() == "s" or "m" or "h":
             self.frame = frame_type
             return True
         return False

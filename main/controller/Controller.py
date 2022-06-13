@@ -3,6 +3,7 @@ import threading
 
 from bs4 import BeautifulSoup
 
+from character.Hull import Hull
 from character.Human import Human
 from character.Owner import Owner
 from character.Vampire import Vampire
@@ -2132,6 +2133,25 @@ class Controller:
         self.games.remove(game)
 
         return game_obj
+
+    def commit_change_frame_size(self, chat_id: int, user_id: int, pc_name: str, frame_size: str):
+        """
+        Changes thhe frame size of the selected pc.
+
+        :param pc_name: the name of the users' active pc
+        :param frame_size: then selected frame size.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        """
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        player = game.get_player_by_id(user_id)
+        pc = player.get_character_by_name(pc_name)
+
+        if isinstance(pc, Hull):
+            pc.select_frame(frame_size)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
 
     def __repr__(self) -> str:
         return str(self.games)
