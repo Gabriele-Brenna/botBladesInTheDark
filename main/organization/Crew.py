@@ -87,6 +87,8 @@ class Crew(Organization, ISavable, IDrawable):
         self.wanted_level += wanted_level
         if self.wanted_level > 4:
             self.wanted_level = 4
+        if self.wanted_level < 0:
+            self.wanted_level = 0
 
     def add_heat(self, heat: int) -> int:
         """

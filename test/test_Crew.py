@@ -64,6 +64,8 @@ class TestCrew(TestCase):
         self.assertEqual(2, self.shadows.wanted_level)
         self.shadows.add_wanted_level(3)
         self.assertEqual(4, self.shadows.wanted_level)
+        self.shadows.add_wanted_level(-7)
+        self.assertEqual(0, self.shadows.wanted_level)
 
     def test_add_heat(self):
         self.smugglers.add_heat(17)

@@ -819,6 +819,48 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["flashback".casefold(), "flash".casefold()], flashback)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, flashback_goal)],
+                1: [ConversationHandler(
+                    entry_points=[MessageHandler(Filters.text & ~Filters.command, flashback_stress)],
+                    states={
+                        0: [CallbackQueryHandler(flashback_entail)],
+                    },
+                    fallbacks=[CommandHandler("cancel".casefold(), flashback_end)],
+                    name="conv_flashback_master",
+                    persistent=True,
+                    map_to_parent={
+                        1: 1,
+                        ConversationHandler.END: ConversationHandler.END
+                    }
+                )]
+            },
+            per_user=False,
+            fallbacks=[CommandHandler("cancel".casefold(), flashback_end)],
+            name="conv_flashback",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["incarceration".casefold(), "incarcerationRoll".casefold(),
+                                          "incRoll".casefold(), "ir".casefold()], incarceration_roll)],
+            states={
+                0: [CallbackQueryHandler(incarceration_roll_choice)],
+                1: [CallbackQueryHandler(incarceration_roll_npc)],
+                2: [CallbackQueryHandler(incarceration_roll_bonus_dice)],
+                3: [MessageHandler(Filters.text & ~Filters.command, incarceration_roll_notes)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), incarceration_roll_end)],
+            name="conv_incarceration",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
