@@ -1170,6 +1170,25 @@ class Journal:
 
         return div_tag
 
+    def create_end_game_tag(self, notes: str):
+        """
+        Method used to create and insert a div tag with class attribute set to "endGame".
+
+        :param notes: description of the end of the game
+        :return: the div Tag
+        """
+        placeholders = self.get_lang(self.write_end_game.__name__)
+
+        div_tag = self.create_div_tag({"class": "endGame"})
+
+        div_tag.append(self.create_h2_tag(placeholders["0"]))
+
+        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+
+        div_tag.append(self.create_h3_tag(placeholders["1"], {"style": "text-align: center"}))
+
+        return div_tag
+
     def get_indentation(self) -> int:
         """
         Method used to get the percentage indentation based on the value of the attribute indentation
@@ -1597,6 +1616,17 @@ class Journal:
         :param choice: if the pcs dies or retire
         """
         tag = self.create_retire_tag(pc, description, choice)
+
+        self.write_general(tag)
+
+    def write_end_game(self, notes: str):
+        """
+        Method used to write the description of the end of the game in the attribute journal representing
+        the html file of the journal.
+
+        :param notes: description of the end of the game
+        """
+        tag = self.create_end_game_tag(notes)
 
         self.write_general(tag)
 

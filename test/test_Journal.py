@@ -13,7 +13,7 @@ class TestJournal(TestCase):
         temp.write_phase(1)
         temp.write_phase(2)
         temp.write_phase(3)
-        temp.write_general_notes("General note title", "This is a general note")
+        temp.write_note("General note title", "This is a general note")
         temp.write_fortune_roll("User", "quality of the Item: Sword", "Will it kill the monster", 6, "Extra notes")
         temp.write_action("user", "goal", "action", "position", "effect", 5, "notes", assistants=["user2", "user3"], push=True, devil_bargain="devil bargain")
         temp.write_score("scoring", "category", "plan type", "target", "detail", [("user1", 5), ("user2", 2)], "controlled", "extra notes")
@@ -55,6 +55,8 @@ class TestJournal(TestCase):
         temp.edit_note("another use of the long rifle", 1)
 
         self.assertEqual("another use of the long rifle", temp.read_note(1))
+
+        temp.write_end_game("notes about the end of the game")
 
         with open("resources_test/journalTest.html", 'w+') as f:
             f.write(temp.get_log_string())

@@ -1365,6 +1365,10 @@
         "4,5": "you are in a <i>risky</i> position when the action starts",
         "1,2,3": "you are in a <i>desperate</i> position when the action starts"
       }
+    },
+    "write_end_game": {
+      "0": "THE END",
+      "1": "That's all scoundrels!!!"
     }
   }
 }
