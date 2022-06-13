@@ -889,6 +889,20 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["endGame".casefold(), "endSession".casefold(),
+                                          "cancelGame".casefold(), "cancelSession".casefold()], end_game)],
+            states={
+                0: [CallbackQueryHandler(end_game_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, end_game_notes)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_game_end)],
+            name="conv_endGame",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

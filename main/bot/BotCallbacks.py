@@ -3338,6 +3338,10 @@ def score_end(update: Update, context: CallbackContext) -> int:
 def send_character_sheet(update: Update, context: CallbackContext) -> None:
     placeholders = get_lang(context, send_character_sheet.__name__)
     chat_id = update.effective_message.chat_id
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return
+
     if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
         img_bytes, file_name = controller.get_character_sheet_image(chat_id, get_user_id(update),
                                                                     context.user_data["active_PCs"][chat_id])
@@ -3355,7 +3359,7 @@ def send_crew_sheet(update: Update, context: CallbackContext) -> None:
 
     if controller.game_has_crew(query_game_of_user(update.effective_message.chat_id, get_user_id(update))):
         chat_id = update.effective_message.chat_id
-        img_bytes, file_name = controller.get_crew_sheet_image(chat_id, get_user_id(update))
+        img_bytes, file_name = controller.get_crew_sheet_image(query_game_of_user(chat_id, get_user_id(update)))
         update.effective_message.reply_photo(photo=img_bytes, filename=file_name, caption=placeholders["1"])
     else:
         update.message.reply_text(placeholders["0"])
@@ -8227,6 +8231,100 @@ def edit_note_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_editNote---------------------------------------------------------------
+
+
+# ------------------------------------------conv_endGame----------------------------------------------------------------
+
+
+def end_game(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation to end a game and sends the user the inline keyboard to verify their intention.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game.__name__)
+
+    add_tag_in_telegram_data(context, ["end_game", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+        placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+
+    add_tag_in_telegram_data(context, ["end_game", "message"], message)
+
+    return 0
+
+
+def end_game_choice(update: Update, context: CallbackContext) -> int:
+    """
+    If the users it's confident the request of the final notes is sent; the conversation is ended otherwise
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    if choice == 2:
+        return end_game_end(update, context)
+
+    context.user_data["end_game"]["message"].delete()
+
+    message = context.user_data["end_game"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["end_game", "message"], message)
+
+    return 1
+
+
+def end_game_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method end game, then ends the conversation after sending all the game files to the user
+    using a separate thread.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game_notes.__name__)
+    context.user_data["end_game"]["message"].delete()
+
+    game_obj = controller.end_game(
+        query_game_of_user(update.effective_message.chat_id, get_user_id(update)), update.message.text)
+
+    context.user_data["end_game"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+
+    def execute() -> None:
+        for obj in game_obj:
+            context.bot.send_document(update.effective_message.chat_id, obj[0], obj[1])
+            time.sleep(3)
+
+    t = Thread(target=execute)
+    t.start()
+
+    update.message.delete()
+    return end_game_end(update, context)
+
+
+def end_game_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the end game conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "incarceration", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_endGame----------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

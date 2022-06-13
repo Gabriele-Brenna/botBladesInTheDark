@@ -438,7 +438,8 @@
 
     "send_character_sheet": {
       "0": "You don't have an active PC in this chat... /join to take part in a game",
-      "1": "Here is your character's sheet"
+      "1": "Here is your character's sheet",
+      "err": "You can't see a character sheet without being in a game... /join to take part in a game"
     },
 
     "send_crew_sheet": {
@@ -1109,6 +1110,20 @@
 
     "edit_note_correct": {
       "0": "Insert the new text of the note"
+    },
+
+    "end_game": {
+      "0": "Are you sure? All the progress in this game and all the characters will be deleted.",
+      "keyboard": ["Yes", "No"],
+      "callbacks": [1,2]
+    },
+
+    "end_game_choice": {
+      "0": "Write some notes to describe the end of the adventure"
+    },
+
+    "end_game_notes": {
+      "0": "The game has been canceled.\n/createGame and /join to start a new one.\nThese are all the files of the last game: "
     }
 
   },

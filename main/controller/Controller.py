@@ -370,16 +370,15 @@ class Controller:
             kwargs["crew_name"] = game.crew.name
         return game.get_player_by_id(user_id).get_character_by_name(pc_name).draw_image(**kwargs), (pc_name + ".png")
 
-    def get_crew_sheet_image(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+    def get_crew_sheet_image(self, game_id: int) -> Tuple[bytes, str]:
         """
         Retrieves the Crew's sheet PNG file of the specified game as a bytes array
         and builds the file's name using the Crew's name.
 
-        :param chat_id: the Telegram id of the user who invoked the action roll.
-        :param user_id: the Telegram chat id of the user.
+        :param game_id: id of the Game.
         :return: a Tuple that contains the bytes of the file and a string that represents its name.
         """
-        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game = self.get_game_by_id(game_id)
         return game.crew.draw_image(), (game.crew.name + ".png")
 
     def get_interactive_map(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
@@ -2104,6 +2103,35 @@ class Controller:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         game.journal.edit_note(**edit_note)
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def end_game(self, game_id: int, notes: str) -> List[Tuple[bytes, str]]:
+        """
+        Writes the final notes in the journal, sends the game files to the users,
+        then Removes a game from the list of games and deletes it from the database.
+
+        :param game_id: id of the Game.
+        :param notes: final notes to write in the journal.
+        :return: a list of Tuples that contains the bytes of the files and a string that represents their names.
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.journal.write_end_game(notes)
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        game_obj = [self.get_journal_of_game(game_id)]
+        try:
+            game_obj.append(self.get_crew_sheet_image(game_id))
+        except:
+            pass
+        for user in game.users:
+            for pc in user.characters:
+                game_obj.append(self.get_character_sheet_image(game.chat_id, user.player_id, pc.name))
+
+        delete_game(game_id)
+
+        self.games.remove(game)
+
+        return game_obj
 
     def __repr__(self) -> str:
         return str(self.games)
