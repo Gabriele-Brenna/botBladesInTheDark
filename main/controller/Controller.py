@@ -3,6 +3,7 @@ import threading
 
 from bs4 import BeautifulSoup
 
+from character.Hull import Hull
 from character.Human import Human
 from character.Owner import Owner
 from character.Vampire import Vampire
@@ -1776,9 +1777,24 @@ class Controller:
             abilities_dict.append(ab.__dict__)
 
         pc_abilities = query_special_abilities(self.get_pc_class(chat_id, user_id, pc_name), as_dict=True)
-        return self.remove_duplicate_abilities(pc_abilities, abilities_dict)
+        abilities = self.remove_duplicate_abilities(pc_abilities, abilities_dict)
 
-    def get_all_abilities(self, chat_id: int, user_id: int, selection: str, pc_name: str) -> List[str]:
+        if self.get_pc_type(chat_id, user_id, pc_name).casefold() == "Human".casefold():
+            abilities.append("Veteran")
+
+        return abilities
+
+    def is_vampire(self, chat_id: int, user_id: int, pc_name: str) -> bool:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        return isinstance(pc, Vampire)
+
+    def is_hull(self, chat_id: int, user_id: int, pc_name: str) -> bool:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        return isinstance(pc, Hull)
+
+    def get_all_abilities(self, chat_id: int, user_id: int, selection: int, pc_name: str) -> List[str]:
         """
         Method used to get all the special abilities for a character or crew.
 
@@ -1789,7 +1805,7 @@ class Controller:
         :return: a list of str containing the names of the special abilities.
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
-        if selection == "pc":
+        if selection == 2:
             pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
             abilities = query_special_abilities(pc=True, as_dict=True)
             pc_abilities = pc.abilities
@@ -1797,7 +1813,7 @@ class Controller:
             for ab in pc_abilities:
                 abilities_dict.append(ab.__dict__)
             return self.remove_duplicate_abilities(abilities, abilities_dict)
-        elif selection == "crew":
+        elif selection == 1:
             crew = game.crew
             abilities = query_special_abilities(pc=False, as_dict=True)
             crew_abilities = crew.abilities
@@ -1805,6 +1821,31 @@ class Controller:
             for ab in crew_abilities:
                 abilities_dict.append(ab.__dict__)
             return self.remove_duplicate_abilities(abilities, abilities_dict)
+
+    def get_strictures(self, chat_id: int, user_id: int, pc_name: str) -> List[str]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        abilities = query_special_abilities(stricture=True, as_dict=True)
+        pc_abilities = []
+        if isinstance(pc, Vampire):
+            pc_abilities = pc.strictures
+        abilities_dict = []
+        for ab in pc_abilities:
+            abilities_dict.append(ab.__dict__)
+        return self.remove_duplicate_abilities(abilities, abilities_dict)
+
+    def get_frame_features(self, chat_id: int, user_id: int, pc_name: str) -> List[str]:
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+        abilities = []
+        pc_abilities = []
+        if isinstance(pc, Hull):
+            abilities = query_special_abilities(frame_feature=pc.frame, as_dict=True)
+            pc_abilities = pc.frame_features
+        abilities_dict = []
+        for ab in pc_abilities:
+            abilities_dict.append(ab.__dict__)
+        return self.remove_duplicate_abilities(abilities, abilities_dict)
 
     def commit_add_ability(self, chat_id: int, user_id: int, add_ability: dict, pc_name: str = None):
         """
@@ -1817,10 +1858,15 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
-        if pc_name is not None and add_ability["selection"].lower() == "pc":
-            game.get_player_by_id(user_id).get_character_by_name(pc_name).abilities.append(
-                query_special_abilities(special_ability=add_ability["ability"])[0])
-            game.get_player_by_id(user_id).get_character_by_name(pc_name).playbook.points -= 1
+        if pc_name is not None:
+            pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
+            if add_ability["selection"] == 2:
+                pc.abilities.append(query_special_abilities(special_ability=add_ability["ability"])[0])
+                pc.playbook.points -= 1
+            elif isinstance(pc, Vampire) and add_ability["selection"] == 3:
+                pc.strictures.append(query_special_abilities(special_ability=add_ability["ability"])[0])
+            elif isinstance(pc, Hull) and add_ability["selection"] == 4:
+                pc.frame_features.append(query_special_abilities(special_ability=add_ability["ability"])[0])
             update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
         else:
             game.crew.abilities.append(query_special_abilities(special_ability=add_ability["ability"])[0])
