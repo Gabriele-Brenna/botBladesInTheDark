@@ -36,7 +36,9 @@ class Journal:
         """
         notes = self.log.find_all(attrs={"class": "user"}, recursive=True)
         number = - number
-        return notes[number] if len(notes) > 0 else None
+        if len(notes) == 0 or number > len(notes):
+            return None
+        return notes[number]
 
     def read_note(self, number: int = 1) -> str:
         """
@@ -247,19 +249,19 @@ class Journal:
 
         self.log.select_one("body").append(h4_tag)
 
-    def create_general_notes_tag(self, title: str, notes: str):
+    def create_note_tag(self, title: str, text: str):
         """
         Method used to create and insert a div tag with class attribute set to "generalNotes".
 
         :param title: str representing the title of the notes
-        :param notes: str representing the actual notes
+        :param text: str representing the actual notes
         :return: the div Tag
         """
         div_tag = self.create_div_tag({"class": "generalNotes"})
 
         div_tag.append(self.create_h2_tag(title))
 
-        div_tag.append(self.create_p_tag(notes, {"class": "user"}))
+        div_tag.append(self.create_p_tag(text, {"class": "user"}))
 
         return div_tag
 
@@ -1298,14 +1300,14 @@ class Journal:
         """
         self.log.select_one("body").append(self.create_title_tag(game_name))
 
-    def write_general_notes(self, title: str, notes: str):
+    def write_note(self, title: str, text: str):
         """
         Method used to write general notes in the attribute journal representing the html file of the journal.
 
         :param title: str representing the title of the notes
-        :param notes: str representing the actual notes
+        :param text: str representing the actual notes
         """
-        tag = self.create_general_notes_tag(title, notes)
+        tag = self.create_note_tag(title, text)
 
         self.write_general(tag)
 

@@ -7622,17 +7622,225 @@ def retire_description(update: Update, context: CallbackContext) -> int:
 
 def retire_end(update: Update, context: CallbackContext) -> int:
     """
-        Ends the retire conversation and deletes all the saved information from the user_data.
+    Ends the retire conversation and deletes all the saved information from the user_data.
 
-        :param update: instance of Update sent by the user.
-        :param context: instance of CallbackContext linked to the user.
-        :return: ConversationHandler.END
-        """
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
     delete_conv_from_telegram_data(context, "retire", "user")
 
     return end_conv(update, context)
 
+
 # ------------------------------------------conv_retire-----------------------------------------------------------------
+
+
+# ------------------------------------------conv_addNote----------------------------------------------------------------
+
+
+def add_note(update: Update, context: CallbackContext) -> int:
+    """
+    Send the user the request for the title of the note.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_note.__name__)
+
+    add_tag_in_telegram_data(context, ["add_note", "invocation_message"], update.effective_message)
+
+    message = update.effective_message.reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["add_note", "message"], message)
+
+    return 0
+
+
+def add_note_title(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the title in the user data and asks the user for the text of the note.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_note_title.__name__)
+
+    add_tag_in_telegram_data(context, ["add_note", "info", "title"], update.effective_message.text)
+
+    context.user_data["add_note"]["message"].delete()
+    update.message.delete()
+
+    message = context.user_data["add_note"]["invocation_message"].reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["add_note", "message"], message)
+
+    return 1
+
+
+def add_note_text(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the text of the not in the user data and calls commit_add_note.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: add_note_end
+    """
+
+    add_tag_in_telegram_data(context, ["add_note", "info", "text"], update.effective_message.text)
+
+    context.user_data["add_note"]["message"].delete()
+
+    controller.commit_add_note(
+        update.effective_message.chat_id, get_user_id(update), context.user_data["add_note"]["info"])
+
+    return add_note_end(update, context)
+
+
+def add_note_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add note conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_note", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addNote----------------------------------------------------------------
+
+
+# ------------------------------------------conv_editNote---------------------------------------------------------------
+
+
+def edit_note(update: Update, context: CallbackContext) -> int:
+    """
+    Asks the user for the position of the note that will be modified.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, edit_note.__name__)
+
+    add_tag_in_telegram_data(context, ["edit_note", "invocation_message"], update.effective_message)
+
+    message = update.effective_message.reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["edit_note", "message"], message)
+
+    return 0
+
+
+def edit_note_position(update: Update, context: CallbackContext) -> int:
+    """
+    Save the position in the user data, displays the chosen note and asks the user if it's the right note.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, edit_note_position.__name__)
+
+    position = update.effective_message.text
+
+    try:
+        if int(position) <= 0:
+            message = context.user_data["edit_note"]["invocation_message"].reply_text(placeholders["err"])
+            auto_delete_message(message, placeholders["err"])
+            return 0
+    except:
+        message = context.user_data["edit_note"]["invocation_message"].reply_text(placeholders["err1"])
+        auto_delete_message(message, placeholders["err"])
+        return 0
+
+    position = int(position)
+
+    context.user_data["edit_note"]["message"].delete()
+    update.message.delete()
+
+    add_tag_in_telegram_data(context, ["edit_note", "info", "number"], position)
+
+    note = controller.get_note(update.effective_message.chat_id, get_user_id(update), position)
+
+    if note is None:
+        message = context.user_data["edit_note"]["invocation_message"].reply_text(placeholders["err2"])
+        auto_delete_message(message, placeholders["err2"])
+        return 0
+
+    query_menu = context.user_data["edit_note"]["invocation_message"].reply_text(
+        placeholders["0"].format(note), reply_markup=custom_kb(placeholders["keyboard"], inline=True,
+                                                               callback_data=placeholders["callback"]),
+        parse_mode=ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["edit_note", "query_menu"], query_menu)
+
+    return 1
+
+
+def edit_note_correct(update: Update, context: CallbackContext) -> int:
+    """
+    If the position is correct asks for the text, otherwise end the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, edit_note_correct.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    context.user_data["edit_note"]["query_menu"].delete()
+
+    if choice == "No":
+        return edit_note_end(update, context)
+
+    message = context.user_data["edit_note"]["invocation_message"].reply_text(placeholders["0"])
+
+    add_tag_in_telegram_data(context, ["edit_note", "message"], message)
+
+    return 2
+
+
+def edit_note_text(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the new text of the note in the user data, calls commit_edit_note and ends the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls edit_note_end
+    """
+    add_tag_in_telegram_data(context, ["edit_note", "info", "new_note"], update.effective_message.text)
+
+    context.user_data["edit_note"]["message"].delete()
+
+    controller.commit_edit_note(
+        update.effective_message.chat_id, get_user_id(update), context.user_data["edit_note"]["info"])
+
+    return edit_note_end(update, context)
+
+
+def edit_note_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the edit note conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "edit_note", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_editNote---------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

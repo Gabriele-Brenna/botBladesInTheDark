@@ -1033,6 +1033,31 @@
 
     "retire_description": {
       "0": "You must do:\n- /changePc to set a new pc as active if you have another pc;\n- /join  if you want to continue as a new scoundrel"
+    },
+
+    "add_note": {
+      "0": "Write the title of your note"
+    },
+
+    "add_note_title": {
+      "0": "Write the text of the note"
+    },
+
+    "edit_note": {
+      "0": "Insert the position of the note (1 is the most recent one, the bigger the number the older the note)"
+    },
+
+    "edit_note_position": {
+      "0": "This is the note you selected:\n\n\"{}\"\n\nIs this the one you want?",
+      "err": "You must insert a number greater than one.",
+      "err1": "You must enter a digit",
+      "err2": "There aren't enough note. Insert a smaller number.",
+      "keyboard": ["Yes", "No"],
+      "callback": ["Yes", "No"]
+    },
+
+    "edit_note_correct": {
+      "0": "Insert the new text of the note"
     }
 
   },

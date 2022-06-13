@@ -819,6 +819,34 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addNote".casefold(), "createNote".casefold()], add_note)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, add_note_title)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_note_text)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_note_end)],
+            name="conv_addNote",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["modifyNote".casefold(), "changeNote".casefold(), "editNote".casefold()],
+                                         edit_note)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, edit_note_position)],
+                1: [CallbackQueryHandler(edit_note_correct)],
+                2: [MessageHandler(Filters.text & ~Filters.command, edit_note_text)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), edit_note_end)],
+            name="conv_editNote",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

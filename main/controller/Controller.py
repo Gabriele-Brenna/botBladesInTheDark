@@ -1,6 +1,8 @@
 import copy
 import threading
 
+from bs4 import BeautifulSoup
+
 from character.Human import Human
 from character.Owner import Owner
 from component.Clock import Clock
@@ -1551,8 +1553,8 @@ class Controller:
         """
         Checks if the selected pc has overindulged
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param pc_name: the name of the user's active pc.
         :param roll_outcome: the outcome of the roll during the downtime activity "indulge vice"
         :return: True if the pc has overindulged, False otherwise (or if he rolled a "CRIT")
@@ -1570,8 +1572,8 @@ class Controller:
         Applies the effects of the downtime activity passed: modifies the pc
         (and eventually the crew or the elements of the game) and updates the database
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param downtime_info: a dictionary containing the info of the activity
         :return: a dictionary containing the information that needs to be notified to the user
         """
@@ -1730,8 +1732,8 @@ class Controller:
         """
         Gets the specific abilities for a given crew sheet.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :return: a list of str containing the names of the special abilities.
         """
         crew = self.get_game_by_id(query_game_of_user(chat_id, user_id)).crew
@@ -1761,8 +1763,8 @@ class Controller:
         """
         Gets the specific abilities for a given character sheet.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param pc_name: name of the pc used to find the character sheet.
         :return: a list of str containing the names of the special abilities.
         """
@@ -1779,8 +1781,8 @@ class Controller:
         """
         Method used to get all the special abilities for a character or crew.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param selection: allows to get the abilities for character or crew.
         :param pc_name: name of the pc used to find the character sheet.
         :return: a list of str containing the names of the special abilities.
@@ -1807,8 +1809,8 @@ class Controller:
         """
         Commits the changes made in the model and updates the database.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param add_ability: dict of the conversation.
         :param pc_name: name of the character to update the right pc from the model.
         """
@@ -1847,8 +1849,8 @@ class Controller:
         """
         Adds the given harm to the selected pc and updates it in the DB.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param harm_info: a dictionary with the info used to add the harm
         :return: an int representing the level where the harm is added if different from the one specified
         """
@@ -1894,8 +1896,8 @@ class Controller:
         """
         Adds the new purveyor in to the vice of the pc of this user.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param change_purveyor: dictionary that contains all the information needed (the PC's name and the new purveyor)
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
@@ -1913,8 +1915,8 @@ class Controller:
         """
         Applies the effect of a PC migration to another type of Character.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param migration: dictionary that contains all the information needed (the PC's name and the migration type)
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
@@ -1954,8 +1956,8 @@ class Controller:
         """
         Applies the effect of a PC class change.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param class_change: dictionary that contains all the information needed (the PC's name and the new class)
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
@@ -1966,12 +1968,13 @@ class Controller:
         game.journal.write_change_pc_class(**class_change)
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
     def retire(self, chat_id: int, user_id: int, retire: dict):
         """
         Remove the selected pc from the model, adds a tag in the journal and updates it in the DB.
 
-        :param chat_id: the Telegram id of the user.
-        :param user_id: the Telegram chat id of the user.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
         :param retire: a dictionary with the info used to retire
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
@@ -1983,6 +1986,44 @@ class Controller:
         insert_journal(game.identifier, game.journal.get_log_string())
 
         update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+    def commit_add_note(self, chat_id: int, user_id: int, add_note: dict):
+        """
+        Writes the new note in the journal and updates the database.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param add_note: dictionary that contains all the information needed (note title and text).
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game.journal.write_note(**add_note)
+
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+    def get_note(self, chat_id: int, user_id: int, position: int) -> str:
+        """
+        Gets the text of the note in the specified position.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param position: position of the note.
+        :return: the text of the note.
+        """
+        soup = BeautifulSoup(self.get_game_by_id(query_game_of_user(chat_id, user_id)).journal.read_note(position),
+                             'html.parser')
+        return soup.get_text()
+
+    def commit_edit_note(self, chat_id: int, user_id: int, edit_note: dict):
+        """
+        Modifies the note in the journal in the given position and updates the database.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param edit_note: dictionary that contains all the information needed (note position and new text).
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game.journal.edit_note(**edit_note)
+        insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:
         return str(self.games)
