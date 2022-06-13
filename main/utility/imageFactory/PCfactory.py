@@ -521,7 +521,7 @@ def paste_hull_frame(frame: str, sheet: Image):
 
     for hull_frame in hull_frames:
         x = 2
-        if frame in hull_frame:
+        if hull_frame.startswith(frame):
             box.paste(frame_full, (x, y))
         else:
             box.paste(frame_empty, (x, y))

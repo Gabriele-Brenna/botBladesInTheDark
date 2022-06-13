@@ -115,7 +115,8 @@
 
     "join_add_player": {
       "0": "<i>{}</i> joined the game <i>{}</i> as Master.",
-      "err": "You must join with a PC of yours or as Master!"
+      "err": "You must join with a PC of yours or as Master!",
+      "err2": "A player has already joined this game with a pc with the same name, select another game or /cancel then /join with another pc"
     },
 
     "join_complete_pc": {
@@ -363,6 +364,7 @@
     "add_cohort": {
       "0": "Select which cohort you want",
       "err": "You cannot create a cohort without being in a game... /join to take part in a game",
+      "err2": "You don't have enough exp",
       "keyboard": ["Gang", "Expert"]
     },
 
@@ -438,7 +440,8 @@
 
     "send_character_sheet": {
       "0": "You don't have an active PC in this chat... /join to take part in a game",
-      "1": "Here is your character's sheet"
+      "1": "Here is your character's sheet",
+      "err": "You can't see a character sheet without being in a game... /join to take part in a game"
     },
 
     "send_crew_sheet": {
@@ -1112,8 +1115,42 @@
 
     "edit_note_correct": {
       "0": "Insert the new text of the note"
-    }
+    },
 
+    "end_game": {
+      "0": "Are you sure? All the progress in this game and all the characters will be deleted.",
+      "keyboard": ["Yes", "No"],
+      "callbacks": [1,2]
+    },
+
+    "end_game_choice": {
+      "0": "Write some notes to describe the end of the adventure"
+    },
+
+    "end_game_notes": {
+      "0": "The game has been canceled.\n/createGame and /join to start a new one.\nThese are all the files of the last game: "
+    },
+
+    "change_frame_size": {
+      "0": "Select the frame size",
+      "err": "You don't have an active PC in this chat... /join to take part in a game",
+      "err2": "You cant' chang the frame size if you are not an Hull",
+      "keyboard": ["Small", "Medium", "Heavy"],
+      "callbacks": ["S","M","H"]
+    },
+
+    "add_type_cohort": {
+      "0": "Select a cohort",
+      "err": "You can't add a type to a cohort without being in a game... /join to take part in a game.",
+      "err2": "You dont' have enough exp",
+      "err3": "You don't have any alive cohort..."
+    },
+
+    "add_type_cohort_choice": {
+      "0": "Write the type to add",
+      "keyboard_expert": ["Doctor", "Investigator", "Occultist", "Assassin", "Spy"],
+      "keyboard_gang": ["Adepts", "Rooks", "Rovers", "Skulks", "Thugs"]
+    }
   },
 
   "Journal": {

@@ -880,3 +880,24 @@ def delete_user_game(user_id: int, game_id: int) -> bool:
             return False
         return True
     return False
+
+
+def delete_game(game_id: int) -> bool:
+    """
+    Deletes the selected game from the database
+
+    :param game_id: the id of the game to delete.
+    :return: True if the opeartion is successful, False otherwise
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+        DELETE FROM Game WHERE Game_ID == ?""", (game_id, ))
+
+        connection.commit()
+    except DatabaseError:
+        traceback.print_exc()
+        return False
+    return True

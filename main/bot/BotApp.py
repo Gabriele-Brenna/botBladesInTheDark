@@ -889,6 +889,46 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["endGame".casefold(), "endSession".casefold(),
+                                          "cancelGame".casefold(), "cancelSession".casefold()], end_game)],
+            states={
+                0: [CallbackQueryHandler(end_game_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, end_game_notes)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), end_game_end)],
+            name="conv_endGame",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["changeFrameSize".casefold(), "FrameSize".casefold(),
+                                          "changeFS".casefold()], change_frame_size)],
+            states={
+                0: [CallbackQueryHandler(change_frame_size_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_frame_size_end)],
+            name="conv_change_frame_size",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addTypeCohort".casefold(), "typeCohort".casefold()], add_type_cohort)],
+            states={
+                0: [CallbackQueryHandler(add_type_cohort_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, add_type_cohort_type)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_type_cohort_end)],
+            name="conv_addTypeCohort",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

@@ -504,6 +504,15 @@ def join_add_player(update: Update, context: CallbackContext) -> int:
             placeholders["err"], reply_markup=custom_kb(buttons))
         return 1
 
+    if controller.is_pc_name_already_present(
+            query_game_ids(update.message.chat_id, context.user_data["join"]["game_name"])[0], update.message.text):
+        update.message.delete()
+        buttons = get_user_pc(context)
+        buttons.append("as Master")
+        context.user_data["join"]["message"] = context.user_data["join"]["invocation_message"].reply_text(
+            placeholders["err2"], reply_markup=custom_kb(buttons))
+        return 1
+
     if update.message.text.lower() == "as master":
         controller.update_user_in_game(get_user_id(update), update.message.chat_id,
                                        context.user_data["join"]["game_name"], True)
@@ -2235,6 +2244,11 @@ def add_cohort(update: Update, context: CallbackContext) -> int:
     if is_game_in_wrong_phase(update, context, placeholders["err"]):
         return add_cohort_end(update, context)
 
+    if controller.get_crew_upgrade_points(query_game_of_user(update.message.chat_id, get_user_id(update))) < 2:
+        message = update.message.reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_cohort_end(update, context)
+
     add_tag_in_telegram_data(context, ["add_cohort", "invocation_message"], update.message)
 
     message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(placeholders["keyboard"], True, 1))
@@ -3338,6 +3352,10 @@ def score_end(update: Update, context: CallbackContext) -> int:
 def send_character_sheet(update: Update, context: CallbackContext) -> None:
     placeholders = get_lang(context, send_character_sheet.__name__)
     chat_id = update.effective_message.chat_id
+
+    if is_user_not_in_game(update, placeholders["err"]):
+        return
+
     if "active_PCs" in context.user_data and chat_id in context.user_data["active_PCs"]:
         img_bytes, file_name = controller.get_character_sheet_image(chat_id, get_user_id(update),
                                                                     context.user_data["active_PCs"][chat_id])
@@ -3355,7 +3373,7 @@ def send_crew_sheet(update: Update, context: CallbackContext) -> None:
 
     if controller.game_has_crew(query_game_of_user(update.effective_message.chat_id, get_user_id(update))):
         chat_id = update.effective_message.chat_id
-        img_bytes, file_name = controller.get_crew_sheet_image(chat_id, get_user_id(update))
+        img_bytes, file_name = controller.get_crew_sheet_image(query_game_of_user(chat_id, get_user_id(update)))
         update.effective_message.reply_photo(photo=img_bytes, filename=file_name, caption=placeholders["1"])
     else:
         update.message.reply_text(placeholders["0"])
@@ -7141,7 +7159,7 @@ def add_harm_cohort_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END
     """
-    delete_conv_from_telegram_data(context, "harm_cohort", "chat")
+    delete_conv_from_telegram_data(context, "harm_cohort")
 
     return end_conv(update, context)
 
@@ -7454,7 +7472,7 @@ def add_armor_cohort_end(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: ConversationHandler.END
     """
-    delete_conv_from_telegram_data(context, "add_harm", "chat")
+    delete_conv_from_telegram_data(context, "add_harm")
 
     return end_conv(update, context)
 
@@ -7935,7 +7953,7 @@ def incarceration_roll_npc(update: Update, context: CallbackContext) -> int:
         name = choice.split("$")[0]
         if "$" in choice:
             placeholders = get_lang(context, "bonus_dice")
-            add_tag_in_telegram_data(context,  tags=["incarceration", "roll", "pc"], value=name)
+            add_tag_in_telegram_data(context, tags=["incarceration", "roll", "pc"], value=name)
             context.user_data["incarceration"]["query_menu"].delete()
             query_menu = context.user_data["incarceration"]["invocation_message"].reply_text(
                 placeholders["message"].format(context.user_data["incarceration"]["tier"]),
@@ -8254,6 +8272,270 @@ def edit_note_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_editNote---------------------------------------------------------------
+
+
+# ------------------------------------------conv_endGame----------------------------------------------------------------
+
+
+def end_game(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation to end a game and sends the user the inline keyboard to verify their intention.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game.__name__)
+
+    add_tag_in_telegram_data(context, ["end_game", "invocation_message"], update.message)
+
+    message = update.message.reply_text(placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+        placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+
+    add_tag_in_telegram_data(context, ["end_game", "message"], message)
+
+    return 0
+
+
+def end_game_choice(update: Update, context: CallbackContext) -> int:
+    """
+    If the users it's confident the request of the final notes is sent; the conversation is ended otherwise
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game_choice.__name__)
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    if choice == 2:
+        return end_game_end(update, context)
+
+    context.user_data["end_game"]["message"].delete()
+
+    message = context.user_data["end_game"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+
+    add_tag_in_telegram_data(context, ["end_game", "message"], message)
+
+    return 1
+
+
+def end_game_notes(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method end game, then ends the conversation after sending all the game files to the user
+    using a separate thread.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, end_game_notes.__name__)
+    context.user_data["end_game"]["message"].delete()
+
+    game_obj = controller.end_game(
+        query_game_of_user(update.effective_message.chat_id, get_user_id(update)), update.message.text)
+
+    context.user_data["end_game"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+
+    def execute() -> None:
+        for obj in game_obj:
+            context.bot.send_document(update.effective_message.chat_id, obj[0], obj[1])
+            time.sleep(3)
+
+    t = Thread(target=execute)
+    t.start()
+
+    update.message.delete()
+    return end_game_end(update, context)
+
+
+def end_game_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the end game conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "end_game", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_endGame----------------------------------------------------------------
+
+
+# ------------------------------------------conv_change_frame_size------------------------------------------------------
+
+
+def change_frame_size(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation to change the frame size and sends the user the inline keyboard with the options if
+    their active pc is an Hull.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_frame_size.__name__)
+
+    chat_id = update.message.chat_id
+
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        auto_delete_message(update.message.reply_text(placeholders["err"], ParseMode.HTML))
+        return change_frame_size_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+    if controller.get_pc_type(chat_id, get_user_id(update), pc_name) != "Hull":
+        auto_delete_message(update.message.reply_text(placeholders["err2"], ParseMode.HTML))
+        return change_frame_size_end(update, context)
+
+    add_tag_in_telegram_data(context, ["frame_size", "invocation_message"], update.message)
+
+    add_tag_in_telegram_data(context, ["frame_size", "pc"], pc_name)
+
+    message = update.message.reply_text(placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+        placeholders["keyboard"], True, 1, placeholders["callbacks"]))
+
+    add_tag_in_telegram_data(context, ["frame_size", "message"], message)
+
+    return 0
+
+
+def change_frame_size_choice(update: Update, context: CallbackContext) -> int:
+    """
+    If the users it's confident the request of the final notes is sent; the conversation is ended otherwise
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    controller.commit_change_frame_size(update.effective_message.chat_id, get_user_id(update),
+                                        context.user_data["frame_size"]["pc"], choice)
+
+    return change_frame_size_end(update, context)
+
+
+def change_frame_size_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the end change frame size end and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "frame_size", "user")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_change_frame_size------------------------------------------------------
+
+
+# ------------------------------------------conv_addTypeCohort----------------------------------------------------------
+
+
+def add_type_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of type to a cohort.
+    Adds the dict "type_cohort" in user_data.
+    Finally, sends the inline keyboard to choose the cohort.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_type_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_type_cohort_end(update, context)
+
+    if controller.get_crew_upgrade_points(query_game_of_user(update.message.chat_id, get_user_id(update))) < 2:
+        message = update.message.reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_type_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["type_cohort", "invocation_message"], update.message)
+
+    cohorts = controller.get_cohorts_of_crew(update.message.chat_id, get_user_id(update))
+    if not cohorts:
+        message = context.user_data["type_cohort"]["invocation_message"].reply_text(placeholders["err3"])
+        auto_delete_message(message, 15)
+        return add_type_cohort_end(update, context)
+    cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+    callbacks = [(cohorts[i], i + 1) for i in range(len(cohorts))]
+    message = context.user_data["type_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+    add_tag_in_telegram_data(context, ["type_cohort", "message"], message)
+
+    return 0
+
+
+def add_type_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen cohort and send the request of the new type to add, then advances the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, add_type_cohort_choice.__name__)
+    context.user_data["type_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data[1]) - 1
+    cohort_type = query.data[0].split("[")[1]
+    cohort_type = cohort_type.split("]")[0]
+
+    add_tag_in_telegram_data(context, ["type_cohort", "info", "cohort"], choice)
+
+    message = context.user_data["type_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(
+            placeholders["keyboard_{}".format(cohort_type.lower())]))
+    add_tag_in_telegram_data(context, ["type_cohort", "message"], message)
+    return 1
+
+
+def add_type_cohort_type(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method commit_add_cohort_type, then calls
+    add_type_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to add_type_cohort_end
+    """
+    context.user_data["type_cohort"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["type_cohort", "info", "type"], update.message.text)
+
+    controller.commit_add_cohort_type(query_game_of_user(update.message.chat_id, get_user_id(update)),
+                                      context.user_data["type_cohort"]["info"])
+    return add_type_cohort_end(update, context)
+
+
+def add_type_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add type cohort conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "type_cohort")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addTypeCohort----------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

@@ -371,16 +371,15 @@ class Controller:
             kwargs["crew_name"] = game.crew.name
         return game.get_player_by_id(user_id).get_character_by_name(pc_name).draw_image(**kwargs), (pc_name + ".png")
 
-    def get_crew_sheet_image(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
+    def get_crew_sheet_image(self, game_id: int) -> Tuple[bytes, str]:
         """
         Retrieves the Crew's sheet PNG file of the specified game as a bytes array
         and builds the file's name using the Crew's name.
 
-        :param chat_id: the Telegram id of the user who invoked the action roll.
-        :param user_id: the Telegram chat id of the user.
+        :param game_id: id of the Game.
         :return: a Tuple that contains the bytes of the file and a string that represents its name.
         """
-        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        game = self.get_game_by_id(game_id)
         return game.crew.draw_image(), (game.crew.name + ".png")
 
     def get_interactive_map(self, chat_id: int, user_id: int) -> Tuple[bytes, str]:
@@ -1650,7 +1649,7 @@ class Controller:
 
         elif activity == "train":
             points = 1 + (
-                        downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
+                    downtime_info["attribute"].lower() in [upgrade.name.lower() for upgrade in game.crew.upgrades])
             attr = pc.get_attribute_by_name(downtime_info["attribute"])
             if attr is None:
                 pc.playbook.add_exp(points)
@@ -2149,6 +2148,90 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         game.journal.edit_note(**edit_note)
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+    def end_game(self, game_id: int, notes: str) -> List[Tuple[bytes, str]]:
+        """
+        Writes the final notes in the journal, sends the game files to the users,
+        then Removes a game from the list of games and deletes it from the database.
+
+        :param game_id: id of the Game.
+        :param notes: final notes to write in the journal.
+        :return: a list of Tuples that contains the bytes of the files and a string that represents their names.
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.journal.write_end_game(notes)
+        insert_journal(game.identifier, game.journal.get_log_string())
+
+        game_obj = [self.get_journal_of_game(game_id)]
+        try:
+            game_obj.append(self.get_crew_sheet_image(game_id))
+        except:
+            pass
+        for user in game.users:
+            for pc in user.characters:
+                game_obj.append(self.get_character_sheet_image(game.chat_id, user.player_id, pc.name))
+
+        delete_game(game_id)
+
+        self.games.remove(game)
+
+        return game_obj
+
+    def commit_change_frame_size(self, chat_id: int, user_id: int, pc_name: str, frame_size: str):
+        """
+        Changes thhe frame size of the selected pc.
+
+        :param pc_name: the name of the users' active pc
+        :param frame_size: then selected frame size.
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        """
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        player = game.get_player_by_id(user_id)
+        pc = player.get_character_by_name(pc_name)
+
+        if isinstance(pc, Hull):
+            pc.select_frame(frame_size)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+    def is_pc_name_already_present(self, game_id: int, pc_name: str) -> bool:
+        """
+        Checks if the name selected is already taken by another pc in the game.
+
+        :param game_id: the id of the game.
+        :param pc_name: the name of the pc.
+        :return: True if the name is already present, False otherwise
+        """
+        game = self.get_game_by_id(game_id)
+
+        if pc_name.lower() in [pc.name.lower() for pc in game.get_pcs_list()]:
+            return True
+        return False
+
+    def commit_add_cohort_type(self, game_id: int, cohort_type_info: dict):
+        """
+        Adds the given type to the selected cohort and updates the crew in the DB.
+
+        :param game_id: the id of the game.
+        :param cohort_type_info: a dictionary with the info used to add the harm
+        """
+        game = self.get_game_by_id(game_id)
+        crew = self.get_game_by_id(game_id).crew
+
+        cohorts_alive = []
+        for cohort in crew.cohorts:
+            if cohort.harm < 4:
+                cohorts_alive.append(cohort)
+        cohort = cohorts_alive[cohort_type_info["cohort"]]
+        cohort.type.append(cohort_type_info["type"])
+
+        crew.crew_exp.add_points(-1)
+
+        insert_crew_json(game_id, save_to_json(crew))
         insert_journal(game.identifier, game.journal.get_log_string())
 
     def __repr__(self) -> str:

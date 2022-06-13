@@ -205,7 +205,7 @@ def print_controller(update: Update, context: CallbackContext):
 
 
 def custom_kb(buttons: List[str], inline: bool = False, split_row: int = None,
-              callback_data: List[Union[str, int]] = None,
+              callback_data: List[Any] = None,
               selective: bool = True, input_field_placeholder: str = None) -> ReplyMarkup:
     """
     Builds a parametric customized keyboard.
