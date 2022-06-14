@@ -1538,29 +1538,42 @@ class Controller:
             upgrades_dict.append({"name": upgrade.name, "quality": upgrade.quality})
         return upgrades_dict
 
-    def commit_add_upgrade(self, chat_id: int, user_id: int, upgrades: dict, upgrade_points: int):
+    def commit_add_upgrade(self, chat_id: int, user_id: int, upgrades: List[dict], upgrade_points: int):
         """
         Commits the changes made in the model and updates the database.
 
         :param chat_id: the Telegram chat id of the user.
         :param user_id: the Telegram id of the user.
-        :param upgrades: dict containing all the information about the upgrades.
+        :param upgrades: list containing all the information about the upgrades.
         :param upgrade_points: remaining amount of upgrade points
         """
+        def contains(temp):
+            for up_dict in upgrades:
+                if up_dict["name"] == temp["name"]:
+                    return up_dict
+            return None
+
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         crew = game.crew
 
-        # differenza di dizionari
-        # for sulle chiavi del dizionario ottenuto: se valore è positivo il nome va N volte nella lista to_add
-        # se valore è negativo il nome va N volte nella lista to_remove
+        old_upgrades = self.get_crew_upgrades(game.identifier)
 
-        # for sulle 2 liste e add_upgrade per to_add e remove_upgrade(fix: rimozione livello invece di Upgrade) per to_remove
+        for upgrade in old_upgrades:
+            up = contains(upgrade)
+            if up is not None:
+                up["quality"] = up["quality"] - upgrade["quality"]
+            else:
+                upgrades.append({"name": upgrade["name"], "quality": -upgrade["quality"]})
 
-        crew.upgrades.clear()
-        for upgrade in upgrades:
-            upg = Upgrade(**upgrade)
-            # if not crew.upgrades.__contains__(upg):
-            crew.upgrades.append(upg)
+        for elem in upgrades:
+            quality = elem["quality"]
+            if quality > 0:
+                for i in range(quality):
+                    crew.add_upgrade(elem["name"])
+            elif quality < 0:
+                quality = -quality
+                for i in range(quality):
+                    crew.remove_upgrade(elem["name"])
 
         crew.crew_exp.points = int(upgrade_points / 2)
 
@@ -1794,17 +1807,33 @@ class Controller:
         pc_abilities = query_special_abilities(self.get_pc_class(chat_id, user_id, pc_name), as_dict=True)
         abilities = self.remove_duplicate_abilities(pc_abilities, abilities_dict)
 
-        if self.get_pc_type(chat_id, user_id, pc_name).casefold() == "Human".casefold():
+        if self.get_pc_type(chat_id, user_id, pc_name).casefold() != "Hull".casefold():
             abilities.append("Veteran")
 
         return abilities
 
     def is_vampire(self, chat_id: int, user_id: int, pc_name: str) -> bool:
+        """
+        Checks if your character is a Vampire.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: True if the character is a Vampire, False otherwise.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         return isinstance(pc, Vampire)
 
     def is_hull(self, chat_id: int, user_id: int, pc_name: str) -> bool:
+        """
+        Checks if your character is a Hull.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: True if the character is a Hull, False otherwise.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         return isinstance(pc, Hull)
@@ -1838,6 +1867,14 @@ class Controller:
             return self.remove_duplicate_abilities(abilities, abilities_dict)
 
     def get_strictures(self, chat_id: int, user_id: int, pc_name: str) -> List[str]:
+        """
+        Method used to get all the strictures for a Vampire.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: a list of str containing the names of the strictures.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         abilities = query_special_abilities(stricture=True, as_dict=True)
@@ -1850,6 +1887,14 @@ class Controller:
         return self.remove_duplicate_abilities(abilities, abilities_dict)
 
     def get_frame_features(self, chat_id: int, user_id: int, pc_name: str) -> List[str]:
+        """
+        Method used to get all the frame features for a Hull.
+
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        :param pc_name: name of the pc used to find the character sheet.
+        :return: a list of str containing the names of the frame features.
+        """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
         abilities = []
