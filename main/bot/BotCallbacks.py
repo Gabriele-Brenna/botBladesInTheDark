@@ -8637,6 +8637,84 @@ def add_type_cohort_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_addTypeCohort----------------------------------------------------------
 
 
+# ------------------------------------------conv_addDarkServant----------------------------------------------------------
+
+
+def add_servant(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the adding of a servant.
+    Adds the dict "add_servant" in user_data.
+    Finally, sends the inline keyboard to choose the servant.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, add_type_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_servant_end(update, context)
+
+    chat_id = update.message.chat_id
+    if "active_PCs" not in context.user_data or chat_id not in context.user_data["active_PCs"]:
+        auto_delete_message(update.message.reply_text(placeholders["err2"], ParseMode.HTML), 15)
+        return add_servant_end(update, context)
+
+    pc_name = context.user_data["active_PCs"][chat_id]
+
+    if controller.get_pc_type(chat_id, get_user_id(update), pc_name) != "Vampire":
+        auto_delete_message(update.message.reply_text(placeholders["err3"], ParseMode.HTML), 15)
+        return add_servant_end(update, context)
+
+    add_tag_in_telegram_data(context, ["add_servant", "info", "pc"], pc_name)
+
+    add_tag_in_telegram_data(context, ["add_servant", "invocation_message"], update.message)
+
+    npcs = [npc["name"] + ", " + npc["role"] for npc in query_char_strange_friends("Vampire", as_dict=True)]
+
+    query_menu = context.user_data["add_servant"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(npcs))
+    add_tag_in_telegram_data(context, ["add_servant", "query_menu"], query_menu)
+
+    return 0
+
+
+def add_servant_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the servant in the user_data, then calls the controller method add_servant.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls add_servant_end.
+    """
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["add_servant", "info", "servant"], choice)
+
+    controller.add_servant(update.effective_message.chat_id, get_user_id(update),
+                           context.user_data["add_servant"]["info"])
+
+    return add_servant_end(update, context)
+
+
+def add_servant_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the add servant conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "add_servant")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addDarkServant----------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

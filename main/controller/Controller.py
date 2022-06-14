@@ -163,8 +163,6 @@ class Controller:
         for cohort in cohorts:
             game.crew.cohorts.append(Cohort(**cohort))
 
-        # set(game.NPCs).add(game.crew.contact)
-        # list(game.NPCs)
         contact = game.crew.contact.name + ", " + game.crew.contact.role
         self.add_npc_to_game(contact, game)
 
@@ -2264,6 +2262,27 @@ class Controller:
     def get_game_npcs(self, game_id: int) -> List[str]:
         game = self.get_game_by_id(game_id)
         return [npc.name + ", " + npc.role for npc in game.NPCs]
+
+    def add_servant(self, chat_id: int, user_id: int, info: dict):
+        """
+        Adds a new dark servant to the selected pc.
+
+        :param info: dictionary with the info about the new servant
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        """
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        player = game.get_player_by_id(user_id)
+        pc = player.get_character_by_name(info["pc"])
+
+        servant = self.add_npc_to_game(info["servant"], game)
+        if isinstance(pc, Vampire):
+            pc.dark_servants.append(servant)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+        insert_npc_json(game.identifier, save_to_json(game.NPCs))
 
     def __repr__(self) -> str:
         return str(self.games)
