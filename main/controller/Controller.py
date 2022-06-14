@@ -106,12 +106,6 @@ class Controller:
                     if human is not None:
                         user.characters.append(human)
 
-                    set(game.NPCs).add(human.friend)
-                    set(game.NPCs).add(human.enemy)
-                    list(game.NPCs)
-
-                    insert_npc_json(game_id, save_to_json(game.NPCs))
-
                     insert_user_game(player_id, game_id, save_to_json(user.characters), user.is_master)
                     return
 
@@ -120,12 +114,6 @@ class Controller:
             if human is not None:
                 new_player.characters.append(human)
             game.users.append(new_player)
-
-            set(game.NPCs).add(human.friend)
-            set(game.NPCs).add(human.enemy)
-            list(game.NPCs)
-
-            insert_npc_json(game_id, save_to_json(game.NPCs))
 
             insert_user_game(player_id, game_id, save_to_json(new_player.characters), is_master)
 
@@ -162,10 +150,6 @@ class Controller:
         for cohort in cohorts:
             game.crew.cohorts.append(Cohort(**cohort))
 
-        set(game.NPCs).add(game.crew.contact)
-        list(game.NPCs)
-
-        insert_npc_json(game_id, save_to_json(game.NPCs))
         insert_crew_json(game_id, save_to_json(game.crew))
 
     def get_game_state(self, game_id: int) -> int:
@@ -2253,6 +2237,27 @@ class Controller:
     def get_game_npcs(self, game_id: int) -> List[str]:
         game = self.get_game_by_id(game_id)
         return [npc.name + ", " + npc.role for npc in game.NPCs]
+
+    def add_servant(self, chat_id: int, user_id: int, info: dict):
+        """
+        Adds a new dark servant to the selected pc.
+
+        :param info: dictionary with the info about the new servant
+        :param chat_id: the Telegram chat id of the user.
+        :param user_id: the Telegram id of the user.
+        """
+
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        player = game.get_player_by_id(user_id)
+        pc = player.get_character_by_name(info["pc"])
+
+        servant = self.add_npc_to_game(info["servant"], game)
+        if isinstance(pc, Vampire):
+            pc.dark_servants.append(servant)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+
+        insert_npc_json(game.identifier, save_to_json(game.NPCs))
 
     def __repr__(self) -> str:
         return str(self.games)

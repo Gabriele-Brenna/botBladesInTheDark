@@ -929,6 +929,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["addServant".casefold(), "addDarkServant".casefold(),
+                                          "darkServant".casefold()], add_servant)],
+            states={
+                0: [CallbackQueryHandler(add_servant_choice)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), add_servant_end)],
+            name="conv_addDarkServant",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
