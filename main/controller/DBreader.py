@@ -47,7 +47,7 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
     :param peculiar: if True, the search is restricted to peculiar abilities only.
     :param special_ability: represents the name of the ability to get;
         if it is None, the complete list of special abilities is retrieved;
-    :param pc: if True, the search is restricted to the character's abilities,
+    :param pc: if True, the search is restricted to the human abilities,
         if False, the search is restricted to the crew's abilities
     :param frame_feature: represent the frame feature of the hull requested of the size requested
     :param stricture: if True the result objects will be the stricture of the vampire
@@ -78,7 +78,6 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
             WHERE Character = ? AND FrameFeature = 'N' AND Stricture is False"""
         else:
             return []
-        print(query)
         cursor.execute(query, (sheet,))
     elif peculiar is not None:
         query += """FROM (SpecialAbility S LEFT JOIN Crew_SA CREW ON S.Name = CREW.SpecialAbility) 
@@ -813,7 +812,7 @@ def query_upgrades(upgrade: str = None, crew_sheet: str = None, group: str = Non
         if as_dict:
             upgrades.append({"name": elem[0], "description": elem[1], "tot_quality": int(elem[2])})
         else:
-            upgrades.append(Upgrade(elem[0], 0))
+            upgrades.append(Upgrade(elem[0], 0, int(elem[2])))
 
     return upgrades
 

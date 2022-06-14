@@ -2,9 +2,10 @@ class Upgrade:
     """
     Improvements of the crew
     """
-    def __init__(self, name: str, quality: int) -> None:
+    def __init__(self, name: str, quality: int, tot_quality: int) -> None:
         self.name = name
         self.quality = quality
+        self.tot_quality = tot_quality
 
     @classmethod
     def from_json(cls, data):

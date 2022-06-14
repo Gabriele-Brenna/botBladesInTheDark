@@ -200,7 +200,9 @@ class Crew(Organization, ISavable, IDrawable):
             if u.name.lower() == upgrade.lower():
                 u.quality += 1
                 return u
-        self.upgrades.append(Upgrade(upgrade, 1))
+        new_upgrade = query_upgrades(upgrade, as_dict=False)[0]
+        new_upgrade.quality = 1
+        self.upgrades.append(new_upgrade)
         return self.upgrades[-1]
 
     def remove_upgrade(self, upgrade: str) -> Upgrade:
@@ -324,7 +326,7 @@ class Crew(Organization, ISavable, IDrawable):
         paste_xp_triggers(self.xp_triggers, sheet)
         paste_contact(self.contact, self.type, sheet)
         paste_crew_exp(self.crew_exp, sheet)
-        paste_crew_upgrades(self.upgrades, sheet)
+        paste_crew_upgrades(self.upgrades, self.type, sheet)
         paste_cohorts(self.cohorts, sheet)
 
         paste_hunting_grounds(self.type, sheet)

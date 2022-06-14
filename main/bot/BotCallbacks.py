@@ -1169,13 +1169,13 @@ def create_central_buttons_upgrades(upgrades: List[dict], group_selected: str, c
     buttons = []
     for upgrade in query_upgrades(group=group_selected, crew_sheet=crew_sheet):
 
-        if upgrade["name"].split("(")[0].lower() in upgrades_names:
-            buttons.append("{}: {}/{}".format(upgrade["name"].split("(")[0],
+        if upgrade["name"].lower() in upgrades_names:
+            buttons.append("{}: {}/{}".format(upgrade["name"],
                                               upgrades_quality[
-                                                  upgrades_names.index(upgrade["name"].split("(")[0].lower())],
+                                                  upgrades_names.index(upgrade["name"].lower())],
                                               upgrade["tot_quality"]))
         else:
-            buttons.append("{}: 0/{}".format(upgrade["name"].split("(")[0], upgrade["tot_quality"]))
+            buttons.append("{}: 0/{}".format(upgrade["name"], upgrade["tot_quality"]))
     return buttons
 
 
@@ -5858,7 +5858,8 @@ def add_upgrade_selection(update: Update, context: CallbackContext) -> int:
 
         if upgrade is None and "+" in choice[-1]:
             if context.user_data["add_upgrade"]["info"]["upgrade_points"] > 0:
-                upgrades.append({"name": name, "quality": 1})
+                upgrades.append(
+                    {"name": name, "quality": 1, "tot_quality": query_upgrades(name)[0]["tot_quality"]})
                 context.user_data["add_upgrade"]["info"]["upgrade_points"] -= 1
                 upgrade = upgrades[-1]
 

@@ -1536,7 +1536,7 @@ class Controller:
         upgrades = self.get_game_by_id(game_id).crew.upgrades
         upgrades_dict = []
         for upgrade in upgrades:
-            upgrades_dict.append({"name": upgrade.name, "quality": upgrade.quality})
+            upgrades_dict.append({"name": upgrade.name, "quality": upgrade.quality, "tot_quality": upgrade.tot_quality})
         return upgrades_dict
 
     def commit_add_upgrade(self, chat_id: int, user_id: int, upgrades: List[dict], upgrade_points: int):
@@ -1564,7 +1564,8 @@ class Controller:
             if up is not None:
                 up["quality"] = up["quality"] - upgrade["quality"]
             else:
-                upgrades.append({"name": upgrade["name"], "quality": -upgrade["quality"]})
+                upgrades.append(
+                    {"name": upgrade["name"], "quality": -upgrade["quality"], "tot_quality": upgrade["tot_quality"]})
 
         for elem in upgrades:
             quality = elem["quality"]
