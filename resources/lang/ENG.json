@@ -1150,6 +1150,13 @@
       "0": "Write the type to add",
       "keyboard_expert": ["Doctor", "Investigator", "Occultist", "Assassin", "Spy"],
       "keyboard_gang": ["Adepts", "Rooks", "Rovers", "Skulks", "Thugs"]
+    },
+
+    "add_servant": {
+       "0": "Select a new servant",
+      "err": "You can't add a servant without being in a game... /join to take part in a game.",
+      "err2": "You dont' have an active pc...",
+      "err3": "You can't add a servant, you are not a Vampire"
     }
   },
 
