@@ -16,7 +16,7 @@
         "0": "\uD83D\uDD2A<b>HELP SECTION</b>\uD83D\uDD2A\nFor more info about complex commands (marked with \uD83D\uDD0E), type \n/help followed by the name of the command",
         "1": "<i>-GENERAL-</i>\n/start - welcome message with credits and bot's starting instruction.\n/login - register your telegram account by choosing an username.\n/join - joins in a game of this chat. \uD83D\uDD0E\n",
         "2": "<i>-CREATION-</i>\n/createGame - create a new game in this chat.\n/createPC - starts the creation of a PC. \uD83D\uDD0E\n/createCrew - starts the creation of the crew. \uD83D\uDD0E\n",
-        "3": "<i>-DICE-</i>\n/roll [N] - rolls N dice and returns the result. \uD83D\uDD0E \n"
+        "3": "<i>-DICE-</i>\n/roll [N] - rolls N dice and returns the result. \uD83D\uDD0E\n/actionRoll - starts the conversation of the action roll with all the information requests to perform this type of roll. \uD83D\uDD0E\n/fortuneRoll - starts the conversation of the fortune roll with all the information requests to perform this type of roll. \uD83D\uDD0E\n/resistanceRoll - starts the conversation of the resistance roll with all the information requests to perform this type of roll. \uD83D\uDD0E\n/groupAction - starts the conversation of the group action with all the information requests to perform this type of roll. \uD83D\uDD0E"
       },
       "commands": {
         "error": "The command <u>{}</u> does not exist.",
@@ -984,9 +984,25 @@
 
     "migrate_pc_selection": {
       "0": "<i>{}</i> changed its nature: now it's a <i>{}</i>!",
-      "Ghost": "Ghost",
-      "Hull": "Hull",
-      "Vampire": "Vampire"
+      "Vampire": "Vampire",
+      "Ghost": "As a Ghost, wrath pervades you. Who are your enemies or what drives your anger?",
+      "Hull": "As a Hull, your autonomy is reduced to your master's will. What are the functions of your new form? Choose 3.",
+      "functions": ["to Guard", "to Destroy", "to Discover", "to Acquire", "to Labour at"]
+    },
+
+    "migrate_pc_ghost_enemies": {
+      "0": "You can add another enemy.\n/done when you have finished."
+    },
+
+    "migrate_pc_enemies_selected" : {
+      "0": "<i>{}</i> changed its nature: now it's a <i>{}</i>!",
+      "Ghost": "Ghost"
+    },
+
+    "migrate_pc_hull_functions": {
+      "0": "Choose {} more.",
+      "1": "<i>{}</i> changed its nature: now it's a <i>{}</i>!",
+      "Hull": "Hull"
     },
 
     "add_reputation": {

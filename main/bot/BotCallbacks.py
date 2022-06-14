@@ -7326,11 +7326,110 @@ def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
 
     add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "migration_pc"], value=choice)
 
+    if choice == "Vampire":
+        controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                       context.user_data["migrate_pc"]["info"])
+
+        auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+            placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+            parse_mode=ParseMode.HTML), 10)
+
+        return migrate_pc_end(update, context)
+    elif choice == "Ghost":
+        # enemies
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
+                                                                         parse_mode=ParseMode.HTML,
+                                                                         reply_markup=custom_kb(
+                                                                             controller.get_game_npcs(
+                                                                                 query_game_of_user(
+                                                                                     update.effective_message.chat_id,
+                                                                                     get_user_id(update)))))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "ghost_enemies"], value=[])
+        return 1
+    elif choice == "Hull":
+        # functions RK
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
+                                                                         parse_mode=ParseMode.HTML,
+                                                                         reply_markup=custom_kb(
+                                                                             placeholders["functions"]))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "hull_functions"], value=[])
+        return 2
+
+
+def migrate_pc_ghost_enemies(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of ghost enemies. The message is appended to the list of ghost_enemies in the user_data
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: this state of the conversation to let the user add more than one enemy.
+    """
+    placeholders = get_lang(context, migrate_pc_ghost_enemies.__name__)
+
+    context.user_data["migrate_pc"]["info"]["ghost_enemies"].append(update.effective_message.text)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    message = context.user_data["migrate_pc"]["invocation_message"].reply_text(
+        placeholders["0"], parse_mode=ParseMode.HTML, reply_markup=custom_kb(
+            controller.get_game_npcs(
+                query_game_of_user(
+                    update.effective_message.chat_id,
+                    get_user_id(update)))
+        ))
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+    return 1
+
+
+def migrate_pc_enemies_selected(update: Update, context: CallbackContext) -> int:
+    """
+    Fallbacks called when the user has finished to add enemies for the Ghost.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to migrate_pc_end().
+    """
+    placeholders = get_lang(context, migrate_pc_enemies_selected.__name__)
+    if "ghost_enemies" in context.user_data["migrate_pc"]["info"] and len(
+            context.user_data["migrate_pc"]["info"]["ghost_enemies"]) > 1:
+        controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                       context.user_data["migrate_pc"]["info"])
+
+        auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+            placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders["Ghost"]),
+            parse_mode=ParseMode.HTML), 10)
+
+        return migrate_pc_end(update, context)
+
+
+def migrate_pc_hull_functions(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the Hull's functions.
+    The message is appended to the list of hull_functions in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: this state if the user selected less than 3 functions, call to migrate_pc_end() otherwise.
+    """
+    placeholders = get_lang(context, migrate_pc_hull_functions.__name__)
+
+    context.user_data["migrate_pc"]["info"]["hull_functions"].append(update.effective_message.text)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    total_functions = len(context.user_data["migrate_pc"]["info"]["hull_functions"])
+
+    if total_functions < 3:
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders["0"].format(
+            3 - total_functions))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        return 2
+
     controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
                                    context.user_data["migrate_pc"]["info"])
 
     auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
-        placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+        placeholders["1"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders["Hull"]),
         parse_mode=ParseMode.HTML), 10)
 
     return migrate_pc_end(update, context)

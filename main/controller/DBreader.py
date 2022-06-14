@@ -72,12 +72,13 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
         cursor.execute(query, (sheet, peculiar))
     elif sheet is not None:
         if exists_crew(sheet):
-            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbilityWHERE Crew = ?"
+            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbility WHERE Crew = ?"
         elif exists_character(sheet):
             query += """FROM SpecialAbility JOIN Char_SA ON Name = SpecialAbility
             WHERE Character = ? AND FrameFeature = 'N' AND Stricture is False"""
         else:
             return []
+        print(query)
         cursor.execute(query, (sheet,))
     elif peculiar is not None:
         query += """FROM (SpecialAbility S LEFT JOIN Crew_SA CREW ON S.Name = CREW.SpecialAbility) 

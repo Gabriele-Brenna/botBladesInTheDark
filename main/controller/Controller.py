@@ -3,6 +3,7 @@ import threading
 
 from bs4 import BeautifulSoup
 
+from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Human import Human
 from character.Owner import Owner
@@ -104,11 +105,11 @@ class Controller:
                     if is_master:
                         user.is_master = is_master
                     if human is not None:
+                        friend = human.friend.name + ", " + human.friend.role
+                        enemy = human.enemy.name + ", " + human.enemy.role
+                        self.add_npc_to_game(friend, game)
+                        self.add_npc_to_game(enemy, game)
                         user.characters.append(human)
-
-                    set(game.NPCs).add(human.friend)
-                    set(game.NPCs).add(human.enemy)
-                    list(game.NPCs)
 
                     insert_npc_json(game_id, save_to_json(game.NPCs))
 
@@ -119,13 +120,13 @@ class Controller:
             new_player = Player(query_users_names(player_id)[0], player_id, is_master)
             if human is not None:
                 new_player.characters.append(human)
+                friend = human.friend.name + ", " + human.friend.role
+                enemy = human.enemy.name + ", " + human.enemy.role
+                self.add_npc_to_game(friend, game)
+                self.add_npc_to_game(enemy, game)
+                insert_npc_json(game_id, save_to_json(game.NPCs))
+
             game.users.append(new_player)
-
-            set(game.NPCs).add(human.friend)
-            set(game.NPCs).add(human.enemy)
-            list(game.NPCs)
-
-            insert_npc_json(game_id, save_to_json(game.NPCs))
 
             insert_user_game(player_id, game_id, save_to_json(new_player.characters), is_master)
 
@@ -162,8 +163,10 @@ class Controller:
         for cohort in cohorts:
             game.crew.cohorts.append(Cohort(**cohort))
 
-        set(game.NPCs).add(game.crew.contact)
-        list(game.NPCs)
+        # set(game.NPCs).add(game.crew.contact)
+        # list(game.NPCs)
+        contact = game.crew.contact.name + ", " + game.crew.contact.role
+        self.add_npc_to_game(contact, game)
 
         insert_npc_json(game_id, save_to_json(game.NPCs))
         insert_crew_json(game_id, save_to_json(game.crew))
@@ -1983,6 +1986,14 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         game.get_player_by_id(user_id).migrate_character_type(migration["pc"], migration["migration_pc"])
+
+        pc = game.get_player_by_id(user_id).get_character_by_name(migration["pc"])
+        if "ghost_enemies" in migration and isinstance(pc, Ghost):
+            pc.enemies_rivals = migration["ghost_enemies"]
+            migration.pop("ghost_enemies")
+        if "hull_functions" in migration and isinstance(pc, Hull):
+            pc.functions = migration["hull_functions"]
+            migration.pop("hull_functions")
 
         update_user_characters(user_id, game.identifier, save_to_json(game.get_player_by_id(user_id).characters))
 
