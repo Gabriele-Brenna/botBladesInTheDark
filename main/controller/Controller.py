@@ -106,6 +106,12 @@ class Controller:
                     if human is not None:
                         user.characters.append(human)
 
+                    set(game.NPCs).add(human.friend)
+                    set(game.NPCs).add(human.enemy)
+                    list(game.NPCs)
+
+                    insert_npc_json(game_id, save_to_json(game.NPCs))
+
                     insert_user_game(player_id, game_id, save_to_json(user.characters), user.is_master)
                     return
 
@@ -114,6 +120,12 @@ class Controller:
             if human is not None:
                 new_player.characters.append(human)
             game.users.append(new_player)
+
+            set(game.NPCs).add(human.friend)
+            set(game.NPCs).add(human.enemy)
+            list(game.NPCs)
+
+            insert_npc_json(game_id, save_to_json(game.NPCs))
 
             insert_user_game(player_id, game_id, save_to_json(new_player.characters), is_master)
 
@@ -150,6 +162,10 @@ class Controller:
         for cohort in cohorts:
             game.crew.cohorts.append(Cohort(**cohort))
 
+        set(game.NPCs).add(game.crew.contact)
+        list(game.NPCs)
+
+        insert_npc_json(game_id, save_to_json(game.NPCs))
         insert_crew_json(game_id, save_to_json(game.crew))
 
     def get_game_state(self, game_id: int) -> int:
@@ -778,7 +794,7 @@ class Controller:
         score.pop("members")
 
         if score["target"]["type"] == "NPC":
-            target = self.add_pc_to_game(score["target"]["name"], game)
+            target = self.add_npc_to_game(score["target"]["name"], game)
         elif score["target"]["type"] == "Faction":
             faction_name = score["target"]["name"].split(": ")[0]
             target = game.get_faction_by_name(faction_name)
@@ -802,7 +818,7 @@ class Controller:
 
         insert_journal(game.identifier, game.journal.get_log_string())
 
-    def add_pc_to_game(self, npc: str, game: Game) -> NPC:
+    def add_npc_to_game(self, npc: str, game: Game) -> NPC:
         name, role = npc.split(", ")
         target = game.get_npc_by_name_and_role(name, role)
         if target is None:
@@ -1623,7 +1639,7 @@ class Controller:
         elif activity == "recover":
             traumas = 0
             if "npc" in downtime_info:
-                self.add_pc_to_game(downtime_info["npc"], game)
+                self.add_npc_to_game(downtime_info["npc"], game)
                 insert_npc_json(game.identifier, save_to_json(game.NPCs))
             elif "healer" in downtime_info:
                 if downtime_info["healer"].split(":")[0].lower() == downtime_info["pc"].lower():
@@ -2188,6 +2204,10 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(crew))
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def get_game_npcs(self, game_id: int) -> List[str]:
+        game = self.get_game_by_id(game_id)
+        return [npc.name + ", " + npc.role for npc in game.NPCs]
 
     def __repr__(self) -> str:
         return str(self.games)
