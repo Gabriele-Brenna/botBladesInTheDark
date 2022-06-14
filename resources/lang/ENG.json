@@ -808,7 +808,10 @@
     "add_ability": {
       "0": "Select where you want to add a special ability",
       "1": "You don't have any point available to spend for a special ability",
-      "err": "You can't add a special ability without being in a game... /join to take part in a game."
+      "keyboard": ["Crew", "PC", "Strictures", "Frame Features"],
+      "callbacks": [1,2,3,4],
+      "err": "You can't add a special ability without being in a game... /join to take part in a game.",
+      "noPoints": "You don't have any point available for a new special ability."
     },
 
     "add_ability_owner": {

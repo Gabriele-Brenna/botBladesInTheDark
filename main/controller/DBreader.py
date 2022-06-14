@@ -38,6 +38,7 @@ def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
 
 
 def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None, pc: bool = None,
+                            frame_feature: str = None, stricture: bool = None,
                             as_dict: bool = False) -> Union[List[SpecialAbility], List[Dict[str, str]]]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
@@ -48,6 +49,8 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
         if it is None, the complete list of special abilities is retrieved;
     :param pc: if True, the search is restricted to the character's abilities,
         if False, the search is restricted to the crew's abilities
+    :param frame_feature: represent the frame feature of the hull requested of the size requested
+    :param stricture: if True the result objects will be the stricture of the vampire
     :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of SpecialAbility objects
     """
@@ -69,9 +72,10 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
         cursor.execute(query, (sheet, peculiar))
     elif sheet is not None:
         if exists_crew(sheet):
-            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbility\nWHERE Crew = ?"
+            query += "FROM SpecialAbility JOIN Crew_SA ON Name = SpecialAbilityWHERE Crew = ?"
         elif exists_character(sheet):
-            query += "FROM SpecialAbility JOIN Char_SA ON Name = SpecialAbility\nWHERE Character = ?"
+            query += """FROM SpecialAbility JOIN Char_SA ON Name = SpecialAbility
+            WHERE Character = ? AND FrameFeature = 'N' AND Stricture is False"""
         else:
             return []
         cursor.execute(query, (sheet,))
@@ -83,10 +87,19 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
         cursor.execute(query, (peculiar, peculiar))
     elif pc is not None:
         if pc:
-            query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility"""
+            query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility 
+            WHERE CHAR.Character not in (SELECT Class FROM CharacterSheet WHERE Spirit is True)"""
         elif not pc:
             query += """FROM Crew_SA CREW LEFT JOIN SpecialAbility S on S.Name = CREW.SpecialAbility"""
         cursor.execute(query)
+    elif frame_feature is not None:
+        query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility
+        WHERE S.FrameFeature = 'E' OR S.FrameFeature = ?"""
+        cursor.execute(query, (frame_feature,))
+    elif stricture is not None:
+        query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility
+        WHERE S.Stricture is ?"""
+        cursor.execute(query, (stricture,))
     else:
         query += """FROM SpecialAbility"""
         cursor.execute(query)

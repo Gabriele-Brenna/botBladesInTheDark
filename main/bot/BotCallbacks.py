@@ -6865,15 +6865,20 @@ def add_ability(update: Update, context: CallbackContext) -> int:
     if len(buttons) == 0:
         auto_delete_message(update.effective_message.reply_text(placeholders["1"]), 10)
         return add_ability_end(update, context)
+    buttons, callbacks = build_add_ability_buttons(update, context)
+    if not buttons:
+        message = update.message.reply_text(placeholders["noPoints"])
+        auto_delete_message(message, placeholders["noPoints"])
+        return add_ability_end(update, context)
     query_menu = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
-        build_add_ability_buttons(update, context), inline=True, split_row=1))
+        buttons, callback_data=callbacks, inline=True, split_row=1))
 
     add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
 
     return 0
 
 
-def build_add_ability_buttons(update: Update, context: CallbackContext) -> List[str]:
+def build_add_ability_buttons(update: Update, context: CallbackContext) -> Tuple[List[str], List[str]]:
     """
     Builds the list of buttons used to select between pc and crew in conv_addAbility.
 
@@ -6881,18 +6886,29 @@ def build_add_ability_buttons(update: Update, context: CallbackContext) -> List[
     :param context: instance of CallbackContext linked to the user.
     :return: list of str representing the buttons.
     """
+    placeholders = get_lang(context, add_ability.__name__)
     chat_id = update.effective_message.chat_id
     try:
         pc_name = context.user_data["active_PCs"][chat_id]
     except:
         pc_name = None
     buttons = []
+    callbacks = []
     if controller.get_crew_exp_points(query_game_of_user(chat_id, get_user_id(update))) > 0:
-        buttons.append("Crew")
-    if pc_name and controller.get_pc_points(chat_id, get_user_id(update), pc_name)["Playbook"] > 0:
-        buttons.append("Pc")
+        buttons.append(placeholders["keyboard"][0])
+        callbacks.append(placeholders["callbacks"][0])
+    if pc_name:
+        if controller.get_pc_points(chat_id, get_user_id(update), pc_name)["Playbook"] > 0:
+            buttons.append(placeholders["keyboard"][1])
+            callbacks.append(placeholders["callbacks"][1])
+        if controller.is_vampire(chat_id, get_user_id(update), pc_name):
+            buttons.append(placeholders["keyboard"][2])
+            callbacks.append(placeholders["callbacks"][2])
+        if controller.is_hull(chat_id, get_user_id(update), pc_name):
+            buttons.append(placeholders["keyboard"][3])
+            callbacks.append(placeholders["callbacks"][3])
 
-    return buttons
+    return buttons, callbacks
 
 
 def add_ability_owner(update: Update, context: CallbackContext) -> int:
@@ -6911,14 +6927,19 @@ def add_ability_owner(update: Update, context: CallbackContext) -> int:
 
     chat_id = update.effective_message.chat_id
 
-    add_tag_in_telegram_data(context, ["add_ability", "info", "selection"], choice.lower())
+    add_tag_in_telegram_data(context, ["add_ability", "info", "selection"], choice)
 
-    if choice.lower() == "crew":
+    if choice == 1:
         abilities = controller.get_crew_special_ability(chat_id, get_user_id(update))
-    elif choice.lower() == "pc":
+    elif choice == 2:
         abilities = controller.get_pc_special_ability(chat_id, get_user_id(update),
                                                       context.user_data["active_PCs"][chat_id])
-    abilities.append("Veteran")
+    elif choice == 3:
+        abilities = controller.get_strictures(chat_id, get_user_id(update), context.user_data["active_PCs"][chat_id])
+    else:
+        abilities = controller.get_frame_features(chat_id, get_user_id(update),
+                                                  context.user_data["active_PCs"][chat_id])
+
     buttons_list = []
     buttons = []
     for i in range(len(abilities)):
@@ -6948,6 +6969,29 @@ def add_ability_selection(update: Update, context: CallbackContext) -> int:
     :param context: instance of CallbackContext linked to the user.
     :return: the next state of the conversation.
     """
+
+    def make_buttons():
+        abilities = controller.get_all_abilities(
+            chat_id, user_id, context.user_data["add_ability"]["info"]["selection"], pc_name)
+        buttons_list = []
+        buttons = []
+        for i in range(len(abilities)):
+            buttons.append(abilities[i])
+            if (i + 1) % 8 == 0:
+                buttons_list.append(buttons.copy())
+                buttons.clear()
+        if buttons:
+            buttons_list.append(buttons.copy())
+        context.user_data["add_ability"]["buttons_list"] = buttons_list
+        context.user_data["add_ability"]["query_menu_index"] = 0
+
+        query_menu = context.user_data["add_ability"]["invocation_message"].reply_text(
+            placeholders["0"], reply_markup=build_multi_page_kb(buttons_list[0])
+        )
+        context.user_data["add_ability"]["query_menu"].delete()
+
+        add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
+
     placeholders = get_lang(context, add_ability_selection.__name__)
 
     query = update.callback_query
@@ -6976,30 +7020,13 @@ def add_ability_selection(update: Update, context: CallbackContext) -> int:
     else:
         name = choice.split("$")[0]
         if "$" in choice:
+
             if name.lower() == "veteran":
-                abilities = controller.get_all_abilities(
-                    chat_id, user_id, context.user_data["add_ability"]["info"]["selection"].lower(), pc_name)
-                buttons_list = []
-                buttons = []
-                for i in range(len(abilities)):
-                    buttons.append(abilities[i])
-                    if (i + 1) % 8 == 0:
-                        buttons_list.append(buttons.copy())
-                        buttons.clear()
-                if buttons:
-                    buttons_list.append(buttons.copy())
-                context.user_data["add_ability"]["buttons_list"] = buttons_list
-                context.user_data["add_ability"]["query_menu_index"] = 0
-
-                query_menu = context.user_data["add_ability"]["invocation_message"].reply_text(
-                    placeholders["0"], reply_markup=build_multi_page_kb(buttons_list[0])
-                )
-                context.user_data["add_ability"]["query_menu"].delete()
-
-                add_tag_in_telegram_data(context, ["add_ability", "query_menu"], query_menu)
+                make_buttons()
                 return 1
 
             else:
+                add_tag_in_telegram_data(context, ["add_ability", "info", "type"], name.lower())
                 add_tag_in_telegram_data(context, ["add_ability", "info", "ability"], name)
                 controller.commit_add_ability(update.effective_message.chat_id, get_user_id(update),
                                               context.user_data["add_ability"]["info"], pc_name)

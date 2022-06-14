@@ -544,7 +544,7 @@ def paste_hull_frame(frame: str, sheet: Image):
 def paste_hull_frame_features(features: List[SpecialAbility], sheet: Image):
     query_frame_features_s = query_frame_features(group="S")
     query_frame_features_m = query_frame_features(group="M")
-    query_frame_features_l = query_frame_features(group="L")
+    query_frame_features_l = query_frame_features(group="H")
     query_frame_features_e = query_frame_features(group="E")
     frame_features = [query_frame_features_s, query_frame_features_m, query_frame_features_l, query_frame_features_e]
 
