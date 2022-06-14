@@ -8651,7 +8651,7 @@ def add_servant(update: Update, context: CallbackContext) -> int:
     :return: the next state of the conversation.
     """
 
-    placeholders = get_lang(context, add_type_cohort.__name__)
+    placeholders = get_lang(context, add_servant.__name__)
     if is_game_in_wrong_phase(update, context, placeholders["err"]):
         return add_servant_end(update, context)
 
@@ -8673,7 +8673,7 @@ def add_servant(update: Update, context: CallbackContext) -> int:
     npcs = [npc["name"] + ", " + npc["role"] for npc in query_char_strange_friends("Vampire", as_dict=True)]
 
     query_menu = context.user_data["add_servant"]["invocation_message"].reply_text(
-        placeholders["0"], reply_markup=build_multi_page_kb(npcs))
+        placeholders["0"], reply_markup=custom_kb(npcs, True, 1))
     add_tag_in_telegram_data(context, ["add_servant", "query_menu"], query_menu)
 
     return 0
