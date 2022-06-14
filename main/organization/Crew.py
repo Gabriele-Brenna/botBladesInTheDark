@@ -177,11 +177,14 @@ class Crew(Organization, ISavable, IDrawable):
             return True
         return False
 
-    def upgrade_vault(self) -> int:
+    def upgrade_vault(self, increase: bool = True) -> int:
         """
         Increase the capacity of the vault by doubling its size.
         """
-        self.vault_capacity *= 2
+        if increase:
+            self.vault_capacity *= 2
+        else:
+            self.vault_capacity = int(self.vault_capacity / 2)
         return self.vault_capacity
 
     def add_upgrade(self, upgrade: str) -> Upgrade:
@@ -191,6 +194,8 @@ class Crew(Organization, ISavable, IDrawable):
         :param upgrade: is the name of the upgrade to create/modify
         :return: the created/modified upgrade
         """
+        if upgrade.lower() == "vault":
+            self.upgrade_vault()
         for u in self.upgrades:
             if u.name.lower() == upgrade.lower():
                 u.quality += 1
@@ -205,9 +210,13 @@ class Crew(Organization, ISavable, IDrawable):
         :param upgrade: is the name of the upgrade to remove
         :return: the removed upgrade
         """
+        if upgrade.lower() == "vault":
+            self.upgrade_vault(False)
         for u in self.upgrades:
             if u.name.lower() == upgrade.lower():
-                self.upgrades.remove(u)
+                u.quality -= 1
+                if u.quality == 0:
+                    self.upgrades.remove(u)
                 return u
 
     def add_cohort(self, cohort: Cohort):

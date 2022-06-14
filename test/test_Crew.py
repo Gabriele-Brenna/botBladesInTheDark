@@ -140,8 +140,8 @@ class TestCrew(TestCase):
 
     def test_remove_upgrade(self):
         self.assertIsNone(self.shadows.remove_upgrade("Workshop"))
-        self.assertEqual(Upgrade("Tools", 1), self.shadows.remove_upgrade("Tools"))
-        self.assertEqual(Upgrade("Boat", 2), self.shadows.remove_upgrade("boat"))
+        self.assertEqual(Upgrade("Tools", 0), self.shadows.remove_upgrade("Tools"))
+        self.assertEqual(Upgrade("Boat", 1), self.shadows.remove_upgrade("boat"))
 
     def test_calc_rep(self):
         score1 = Score(target_tier=3)
