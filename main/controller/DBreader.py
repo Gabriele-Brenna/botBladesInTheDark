@@ -121,20 +121,17 @@ def query_xp_triggers_id_description(xp_id: int = None, crew: bool = False) -> L
     connection = establish_connection()
     cursor = connection.cursor()
 
+    query = "SELECT XpID, Description\n"
     if xp_id is not None:
-        cursor.execute("""
-        SELECT XpID, Description
-        FROM XpTrigger
-        WHERE XpID = ?
-        """, (xp_id, ))
-
+        query += """FROM XpTrigger\nWHERE XpID = ?"""
+        cursor.execute(query, (xp_id,))
     else:
-        cursor.execute("""
-                SELECT XpID, Description
-                FROM XpTrigger
-                WHERE Crew_Char = ?
-                """, (crew,))
-
+        if crew:
+            query += "FROM XpTrigger NATURAL JOIN Crew_Xp\nWHERE Peculiar is True"
+            cursor.execute(query)
+        else:
+            query += "FROM XpTrigger NATURAL JOIN Char_Xp\nWHERE Peculiar is True"
+            cursor.execute(query)
     return cursor.fetchall()
 
 
@@ -926,7 +923,7 @@ def query_frame_features(feature: str = None, group: str = None,
 
 
 def query_items(item_name: str = None, common_items: bool = False, pc_class: str = None, canon: bool = None,
-                as_dict: bool = False) -> Union[List[Item], List[dict]]:
+                specific: bool = None, as_dict: bool = False) -> Union[List[Item], List[dict]]:
     """
     Retrieves a list of Items from the DB. If item_name is passed this method searches for its occurrence.
     Otherwise, if pc_class is passed, the targets are all the items of this specific sheet.
@@ -935,6 +932,7 @@ def query_items(item_name: str = None, common_items: bool = False, pc_class: str
     :param common_items: True if only the common items should be retrieved, False otherwise.
     :param pc_class: is the target PC's sheet.
     :param canon: True if the canon items are the target, false if the non-canon items are the target.
+    :param specific:
     :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of Item.
     """
@@ -976,6 +974,13 @@ def query_items(item_name: str = None, common_items: bool = False, pc_class: str
                        FROM Item
                        WHERE Canon = ?"""
             cursor.execute(query, (canon,))
+
+        elif specific:
+            query = """SELECT DISTINCT Name, Description, Weight, Usages
+                       FROM Item
+                       WHERE Canon is False or Name in (SELECT Item FROM Char_Item)"""
+            cursor.execute(query)
+
         else:
             query = """SELECT Name, Description, Weight, Usages
                        FROM Item

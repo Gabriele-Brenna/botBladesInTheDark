@@ -1266,8 +1266,9 @@
 
     "create_char_sheet_xp": {
       "0": "Select the xp trigger for this sheet",
-      "1": "New Character Sheet added, now everyone can use it!",
-      "404": "Description not found"
+      "200": "New Character Sheet added, now everyone can use it!",
+      "404": "Description not found",
+      "500": "Ops! Something went wrong and the Character Sheet couldn't been saved!\nRetry later."
     },
 
     "create_hg": {
