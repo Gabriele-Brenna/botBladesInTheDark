@@ -1268,6 +1268,37 @@
       "0": "Select the xp trigger for this sheet",
       "1": "New Character Sheet added, now everyone can use it!",
       "404": "Description not found"
+    },
+
+    "create_hg": {
+      "0": "Write the name of the hunting ground"
+    },
+
+    "create_hg_name": {
+      "0": "Write the description of the hunting ground",
+      "err": "Hunting ground already present, write another name"
+    },
+
+    "create_hg_description": {
+      "0": "New hunting ground created, now everyone can use it!"
+    },
+
+    "create_upgrade": {
+      "0": "Write the name of the upgrade"
+    },
+
+    "create_upgrade_name": {
+      "0": "Write the description of the upgrade",
+      "err": "Upgrade already existing, write another name"
+    },
+
+    "create_upgrade_description": {
+      "0": "Write the total quality for the upgrade"
+    },
+
+    "create_upgrade_tot_quality": {
+      "0": "New upgrade created, now everyone can use it!",
+      "err": "Must be a number (1 > tot_quality > 4)"
     }
   },
 

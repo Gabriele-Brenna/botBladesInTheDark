@@ -8924,9 +8924,9 @@ def create_item_name(update: Update, context: CallbackContext) -> int:
     context.user_data["create_item"]["message"].delete()
 
     name = update.message.text
-    if not query_items(name):
-        message = context.user_data["create_sa"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
-        add_tag_in_telegram_data(context, ["create_sa", "message"], message)
+    if query_items(name):
+        message = context.user_data["create_item"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_item", "message"], message)
         return 0
 
     add_tag_in_telegram_data(context, ["create_item", "info", "name"], update.message.text)
@@ -9493,6 +9493,213 @@ def create_char_sheet_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_createCharSheet--------------------------------------------------------
+
+
+# ------------------------------------------conv_createHuntingGround----------------------------------------------------
+
+
+def create_hg(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_hg.__name__)
+
+    add_tag_in_telegram_data(context, ["create_hg", "invocation_message"], update.message)
+
+    message = context.user_data["create_hg"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_hg", "message"], message)
+
+    return 0
+
+
+def create_hg_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the special ability name in the user_data, then asks for the description.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_hg_name.__name__)
+    context.user_data["create_hg"]["message"].delete()
+
+    name = update.message.text
+    if name in [sa["name"] for sa in query_special_abilities(as_dict=True)]:
+        message = context.user_data["create_hg"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_hg", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["create_hg", "info", "name"], name)
+
+    message = context.user_data["create_hg"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_hg", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_hg_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the description in the user_data, then adds the new special ability to the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls create_hg_end.
+    """
+    placeholders = get_lang(context, create_hg_description.__name__)
+    context.user_data["create_hg"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_hg", "info", "description"], update.message.text)
+
+    insert_hunting_ground(**context.user_data["create_hg"]["info"])
+
+    message = context.user_data["create_hg"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    auto_delete_message(message, 10)
+
+    return create_hg_end(update, context)
+
+
+def create_hg_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the creation of the creation of a special ability conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "create_hg")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_createHuntingGround----------------------------------------------------
+
+
+# ------------------------------------------conv_createUpgrade----------------------------------------------------------
+
+
+def create_upgrade(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that handles the creation of a new upgrade and ask the user the name of it.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_upgrade.__name__)
+
+    add_tag_in_telegram_data(context, ["create_upgrade", "invocation_message"], update.message)
+
+    message = context.user_data["create_upgrade"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_upgrade", "message"], message)
+
+    return 0
+
+
+def create_upgrade_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the upgrade name in the user_data,
+    then asks if is a trigger for a crew or not.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_upgrade_name.__name__)
+    context.user_data["create_upgrade"]["message"].delete()
+
+    name = update.message.text
+    if query_upgrades(name):
+        message = context.user_data["create_upgrade"]["invocation_message"].reply_text(
+            placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_upgrade", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["create_upgrade", "info", "name"], update.message.text)
+
+    message = context.user_data["create_upgrade"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_upgrade", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_upgrade_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the description in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_upgrade_description.__name__)
+    context.user_data["create_upgrade"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_upgrade", "info", "description"], update.message.text)
+
+    message = context.user_data["create_upgrade"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_upgrade", "message"], message)
+
+    update.message.delete()
+    return 2
+
+
+def create_upgrade_tot_quality(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the tot quality in the user_data, then adds the new upgrade to the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_upgrade_tot_quality.__name__)
+    context.user_data["create_upgrade"]["message"].delete()
+
+    try:
+        tot_quality = int(update.message.text)
+        if 1 > tot_quality > 4:
+            raise Exception
+    except:
+        message = context.user_data["create_upgrade"]["invocation_message"].reply_text(
+            placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_upgrade", "message"], message)
+        update.message.delete()
+        return 3
+
+    add_tag_in_telegram_data(context, ["create_upgrade", "info", "quality"], tot_quality)
+
+    insert_upgrade(**context.user_data["create_upgrade"]["info"])
+
+    message = context.user_data["create_upgrade"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    auto_delete_message(message, 15)
+
+    return create_upgrade_end(update, context)
+
+
+def create_upgrade_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the creation of an upgrade conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "create_upgrade")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_createUpgrade----------------------------------------------------------
+
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
