@@ -1182,7 +1182,8 @@
     },
 
     "create_sa_name": {
-      "0": "Write the description of the special ability"
+      "0": "Write the description of the special ability",
+      "err": "Special ability already present, write another name"
     },
 
     "create_sa_description": {
@@ -1208,7 +1209,8 @@
     },
 
     "create_item_name": {
-      "0": "Write the description of the item"
+      "0": "Write the description of the item",
+      "err": "Item already existing, write another name"
     },
 
     "create_item_description": {
@@ -1230,7 +1232,8 @@
     },
 
     "create_char_sheet_name": {
-      "0": "Write the description of the sheet"
+      "0": "Write the description of the sheet",
+      "err": "Character sheet already present, write another name"
     },
 
     "create_char_sheet_description": {

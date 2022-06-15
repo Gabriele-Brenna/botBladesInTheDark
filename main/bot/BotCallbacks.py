@@ -8749,7 +8749,13 @@ def create_sa_name(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, create_sa_name.__name__)
     context.user_data["create_sa"]["message"].delete()
 
-    add_tag_in_telegram_data(context, ["create_sa", "info", "name"], update.message.text)
+    name = update.message.text
+    if name in [sa["name"] for sa in query_special_abilities(as_dict=True)]:
+        message = context.user_data["create_sa"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_sa", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["create_sa", "info", "name"], name)
 
     message = context.user_data["create_sa"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
     add_tag_in_telegram_data(context, ["create_sa", "message"], message)
@@ -8917,6 +8923,12 @@ def create_item_name(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, create_item_name.__name__)
     context.user_data["create_item"]["message"].delete()
 
+    name = update.message.text
+    if not query_items(name):
+        message = context.user_data["create_sa"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_sa", "message"], message)
+        return 0
+
     add_tag_in_telegram_data(context, ["create_item", "info", "name"], update.message.text)
 
     message = context.user_data["create_item"]["invocation_message"].reply_text(
@@ -9059,7 +9071,15 @@ def create_char_sheet_name(update: Update, context: CallbackContext) -> int:
     placeholders = get_lang(context, create_char_sheet_name.__name__)
     context.user_data["char_sheet"]["message"].delete()
 
-    add_tag_in_telegram_data(context, ["char_sheet", "name"], update.message.text)
+    name = update.message.text
+
+    if name.lower in [sheet.lower for sheet in query_character_sheets()]:
+        message = context.user_data["char_sheet"]["invocation_message"].reply_text(
+            placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["char_sheet", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["char_sheet", "name"], name)
 
     message = context.user_data["char_sheet"]["invocation_message"].reply_text(
         placeholders["0"], ParseMode.HTML)
