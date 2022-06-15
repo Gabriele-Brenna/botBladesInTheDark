@@ -1008,6 +1008,51 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createHuntingGround".casefold(), "inventHuntingGround".casefold()],
+                                         create_hg)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_hg_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_hg_description)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_hg_end)],
+            name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createUpgrade".casefold(), "inventUpgrade".casefold()],
+                                         create_upgrade)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_upgrade_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_upgrade_description)],
+                2: [MessageHandler(Filters.text & ~Filters.command, create_upgrade_tot_quality)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_upgrade_end)],
+            name="conv_createUpgrade",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createNPC".casefold(), "inventNPC".casefold()],
+                                         create_npc)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_npc_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_npc_role)],
+                2: [CallbackQueryHandler(create_npc_faction)],
+                3: [MessageHandler(Filters.text & ~Filters.command, create_npc_description)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_sa_end)],
+            name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

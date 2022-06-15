@@ -1182,7 +1182,8 @@
     },
 
     "create_sa_name": {
-      "0": "Write the description of the special ability"
+      "0": "Write the description of the special ability",
+      "err": "Special ability already present, write another name"
     },
 
     "create_sa_description": {
@@ -1208,7 +1209,8 @@
     },
 
     "create_item_name": {
-      "0": "Write the description of the item"
+      "0": "Write the description of the item",
+      "err": "Item already existing, write another name"
     },
 
     "create_item_description": {
@@ -1230,7 +1232,8 @@
     },
 
     "create_char_sheet_name": {
-      "0": "Write the description of the sheet"
+      "0": "Write the description of the sheet",
+      "err": "Character sheet already present, write another name"
     },
 
     "create_char_sheet_description": {
@@ -1266,6 +1269,59 @@
       "200": "New Character Sheet added, now everyone can use it!",
       "404": "Description not found",
       "500": "Ops! Something went wrong and the Character Sheet couldn't been saved!\nRetry later."
+    },
+
+    "create_hg": {
+      "0": "Write the name of the hunting ground"
+    },
+
+    "create_hg_name": {
+      "0": "Write the description of the hunting ground",
+      "err": "Hunting ground already present, write another name"
+    },
+
+    "create_hg_description": {
+      "0": "New hunting ground created, now everyone can use it!"
+    },
+
+    "create_upgrade": {
+      "0": "Write the name of the upgrade"
+    },
+
+    "create_upgrade_name": {
+      "0": "Write the description of the upgrade",
+      "err": "Upgrade already existing, write another name"
+    },
+
+    "create_upgrade_description": {
+      "0": "Write the total quality for the upgrade"
+    },
+
+    "create_upgrade_tot_quality": {
+      "0": "New upgrade created, now everyone can use it!",
+      "err": "Must be a number (1 > tot_quality > 4)"
+    },
+
+     "create_npc": {
+      "0": "Write the name of the npc"
+    },
+
+    "create_npc_name": {
+      "0": "Write the role of the npc"
+    },
+
+    "create_npc_role": {
+      "0": "Select the faction of the npc"
+    },
+
+    "create_npc_faction": {
+      "404": "Description not found",
+      "0": "Select the faction of the npc",
+      "1": "Write the description of the npc"
+    },
+
+    "create_npc_description": {
+      "0": "New npc created, now everyone can use it!"
     }
   },
 
