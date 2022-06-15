@@ -121,20 +121,17 @@ def query_xp_triggers_id_description(xp_id: int = None, crew: bool = False) -> L
     connection = establish_connection()
     cursor = connection.cursor()
 
+    query = "SELECT XpID, Description\n"
     if xp_id is not None:
-        cursor.execute("""
-        SELECT XpID, Description
-        FROM XpTrigger
-        WHERE XpID = ?
-        """, (xp_id, ))
-
+        query += """FROM XpTrigger\nWHERE XpID = ?"""
+        cursor.execute(query, (xp_id,))
     else:
-        cursor.execute("""
-                SELECT XpID, Description
-                FROM XpTrigger
-                WHERE Crew_Char = ?
-                """, (crew,))
-
+        if crew:
+            query += "FROM XpTrigger NATURAL JOIN Crew_Xp\nWHERE Peculiar is True"
+            cursor.execute(query)
+        else:
+            query += "FROM XpTrigger NATURAL JOIN Char_Xp\nWHERE Peculiar is True"
+            cursor.execute(query)
     return cursor.fetchall()
 
 

@@ -9190,6 +9190,8 @@ def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
         name = choice.split("$")[0]
         name, role = name.split(", ")
         if "$" in choice:
+            buttons = context.user_data["char_sheet"]["buttons_list"][context.user_data["char_sheet"]["query_menu_index"]]
+            buttons.remove(choice.split("$")[0])
             npcs.append(query_npc_id(name, role))
 
             if len(npcs) >= 5:
@@ -9268,6 +9270,10 @@ def create_char_sheet_items(update: Update, context: CallbackContext) -> int:
     else:
         name = choice
         if "$" in choice:
+            name = choice.split("$")[0]
+            buttons = context.user_data["char_sheet"]["buttons_list"][
+                context.user_data["char_sheet"]["query_menu_index"]]
+            buttons.remove(name)
             items.append(name)
 
             if len(items) >= 6:
@@ -9347,6 +9353,10 @@ def create_char_sheet_sa(update: Update, context: CallbackContext) -> int:
     else:
         name = choice
         if "$" in choice:
+            name = choice.split("$")[0]
+            buttons = context.user_data["char_sheet"]["buttons_list"][
+                context.user_data["char_sheet"]["query_menu_index"]]
+            buttons.remove(name)
             sas.append(name)
 
             if len(sas) >= 8:
@@ -9419,27 +9429,20 @@ def create_char_sheet_xp(update: Update, context: CallbackContext) -> int:
     else:
         if "$" in choice:
             choice = choice.split("$")[0]
+            buttons = context.user_data["char_sheet"]["buttons_list"][
+                context.user_data["char_sheet"]["query_menu_index"]]
+            buttons.remove(choice)
             add_tag_in_telegram_data(context, ["char_sheet", "Char_Xp", "xp_id"], int(choice))
 
-            sheet_name = context.user_data["char_sheet"]["name"]
             info = context.user_data["char_sheet"]
 
-            insert_character_sheet(sheet_name, **info["CharacterSheet"])
-            for key in info["Char_Action"]["action_dots"].keys():
-                insert_char_action(sheet_name, key, info["Char_Action"]["action_dots"][key])
-            for npc in info["Char_Friend"]["NPCs"]:
-                insert_char_friend(sheet_name, npc)
-            for item in info["Char_Item"]["items"]:
-                insert_char_item(sheet_name, item)
-            insert_char_sa(sheet_name, info["Char_Sa"]["sas"][0], True)
-            info["Char_Sa"]["sas"].pop(0)
-            for special_ability in info["Char_Sa"]["sas"]:
-                insert_char_sa(sheet_name, special_ability)
-            for i in range(1, 4):
-                insert_char_xp(sheet_name, i, False)
-            insert_char_xp(sheet_name, info["Char_Xp"]["xp_id"], True)
+            if not insert_char_info(info):
+                message = context.user_data["char_sheet"]["invocation_message"].reply_text(placeholders["500"])
+                auto_delete_message(message, 15)
 
-            message = context.user_data["char_sheet"]["invocation_message"].reply_text(placeholders["1"])
+                return create_char_sheet_end(update, context)
+
+            message = context.user_data["char_sheet"]["invocation_message"].reply_text(placeholders["200"])
             auto_delete_message(message, 15)
 
             return create_char_sheet_end(update, context)
