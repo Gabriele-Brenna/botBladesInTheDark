@@ -25,7 +25,7 @@ class TestFilesLoader(TestCase):
             wanted_level=1,
             contact=NPC("Rolan", "a drug-dealer"),
             description="a guild of smugglers",
-            upgrades=[Upgrade("Vehicle", 1), Upgrade("Barge", 1)],
+            upgrades=[Upgrade("Vehicle", 1, 2), Upgrade("Barge", 1, 1)],
             vault_capacity=8,
             coins=3
         )

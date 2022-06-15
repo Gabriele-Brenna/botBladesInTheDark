@@ -1169,13 +1169,13 @@ def create_central_buttons_upgrades(upgrades: List[dict], group_selected: str, c
     buttons = []
     for upgrade in query_upgrades(group=group_selected, crew_sheet=crew_sheet):
 
-        if upgrade["name"].split("(")[0].lower() in upgrades_names:
-            buttons.append("{}: {}/{}".format(upgrade["name"].split("(")[0],
+        if upgrade["name"].lower() in upgrades_names:
+            buttons.append("{}: {}/{}".format(upgrade["name"],
                                               upgrades_quality[
-                                                  upgrades_names.index(upgrade["name"].split("(")[0].lower())],
+                                                  upgrades_names.index(upgrade["name"].lower())],
                                               upgrade["tot_quality"]))
         else:
-            buttons.append("{}: 0/{}".format(upgrade["name"].split("(")[0], upgrade["tot_quality"]))
+            buttons.append("{}: 0/{}".format(upgrade["name"], upgrade["tot_quality"]))
     return buttons
 
 
@@ -5858,7 +5858,8 @@ def add_upgrade_selection(update: Update, context: CallbackContext) -> int:
 
         if upgrade is None and "+" in choice[-1]:
             if context.user_data["add_upgrade"]["info"]["upgrade_points"] > 0:
-                upgrades.append({"name": name, "quality": 1})
+                upgrades.append(
+                    {"name": name, "quality": 1, "tot_quality": query_upgrades(name)[0]["tot_quality"]})
                 context.user_data["add_upgrade"]["info"]["upgrade_points"] -= 1
                 upgrade = upgrades[-1]
 
@@ -7326,11 +7327,110 @@ def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
 
     add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "migration_pc"], value=choice)
 
+    if choice == "Vampire":
+        controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                       context.user_data["migrate_pc"]["info"])
+
+        auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+            placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+            parse_mode=ParseMode.HTML), 10)
+
+        return migrate_pc_end(update, context)
+    elif choice == "Ghost":
+        # enemies
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
+                                                                         parse_mode=ParseMode.HTML,
+                                                                         reply_markup=custom_kb(
+                                                                             controller.get_game_npcs(
+                                                                                 query_game_of_user(
+                                                                                     update.effective_message.chat_id,
+                                                                                     get_user_id(update)))))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "ghost_enemies"], value=[])
+        return 1
+    elif choice == "Hull":
+        # functions RK
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
+                                                                         parse_mode=ParseMode.HTML,
+                                                                         reply_markup=custom_kb(
+                                                                             placeholders["functions"]))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "hull_functions"], value=[])
+        return 2
+
+
+def migrate_pc_ghost_enemies(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of ghost enemies. The message is appended to the list of ghost_enemies in the user_data
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: this state of the conversation to let the user add more than one enemy.
+    """
+    placeholders = get_lang(context, migrate_pc_ghost_enemies.__name__)
+
+    context.user_data["migrate_pc"]["info"]["ghost_enemies"].append(update.effective_message.text)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    message = context.user_data["migrate_pc"]["invocation_message"].reply_text(
+        placeholders["0"], parse_mode=ParseMode.HTML, reply_markup=custom_kb(
+            controller.get_game_npcs(
+                query_game_of_user(
+                    update.effective_message.chat_id,
+                    get_user_id(update)))
+        ))
+    add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+    return 1
+
+
+def migrate_pc_enemies_selected(update: Update, context: CallbackContext) -> int:
+    """
+    Fallbacks called when the user has finished to add enemies for the Ghost.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to migrate_pc_end().
+    """
+    placeholders = get_lang(context, migrate_pc_enemies_selected.__name__)
+    if "ghost_enemies" in context.user_data["migrate_pc"]["info"] and len(
+            context.user_data["migrate_pc"]["info"]["ghost_enemies"]) > 1:
+        controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
+                                       context.user_data["migrate_pc"]["info"])
+
+        auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
+            placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders["Ghost"]),
+            parse_mode=ParseMode.HTML), 10)
+
+        return migrate_pc_end(update, context)
+
+
+def migrate_pc_hull_functions(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the Hull's functions.
+    The message is appended to the list of hull_functions in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: this state if the user selected less than 3 functions, call to migrate_pc_end() otherwise.
+    """
+    placeholders = get_lang(context, migrate_pc_hull_functions.__name__)
+
+    context.user_data["migrate_pc"]["info"]["hull_functions"].append(update.effective_message.text)
+    context.user_data["migrate_pc"]["message"].delete()
+
+    total_functions = len(context.user_data["migrate_pc"]["info"]["hull_functions"])
+
+    if total_functions < 3:
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders["0"].format(
+            3 - total_functions))
+        add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
+        return 2
+
     controller.commit_pc_migration(update.effective_message.chat_id, get_user_id(update),
                                    context.user_data["migrate_pc"]["info"])
 
     auto_delete_message(context.user_data["migrate_pc"]["invocation_message"].reply_text(
-        placeholders["0"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders[choice]),
+        placeholders["1"].format(context.user_data["migrate_pc"]["info"]["pc"], placeholders["Hull"]),
         parse_mode=ParseMode.HTML), 10)
 
     return migrate_pc_end(update, context)
@@ -8552,7 +8652,7 @@ def add_servant(update: Update, context: CallbackContext) -> int:
     :return: the next state of the conversation.
     """
 
-    placeholders = get_lang(context, add_type_cohort.__name__)
+    placeholders = get_lang(context, add_servant.__name__)
     if is_game_in_wrong_phase(update, context, placeholders["err"]):
         return add_servant_end(update, context)
 
@@ -8574,7 +8674,7 @@ def add_servant(update: Update, context: CallbackContext) -> int:
     npcs = [npc["name"] + ", " + npc["role"] for npc in query_char_strange_friends("Vampire", as_dict=True)]
 
     query_menu = context.user_data["add_servant"]["invocation_message"].reply_text(
-        placeholders["0"], reply_markup=build_multi_page_kb(npcs))
+        placeholders["0"], reply_markup=custom_kb(npcs, True, 1))
     add_tag_in_telegram_data(context, ["add_servant", "query_menu"], query_menu)
 
     return 0

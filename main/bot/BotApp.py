@@ -769,8 +769,11 @@ def start_bot():
                                           "migrateCharacter".casefold()], migrate_pc)],
             states={
                 0: [CallbackQueryHandler(migrate_pc_selection)],
+                1: [MessageHandler(Filters.text & ~Filters.command, migrate_pc_ghost_enemies)],
+                2: [MessageHandler(Filters.text & ~Filters.command, migrate_pc_hull_functions)]
             },
-            fallbacks=[CommandHandler("cancel".casefold(), migrate_pc_end)],
+            fallbacks=[CommandHandler("cancel".casefold(), migrate_pc_end),
+                       CommandHandler("done".casefold(), migrate_pc_enemies_selected)],
             name="conv_migratePC",
             persistent=True
         )

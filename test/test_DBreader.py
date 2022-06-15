@@ -339,7 +339,7 @@ class TestDBReader(TestCase):
         self.assertEqual(20, len(query_upgrades(canon=True, group="specific")))
 
     def test_query_starting_upgrades_and_cohorts(self):
-        self.assertEqual([{"name": "Carriage (Vehicle)", "quality": 1}, {"name": "Prowess", "quality": 1}],
+        self.assertEqual([{"name": "Carriage", "quality": 1}, {"name": "Prowess", "quality": 1}],
                          query_starting_upgrades_and_cohorts("smugglers")[0])
 
         self.assertEqual(([{"name": "Prowess", "quality": 1}], [{"type": "Thugs", "expert": False}]),

@@ -34,6 +34,6 @@ class TestDBmanager(TestCase):
         pass
 
     def test_exists_upgrade(self):
-        self.assertEqual("Assassin's Rigging (2 free load of weapons or gear)", exists_upgrade("assassin's rigging"))
+        self.assertEqual("Assassin's Rigging", exists_upgrade("assassin's rigging"))
 
         self.assertIsNone(exists_upgrade("Car"))

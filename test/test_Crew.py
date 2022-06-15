@@ -21,7 +21,7 @@ class TestCrew(TestCase):
             tier=1,
             contact=NPC("Larose", "a bluecoat"),
             description="a guild of master spies and saboteurs",
-            upgrades=[Upgrade("Boat", 2), Upgrade("Tools", 1)]
+            upgrades=[Upgrade("Boat", 2, 2), Upgrade("Tools", 1, 1)]
         )
 
         self.smugglers = Crew(
@@ -38,7 +38,7 @@ class TestCrew(TestCase):
             wanted_level=1,
             contact=NPC("Rolan", "a drug-dealer"),
             description="a guild of smugglers",
-            upgrades=[Upgrade("Vehicle", 1), Upgrade("Barge", 1)],
+            upgrades=[Upgrade("Vehicle", 1, 2), Upgrade("Barge", 1, 1)],
             vault_capacity=8,
             coins=3
         )
@@ -46,7 +46,7 @@ class TestCrew(TestCase):
     def test_check_mastery(self):
         self.assertFalse(self.shadows.check_mastery())
 
-        self.shadows.upgrades.append(Upgrade("Mastery", 4))
+        self.shadows.upgrades.append(Upgrade("Mastery", 4, 4))
         self.assertTrue(self.shadows.check_mastery())
 
     def test_add_rep(self):
@@ -96,7 +96,7 @@ class TestCrew(TestCase):
 
     def test_check_training(self):
         self.assertFalse(self.shadows.check_training("Insight"))
-        self.shadows.upgrades.append(Upgrade("Prowess", 1))
+        self.shadows.upgrades.append(Upgrade("Prowess", 1, 1))
         self.assertTrue(self.shadows.check_training("PROWESS"))
 
     def test_add_coin(self):
@@ -132,16 +132,16 @@ class TestCrew(TestCase):
         self.assertEqual(16, self.smugglers.upgrade_vault())
 
     def test_add_upgrade(self):
-        self.assertEqual(Upgrade("Vehicle", 2), self.smugglers.add_upgrade("veHicle"))
-        self.assertTrue(self.smugglers.upgrades.__contains__(Upgrade("Vehicle", 2)))
+        self.assertEqual(Upgrade("Vehicle", 2, 2), self.smugglers.add_upgrade("veHicle"))
+        self.assertTrue(self.smugglers.upgrades.__contains__(Upgrade("Vehicle", 2, 2)))
 
-        self.assertEqual(Upgrade("Gear", 1), self.shadows.add_upgrade("Gear"))
-        self.assertTrue((self.shadows.upgrades.__contains__(Upgrade("Gear", 1))))
+        self.assertEqual(Upgrade("Gear", 1, 1), self.shadows.add_upgrade("Gear"))
+        self.assertTrue((self.shadows.upgrades.__contains__(Upgrade("Gear", 1, 1))))
 
     def test_remove_upgrade(self):
         self.assertIsNone(self.shadows.remove_upgrade("Workshop"))
-        self.assertEqual(Upgrade("Tools", 1), self.shadows.remove_upgrade("Tools"))
-        self.assertEqual(Upgrade("Boat", 2), self.shadows.remove_upgrade("boat"))
+        self.assertEqual(Upgrade("Tools", 0, 1), self.shadows.remove_upgrade("Tools"))
+        self.assertEqual(Upgrade("Boat", 1, 2), self.shadows.remove_upgrade("boat"))
 
     def test_calc_rep(self):
         score1 = Score(target_tier=3)

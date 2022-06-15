@@ -396,7 +396,7 @@ def paste_xp_triggers(xp_triggers: List[str], sheet: Image):
 
 def paste_contact(contact: NPC, crew_type: str, sheet: Image):
     # DB query
-    contacts = query_crew_contacts()
+    contacts = query_crew_contacts(crew_type)
 
     contact_full = Image.open(path_finder("images/ContactFull.png"))
     contact_empty = Image.open(path_finder("images/ContactEmpty.png"))
@@ -432,10 +432,10 @@ def paste_contact(contact: NPC, crew_type: str, sheet: Image):
     sheet.paste(box, coordinates)
 
 
-def paste_crew_upgrades(owned_upgrades: List[Upgrade], sheet: Image):
+def paste_crew_upgrades(owned_upgrades: List[Upgrade], crew_type: str, sheet: Image):
     upgrades = owned_upgrades[:]
 
-    paste_specific_upgrades(upgrades, sheet)
+    paste_specific_upgrades(upgrades, crew_type, sheet)
     paste_lair_upgrades(upgrades, sheet)
     paste_quality_upgrades(upgrades, sheet)
     paste_training_upgrades(upgrades, sheet)
@@ -447,15 +447,15 @@ def paste_upgrades_list(upgrades_list: List[Upgrade], queried_upgrades: List[Upg
     y = 0
     for specific_upgrade in queried_upgrades:
         owned_upgrade = find_upgrade(upgrades_list, specific_upgrade.name)
-        tot_quality_to_print = specific_upgrade.quality
+        tot_quality_to_print = specific_upgrade.tot_quality
         if owned_upgrade is not None:
-            if owned_upgrade.quality > specific_upgrade.quality:
+            if owned_upgrade.quality > specific_upgrade.tot_quality:
                 tot_quality_to_print = owned_upgrade.quality
 
             x = 5
             for i in range(tot_quality_to_print):
                 fill = "white"
-                if owned_upgrade.quality <= tot_quality_to_print:
+                if i < owned_upgrade.quality:
                     fill = "red"
                 draw.rectangle(((x, y), (x + 8, y + 8)), outline="black", fill=fill, width=1)
                 x += 8
@@ -466,7 +466,7 @@ def paste_upgrades_list(upgrades_list: List[Upgrade], queried_upgrades: List[Upg
             x += 4
         else:
             x = 5
-            for i in range(specific_upgrade.quality):
+            for i in range(specific_upgrade.tot_quality):
                 draw.rectangle(((x, y), (x + 8, y + 8)), outline="black", fill="white", width=1)
                 x += 8
                 if i != tot_quality_to_print - 1:
@@ -486,12 +486,8 @@ def paste_upgrades_list(upgrades_list: List[Upgrade], queried_upgrades: List[Upg
         y += 10
 
 
-def paste_specific_upgrades(upgrades: List[Upgrade], sheet: Image):
-    specific_upgrades = [Upgrade("Assassin's Rigging (2 free load of weapons or gear)", 1),
-                         Upgrade("Elite Skulks", 1),
-                         Upgrade("Elite Thugs", 1),
-                         Upgrade("Hardened (+1 Trauma box)", 3),
-                         Upgrade("Ironhook Contacts (+1 Tier in prison)", 1)]
+def paste_specific_upgrades(upgrades: List[Upgrade], crew_type: str, sheet: Image):
+    specific_upgrades = query_upgrades(crew_sheet=crew_type, as_dict=False)
 
     box_dim = (189, 140)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
@@ -504,13 +500,7 @@ def paste_specific_upgrades(upgrades: List[Upgrade], sheet: Image):
 
 
 def paste_lair_upgrades(upgrades: List[Upgrade], sheet: Image):
-    specific_upgrades = [Upgrade("Carriage (Vehicle)", 2),
-                         Upgrade("Boat (Vehicle)", 2),
-                         Upgrade("Hidden", 1),
-                         Upgrade("Quarters", 1),
-                         Upgrade("Secure", 2),
-                         Upgrade("Vault", 2),
-                         Upgrade("Workshop", 1)]
+    specific_upgrades = query_upgrades(group="lair", as_dict=False)
 
     box_dim = (120, 150)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -523,12 +513,7 @@ def paste_lair_upgrades(upgrades: List[Upgrade], sheet: Image):
 
 
 def paste_quality_upgrades(upgrades: List[Upgrade], sheet: Image):
-    specific_upgrades = [Upgrade("Documents", 2),
-                         Upgrade("Gear", 2),
-                         Upgrade("Implements", 1),
-                         Upgrade("Supplies", 1),
-                         Upgrade("Tools", 2),
-                         Upgrade("Weapons", 2)]
+    specific_upgrades = query_upgrades(group="quality", as_dict=False)
 
     box_dim = (90, 150)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
@@ -541,11 +526,7 @@ def paste_quality_upgrades(upgrades: List[Upgrade], sheet: Image):
 
 
 def paste_training_upgrades(upgrades: List[Upgrade], sheet: Image):
-    specific_upgrades = [Upgrade("Insight", 1),
-                         Upgrade("Prowess", 1),
-                         Upgrade("Resolve", 1),
-                         Upgrade("Personal", 1),
-                         Upgrade("Mastery", 4)]
+    specific_upgrades = query_upgrades(group="training", as_dict=False)
 
     box_dim = (100, 110)
     box = Image.new('RGBA', box_dim, (255, 255, 255, 255))
