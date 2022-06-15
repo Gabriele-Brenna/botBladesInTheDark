@@ -715,11 +715,9 @@ def join_complete_pc_action_selection(update: Update, context: CallbackContext) 
                                       btn_label="Action Dots", lang_source="join_complete_pc", split_row=2)
             return 2
 
-        context.user_data["join"]["message"].delete()
-        context.user_data["join"]["message"] = context.bot.sendMessage(chat_id=get_user_id(update),
-                                                                       text=placeholders["0"].format(
-                                                                           7 - calc_total_dots(action_dots)),
-                                                                       reply_markup=build_plus_minus_keyboard(buttons))
+        context.user_data["join"]["message"].edit_text(text=placeholders["0"].format(
+            7 - calc_total_dots(action_dots)),
+            reply_markup=build_plus_minus_keyboard(buttons))
 
         return 7
 
@@ -1122,11 +1120,9 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
                                       split_row=3, reply_in_group=True)
             return 1
 
-        context.user_data["create_crew"]["message"].delete()
-        context.user_data["create_crew"]["message"] = context.user_data["create_crew"]["invocation_message"].reply_text(
-            text=placeholders["0"].format(
-                4 - calc_total_upgrade_points(
-                    upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
+        context.user_data["create_crew"]["message"].edit_text(text=placeholders["0"].format(
+            4 - calc_total_upgrade_points(
+                upgrades + context.user_data["create_crew"]["crew"]["cohorts"])),
             reply_markup=build_plus_minus_keyboard(
                 buttons))
         return 10
