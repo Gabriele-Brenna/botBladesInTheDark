@@ -117,6 +117,27 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
     return abilities
 
 
+def query_xp_triggers_id_description(xp_id: int = None, crew: bool = False) -> List[Tuple[int, str]]:
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    if xp_id is not None:
+        cursor.execute("""
+        SELECT XpID, Description
+        FROM XpTrigger
+        WHERE XpID = ?
+        """, (xp_id, ))
+
+    else:
+        cursor.execute("""
+                SELECT XpID, Description
+                FROM XpTrigger
+                WHERE Crew_Char = ?
+                """, (crew,))
+
+    return cursor.fetchall()
+
+
 def query_xp_triggers(sheet: str = None, peculiar: bool = None) -> List[str]:
     """
     Creates a parametric query to retrieve from database specified xp triggers.
@@ -958,7 +979,7 @@ def query_items(item_name: str = None, common_items: bool = False, pc_class: str
         else:
             query = """SELECT Name, Description, Weight, Usages
                        FROM Item
-                       WHERE Canon = ?"""
+                       """
             cursor.execute(query)
 
     rows = cursor.fetchall()
@@ -1190,6 +1211,18 @@ def query_factions(name: str = None, category: str = None, tier: int = None, hol
             factions[i] = Faction(**factions[i])
 
     return factions
+
+
+def query_npc_id(name: str, role: str) -> int:
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+                    SELECT NpcID
+                    FROM NPC
+                    WHERE (Name, Role) = (?, ?)""", (name, role))
+
+    return cursor.fetchone()[0]
 
 
 def query_npcs(npc_id: int = None, name: str = None, role: str = None, faction: str = None, canon: bool = None,

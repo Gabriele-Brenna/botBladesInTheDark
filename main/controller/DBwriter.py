@@ -731,7 +731,7 @@ def insert_char_item(character: str, item: str) -> bool:
     return False
 
 
-def insert_char_sa(character: str, sa: str) -> bool:
+def insert_char_sa(character: str, sa: str, peculiar: bool = False) -> bool:
     """
     Insert a new relation in Char_SA table in BladesInTheDark Database.
 
@@ -740,7 +740,7 @@ def insert_char_sa(character: str, sa: str) -> bool:
     :return: True if the relation is added, False otherwise
     """
     if isinstance(character, str) and isinstance(sa, str):
-        return insert_simple_relation("Char_SA", character, sa)
+        return insert_complex_relation("Char_SA", character, sa, peculiar)
     return False
 
 

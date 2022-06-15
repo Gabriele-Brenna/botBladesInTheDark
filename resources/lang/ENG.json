@@ -1157,6 +1157,96 @@
       "err": "You can't add a servant without being in a game... /join to take part in a game.",
       "err2": "You dont' have an active pc...",
       "err3": "You can't add a servant, you are not a Vampire"
+    },
+
+    "create_sa": {
+      "0": "Write the name of the special ability"
+    },
+
+    "create_sa_name": {
+      "0": "Write the description of the special ability"
+    },
+
+    "create_sa_description": {
+      "0": "New special ability created, now everyone can use it!"
+    },
+
+    "create_xp_trigger": {
+      "0": "Write the description of the xp trigger"
+    },
+
+    "create_xp_trigger_name": {
+      "0": "Select what type of trigger this is",
+      "keyboard": ["Crew", "Character"],
+      "callbacks": [1,2]
+    },
+
+    "create_xp_trigger_crew_char": {
+      "0": "New xp trigger created, now everyone can use it!"
+    },
+
+    "create_item": {
+      "0": "Write the name of the item"
+    },
+
+    "create_item_name": {
+      "0": "Write the description of the item"
+    },
+
+    "create_item_description": {
+      "0": "Write the weight of the item"
+    },
+
+    "create_item_weight": {
+      "0": "Write the usages of the item",
+      "err": "Must be a number (weight > 0)"
+    },
+
+    "create_item_usages": {
+      "0": "New item created, now everyone can use it!",
+      "err": "Must be a number (-1 for unlimited usages)"
+    },
+
+    "create_char_sheet": {
+      "0": "Write the name for the sheet"
+    },
+
+    "create_char_sheet_name": {
+      "0": "Write the description of the sheet"
+    },
+
+    "create_char_sheet_description": {
+      "0": "Select 3 actions to assign the initial dots"
+    },
+
+    "create_char_sheet_dots": {
+      "err": "Write an existing action",
+      "0": "Select 5 friends/enemy for the sheet: 0/5",
+      "1": "Select another action dots: {}/3"
+    },
+
+    "create_char_sheet_friends": {
+      "0": "Select another one: {}/5",
+      "1": "Select the items peculiar of this sheet: 0/6",
+      "404": "Description not found"
+    },
+
+    "create_char_sheet_items": {
+      "0": "Select the items peculiar of this sheet: {}/6",
+      "1": "Select the special abilities for this sheet: 0/8",
+      "404": "Description not found"
+    },
+
+    "create_char_sheet_sa": {
+      "0": "Select the special abilities for this sheet: {}/8",
+      "1": "Select the xp trigger for this sheet",
+      "404": "Description not found"
+    },
+
+    "create_char_sheet_xp": {
+      "0": "Select the xp trigger for this sheet",
+      "1": "New Character Sheet added, now everyone can use it!",
+      "404": "Description not found"
     }
   },
 

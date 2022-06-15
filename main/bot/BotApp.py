@@ -942,6 +942,69 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createSpecialAbility".casefold(), "inventSpecialAbility".casefold()],
+                                         create_sa)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_sa_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_sa_description)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_sa_end)],
+            name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createXpTrigger".casefold(), "inventXpTrigger".casefold()],
+                                         create_xp_trigger)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_xp_trigger_name)],
+                1: [CallbackQueryHandler(create_xp_trigger_crew_char)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_xp_trigger_end)],
+            name="conv_createXpTrigger",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createItem".casefold(), "inventItem".casefold()],
+                                         create_item)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_item_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_item_description)],
+                2: [MessageHandler(Filters.text & ~Filters.command, create_item_weight)],
+                3: [MessageHandler(Filters.text & ~Filters.command, create_item_usages)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_item_end)],
+            name="conv_createItem",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createCharacterSheet".casefold(), "inventCharacterSheet".casefold()],
+                                         create_char_sheet)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_char_sheet_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_char_sheet_description)],
+                2: [MessageHandler(Filters.text & ~Filters.command, create_char_sheet_dots)],
+                3: [CallbackQueryHandler(create_char_sheet_friends)],
+                4: [CallbackQueryHandler(create_char_sheet_items)],
+                5: [CallbackQueryHandler(create_char_sheet_sa)],
+                6: [CallbackQueryHandler(create_char_sheet_xp)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_char_sheet_end)],
+            name="conv_createCharSheet",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))
