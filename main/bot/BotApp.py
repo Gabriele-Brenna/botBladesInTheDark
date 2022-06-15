@@ -1037,6 +1037,22 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createNPC".casefold(), "inventNPC".casefold()],
+                                         create_npc)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_npc_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_npc_role)],
+                2: [CallbackQueryHandler(create_npc_faction)],
+                3: [MessageHandler(Filters.text & ~Filters.command, create_npc_description)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_sa_end)],
+            name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

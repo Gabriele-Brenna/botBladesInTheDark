@@ -9701,6 +9701,183 @@ def create_upgrade_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_createUpgrade----------------------------------------------------------
 
 
+# ------------------------------------------conv_createNPC--------------------------------------------------------------
+
+
+def create_npc(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_npc.__name__)
+
+    add_tag_in_telegram_data(context, ["create_npc", "invocation_message"], update.message)
+
+    message = context.user_data["create_npc"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_npc", "message"], message)
+
+    return 0
+
+
+def create_npc_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the special ability name in the user_data, then asks for the description.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_npc_name.__name__)
+    context.user_data["create_npc"]["message"].delete()
+
+    name = update.message.text
+
+    add_tag_in_telegram_data(context, ["create_npc", "info", "name"], name)
+
+    message = context.user_data["create_npc"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_npc", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_npc_role(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the special ability name in the user_data, then asks for the description.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_npc_role.__name__)
+    context.user_data["create_npc"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_npc", "info", "role"], update.message.text)
+
+    factions = [faction["name"] + ": " + str(faction["tier"]) for faction in query_factions(as_dict=True)]
+
+    buttons_list = []
+    buttons = []
+    for i in range(len(factions)):
+        buttons.append(factions[i])
+        if (i + 1) % 8 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+    add_tag_in_telegram_data(context, ["create_npc", "buttons_list"], buttons_list)
+    add_tag_in_telegram_data(context, ["create_npc", "query_menu_index"], 0)
+
+    query_menu = context.user_data["create_npc"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML, reply_markup=build_multi_page_kb(buttons_list[0]))
+
+    add_tag_in_telegram_data(context, ["create_npc", "query_menu"], query_menu)
+
+    update.message.delete()
+    return 2
+
+
+def create_npc_faction(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the choice of the faction used to perform the roll.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_npc_faction.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["create_npc"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index >= len(context.user_data["create_npc"]["buttons_list"]):
+            index = 0
+        context.user_data["create_npc"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["create_npc"]["buttons_list"]):
+            index = 0
+
+        context.user_data["create_npc"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        name = name.split(": ")[0]
+        if "$" in choice:
+            add_tag_in_telegram_data(context, tags=["create_npc", "info", "faction"],
+                                     value=name)
+
+            context.user_data["create_npc"]["query_menu"].delete()
+
+            message = context.user_data["create_npc"]["invocation_message"].reply_text(placeholders["1"],
+                                                                                       ParseMode.HTML)
+            add_tag_in_telegram_data(context, ["create_npc", "message"], message)
+
+            return 3
+        else:
+            description = query_factions(name=name, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 2
+
+    context.user_data["create_npc"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["create_npc"]["buttons_list"][
+                context.user_data["create_npc"]["query_menu_index"]]))
+    return 2
+
+
+def create_npc_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the description in the user_data, then adds the new special ability to the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls create_npc_end.
+    """
+    placeholders = get_lang(context, create_npc_description.__name__)
+    context.user_data["create_npc"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_npc", "info", "description"], update.message.text)
+
+    insert_npc(**context.user_data["create_npc"]["info"])
+
+    message = context.user_data["create_npc"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    auto_delete_message(message, 10)
+
+    return create_npc_end(update, context)
+
+
+def create_npc_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the creation of the creation of a special ability conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "create_npc")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_createNPC--------------------------------------------------------------
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

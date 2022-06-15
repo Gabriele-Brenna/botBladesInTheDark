@@ -1299,6 +1299,28 @@
     "create_upgrade_tot_quality": {
       "0": "New upgrade created, now everyone can use it!",
       "err": "Must be a number (1 > tot_quality > 4)"
+    },
+
+     "create_npc": {
+      "0": "Write the name of the npc"
+    },
+
+    "create_npc_name": {
+      "0": "Write the role of the npc"
+    },
+
+    "create_npc_role": {
+      "0": "Select the faction of the npc"
+    },
+
+    "create_npc_faction": {
+      "404": "Description not found",
+      "0": "Select the faction of the npc",
+      "1": "Write the description of the npc"
+    },
+
+    "create_npc_description": {
+      "0": "New npc created, now everyone can use it!"
     }
   },
 
