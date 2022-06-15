@@ -154,10 +154,11 @@ class TestDBwriter(TestCase):
         self.connection.commit()
 
     def test_insert_character_sheet(self):
-        self.assertTrue(insert_character_sheet("Witchers", "Welcome to Kaer Morhen"))
+        self.assertTrue(insert_character_sheet("Witchers", "Welcome to Kaer Morhen", self.connection))
 
         # Class already present
-        self.assertFalse(insert_character_sheet("Witchers", "Welcome to Kaer Morhen"))
+        self.assertRaises(DatabaseError,
+                          lambda: insert_character_sheet("Witchers", "Welcome to Kaer Morhen", self.connection))
 
         self.cursor.execute("DELETE FROM CharacterSheet WHERE Class = 'Witchers'")
         self.connection.commit()
@@ -173,10 +174,11 @@ class TestDBwriter(TestCase):
         self.connection.commit()
 
     def test_insert_crew_sheet(self):
-        self.assertTrue(insert_crew_sheet("The Lodge", "Most powerful mages"))
+        self.assertTrue(insert_crew_sheet("The Lodge", "Most powerful mages", self.connection))
 
         # Type already present
-        self.assertFalse(insert_crew_sheet("The Lodge", "Not so powerful mages"))
+        self.assertRaises(DatabaseError,
+                          lambda: insert_crew_sheet("The Lodge", "Not so powerful mages", self.connection))
 
         self.cursor.execute("DELETE FROM CrewSheet WHERE Type = 'The Lodge'")
         self.connection.commit()
@@ -254,13 +256,13 @@ class TestDBwriter(TestCase):
         self.assertTrue(insert_simple_relation("Char_Friend", "Whisper", 18))
 
         # Table not present
-        self.assertFalse(insert_simple_relation("Char_Enemy", "Hound", 13))
+        self.assertRaises(DatabaseError, lambda: insert_simple_relation("Char_Enemy", "Hound", 13))
 
         # First column is not present
-        self.assertFalse(insert_simple_relation("Crew_HG", "Slaughter", "Assassins"))
+        self.assertRaises(DatabaseError, lambda: insert_simple_relation("Crew_HG", "Slaughter", "Assassins"))
 
         # Second column is not present
-        self.assertFalse(insert_simple_relation("Char_Item", "Leech", True))
+        self.assertRaises(DatabaseError, lambda: insert_simple_relation("Char_Item", "Leech", True))
 
         self.cursor.execute("DELETE FROM Char_Friend WHERE Character = 'Whisper' and NPC = 18")
         self.connection.commit()
@@ -269,16 +271,16 @@ class TestDBwriter(TestCase):
         self.assertTrue(insert_complex_relation("Char_Action", "Hull", "Prowl", True))
 
         # Table is not present
-        self.assertFalse(insert_complex_relation("Char_Upgrade", "Whisper", "Skirmish", 3))
+        self.assertRaises(DatabaseError, lambda: insert_complex_relation("Char_Upgrade", "Whisper", "Skirmish", 3))
 
         # First column is not present
-        self.assertFalse(insert_complex_relation("Crew_StartingUpgrade", "Killers", "Gear", 1))
+        self.assertRaises(DatabaseError, lambda: insert_complex_relation("Crew_StartingUpgrade", "Killers", "Gear", 1))
 
         # Second column is not present
-        self.assertFalse(insert_complex_relation("Char_Xp", "Leech", 30, True))
+        self.assertRaises(DatabaseError, lambda: insert_complex_relation("Char_Xp", "Leech", 30, True))
 
         # Third column is not of right type
-        self.assertFalse(insert_complex_relation("Crew_SA", "Assassins", "Mule", 2))
+        self.assertRaises(DatabaseError, lambda: insert_complex_relation("Crew_SA", "Assassins", "Mule", 2))
 
         self.cursor.execute("DELETE FROM Char_Action WHERE Character = 'Hull' and Action = 'Prowl'")
         self.connection.commit()

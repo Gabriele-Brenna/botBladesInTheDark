@@ -9215,7 +9215,7 @@ def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
             npcs.append(query_npc_id(name, role))
 
             if len(npcs) >= 5:
-                items = [item["name"] for item in query_items(as_dict=True)]
+                items = [item["name"] for item in query_items(specific=True, as_dict=True)]
 
                 buttons_list = []
                 buttons = []

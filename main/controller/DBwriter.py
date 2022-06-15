@@ -411,7 +411,7 @@ def insert_character_sheet(char_class: str, description: str, connection: Connec
 
     :param char_class: class of the character
     :param description: description of the class
-    :param connection: if commit is False it will be the connection used to commit the change
+    :param connection: connection used to execute the query
     :return: True if the new class is added, False otherwise
     """
     if isinstance(char_class, str) and isinstance(description, str):
@@ -426,7 +426,7 @@ def insert_character_sheet(char_class: str, description: str, connection: Connec
             traceback.print_exc()
             raise DatabaseError
         return True
-    return True
+    return False
 
 
 def insert_claim(name: str, description: str, prison: bool) -> bool:
@@ -457,16 +457,16 @@ def insert_claim(name: str, description: str, prison: bool) -> bool:
     return False
 
 
-def insert_crew_sheet(crew_type: str, description: str) -> bool:
+def insert_crew_sheet(crew_type: str, description: str, connection: Connection) -> bool:
     """
     Insert a new crew type in CrewSheet table in BladesInTheDark Database.
 
     :param crew_type: type of the crew
     :param description: description of the crew
+    :param connection: connection used to execute the query
     :return: True if the crew type is added, False otherwise
     """
     if isinstance(crew_type, str) and isinstance(description, str):
-        connection = establish_connection()
         cursor = connection.cursor()
 
         try:
@@ -474,11 +474,9 @@ def insert_crew_sheet(crew_type: str, description: str) -> bool:
             INSERT INTO CrewSheet (Type, Description)
             VALUES (?, ?)""", (crew_type, description))
 
-            connection.commit()
-
         except DatabaseError:
             traceback.print_exc()
-            return False
+            raise DatabaseError
         return True
     return False
 
@@ -902,6 +900,39 @@ def insert_char_info(info: dict) -> bool:
         for i in range(1, 4):
             insert_char_xp(sheet_name, i, False, connection)
         insert_char_xp(sheet_name, info["Char_Xp"]["xp_id"], True, connection)
+    except:
+        traceback.print_exc()
+        return False
+    connection.commit()
+    return True
+
+
+def insert_crew_info(info: dict) -> bool:
+    """
+        Method used to insert all the information needed to have a new playable crew class.
+
+        :param info: dictionary containing all the information needed to add the class
+        :return: True if crew has been added properly, False otherwise
+        """
+    connection = establish_connection()
+    sheet_name = info["crew_type"]
+    try:
+        insert_crew_sheet(sheet_name, **info["CrewSheet"], connection=connection)
+        for npc in info["Crew_Contact"]["contacts"]:
+            insert_crew_contact(sheet_name, npc, connection)
+        for upgrade in info["Crew_Upgrade"]["upgrades"]:
+            insert_crew_upgrade(sheet_name, upgrade, connection)
+        for upgrade in info["Crew_StartingUpgrade"]["upgrades"]:
+            insert_crew_starting_upgrade(sheet_name, upgrade[0], upgrade[1], connection)
+        for hg in info["Crew_Hg"]["hgs"]:
+            insert_crew_hg(hg, sheet_name, connection)
+        insert_crew_sa(sheet_name, info["Crew_Sa"]["sas"][0], True, connection)
+        info["Crew_Sa"]["sas"].pop(0)
+        for special_ability in info["Crew_Sa"]["sas"]:
+            insert_crew_sa(sheet_name, special_ability, False, connection)
+        for i in range(16, 19):
+            insert_crew_xp(sheet_name, i, False, connection)
+        insert_crew_xp(sheet_name, info["Crew_Xp"]["xp_id"], True, connection)
     except:
         traceback.print_exc()
         return False

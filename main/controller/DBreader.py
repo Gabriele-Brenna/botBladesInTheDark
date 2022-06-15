@@ -923,7 +923,7 @@ def query_frame_features(feature: str = None, group: str = None,
 
 
 def query_items(item_name: str = None, common_items: bool = False, pc_class: str = None, canon: bool = None,
-                as_dict: bool = False) -> Union[List[Item], List[dict]]:
+                specific: bool = None, as_dict: bool = False) -> Union[List[Item], List[dict]]:
     """
     Retrieves a list of Items from the DB. If item_name is passed this method searches for its occurrence.
     Otherwise, if pc_class is passed, the targets are all the items of this specific sheet.
@@ -932,6 +932,7 @@ def query_items(item_name: str = None, common_items: bool = False, pc_class: str
     :param common_items: True if only the common items should be retrieved, False otherwise.
     :param pc_class: is the target PC's sheet.
     :param canon: True if the canon items are the target, false if the non-canon items are the target.
+    :param specific:
     :param as_dict: if True the result objects will be returned as dictionaries.
     :return: a list of Item.
     """
@@ -973,6 +974,13 @@ def query_items(item_name: str = None, common_items: bool = False, pc_class: str
                        FROM Item
                        WHERE Canon = ?"""
             cursor.execute(query, (canon,))
+
+        elif specific:
+            query = """SELECT DISTINCT Name, Description, Weight, Usages
+                       FROM Item
+                       WHERE Canon is False or Name in (SELECT Item FROM Char_Item)"""
+            cursor.execute(query)
+
         else:
             query = """SELECT Name, Description, Weight, Usages
                        FROM Item
