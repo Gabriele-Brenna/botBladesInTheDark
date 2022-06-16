@@ -568,9 +568,9 @@ def invalid_state_choice(update: Update, context: CallbackContext, command: str,
     :param command: represents the command that starts the conversation.
     :param placeholders: is the dict containing the replies to send.
     """
-    context.user_data[command]["message"].delete()
     auto_delete_message(update.message.reply_text(placeholders["0"]))
-    context.user_data[command]["message"] = update.message.reply_text(text=placeholders["1"])
+    message = context.user_data[command]["message"].reply_text(text=placeholders["1"])
+    auto_delete_message(message, 10)
     update.message.delete()
 
 
