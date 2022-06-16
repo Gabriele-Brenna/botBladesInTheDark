@@ -69,7 +69,7 @@ def get_lang(context: CallbackContext, method: str = None) -> dict:
     :return: a dict.
     """
     # TODO: remove after testing
-    context.user_data["lang"] = default_lang
+    # context.user_data["lang"] = default_lang
     # --------------------------------------
 
     if "lang" in context.user_data:
@@ -384,6 +384,11 @@ def update_inline_keyboard(update: Update, context: CallbackContext, command: st
     :param reply_in_group: the id of the chat where the messages need to be sent.
         If None the message is sent to the user's private chat
     """
+    try:
+        btn_label = get_lang(context, update_inline_keyboard.__name__)[btn_label]
+    except:
+        print("Not Found")
+
     context.user_data[command]["message"].delete()
     placeholders = get_lang(context, lang_source)
 

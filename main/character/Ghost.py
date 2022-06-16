@@ -21,6 +21,34 @@ class Ghost(PC, ISavable):
                  downtime_activities: List[str] = None,
                  enemies_rivals: List[str] = None,
                  migrating_character: PC = None) -> None:
+        """
+        Constructor of the Ghost. It takes as parameters all the common attributes of the superclass PC and the peculiar
+        attributes of this class, that are the enemies_rivals.
+        It is also possible to pass only a PC object: in this case the PC will be transformed into a Ghost; all the
+        attributes in common between the PC's class and this class are maintained.
+
+        :param name: string that represents the name of this Ghost.
+        :param alias: string that represents the alias of this Ghost,
+        :param look: string that string that describes the appearance of this Ghost.
+        :param heritage: string that represents the heritage of this Ghost.
+        :param background: string that represents the background of this Ghost.
+        :param stress_level: int number that keeps track of the level of the stress of this Ghost.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this Ghost.
+        :param items: List of Items carried by this Ghost.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this Ghost.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this Ghost.
+        :param attributes: List of Attribute objects used to model the attributes progression of this Ghost.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the Ghost
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this Ghost
+        :param enemies_rivals: List of this Ghost's enemies.
+        :param migrating_character: PC object that needs to be converted into a Ghost.
+        """
 
         if migrating_character is not None:
             self.migrate(migrating_character)

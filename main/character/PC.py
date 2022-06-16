@@ -30,6 +30,29 @@ class PC(Character, ISavable, IDrawable):
                  attributes: List[Attribute] = None,
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None) -> None:
+        """
+        Constructor of PC. it creates a Playable Character that can be controlled by a Player.
+
+        :param name: string that represents the name of this PC.
+        :param alias: string that represents the alias of this PC,
+        :param look: string that string that describes the appearance of this PC.
+        :param heritage: string that represents the heritage of this PC.
+        :param background: string that represents the background of this PC.
+        :param stress_level: int number that keeps track of the level of the stress of this PC.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this PC.
+        :param items: List of Items carried by this PC.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this PC.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this PC.
+        :param attributes: List of Attribute objects used to model the attributes progression of this PC.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the PC.
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this PC.
+        """
         super().__init__(name, description)
         self.alias = alias
         self.look = look
@@ -389,6 +412,13 @@ def pc_from_json(data: dict) -> dict:
 
 
 def paste_common_attributes(pc: PC, sheet: Image, **kwargs):
+    """
+    Calls all the PCfactory methods that draws the attributes that are common among all types of PCs.
+
+    :param pc: is the PC that needs to be drawn.
+    :param sheet: is the Image where the PC must be drawn.
+    :param kwargs: a list of keyword arguments.
+    """
     paste_name(pc.name, sheet)
     paste_alias(pc.alias, sheet)
 

@@ -21,6 +21,37 @@ class Hull(PC, ISavable):
                  xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, functions: List[str] = None, frame: str = "S",
                  frame_features: List[SpecialAbility] = None, migrating_character: PC = None) -> None:
+        """
+        Constructor of the Hull. It takes as parameters all the common attributes of the superclass PC and the peculiar
+        attributes of this class, that are the frame, the frame_features and the functions.
+        It is also possible to pass only a PC object: in this case the PC will be transformed into a Hull; all the
+        attributes in common between the PC's class and this class are maintained.
+
+
+        :param name: string that represents the name of this Hull.
+        :param alias: string that represents the alias of this Hull,
+        :param look: string that string that describes the appearance of this Hull.
+        :param heritage: string that represents the heritage of this Hull.
+        :param background: string that represents the background of this Hull.
+        :param stress_level: int number that keeps track of the level of the stress of this Hull.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this Hull.
+        :param items: List of Items carried by this Hull.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this Hull.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this Hull.
+        :param attributes: List of Attribute objects used to model the attributes progression of this Hull.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the Hull
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this Hull
+        :param functions: List of strings that represents the functions that this Hull can implement.
+        :param frame: string that represents the size of the frame of this Hull
+        :param frame_features: List of SpecialAbility that represents the features associated to the frame.
+        :param migrating_character: PC object that needs to be converted into a Hull.
+        """
 
         if migrating_character is not None:
             self.migrate(migrating_character)

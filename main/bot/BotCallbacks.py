@@ -1116,7 +1116,7 @@ def create_crew_upgrade_selection(update: Update, context: CallbackContext) -> i
 
         if calc_total_upgrade_points(upgrades + context.user_data["create_crew"]["crew"]["cohorts"]) == 4:
             store_value_and_update_kb(update, context, tags=["create_crew", "crew", "upgrades"], value=upgrades,
-                                      btn_label="Upgrades", lang_source="create_crew_type",
+                                      btn_label="upgrades", lang_source="create_crew_type",
                                       split_row=3, reply_in_group=True)
             return 1
 
@@ -1207,7 +1207,7 @@ def create_crew_ability(update: Update, context: CallbackContext) -> int:
     if ability:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["create_crew", "crew", "abilities"], value=ability,
-                                  btn_label="Special ability", lang_source="create_crew_type",
+                                  btn_label="special ability", lang_source="create_crew_type",
                                   split_row=3, reply_in_group=True)
 
         return 1
@@ -9875,6 +9875,63 @@ def create_npc_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_createNPC--------------------------------------------------------------
+
+# ------------------------------------------conv_changeLang-------------------------------------------------------------
+
+
+def change_lang(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the selection of the Bot language. It sends to the user a keyboard with the supported languages.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, change_lang.__name__)
+    languages_callbacks = os.listdir(path_finder("lang"))
+    languages = [lang.split(".")[0] for lang in languages_callbacks]
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        languages, True, 1, languages_callbacks))
+    add_tag_in_telegram_data(context, ["change_lang", "message"], message)
+    add_tag_in_telegram_data(context, ["change_lang", "invocation_message"], update.message)
+    return 0
+
+
+def change_lang_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Saves the selected languages dictionary in the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to change_lang_end()
+    """
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    with open(path_finder(choice), 'r', encoding="utf8") as lang_file:
+        lang = json.load(lang_file)["Bot"]
+
+        context.user_data["lang"] = lang
+
+    return change_lang_end(update, context)
+
+
+def change_lang_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the change language conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "change_lang")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_changeLang-------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:

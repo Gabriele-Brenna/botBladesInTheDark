@@ -118,6 +118,13 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
 
 
 def query_xp_triggers_id_description(xp_id: int = None, crew: bool = False) -> List[Tuple[int, str]]:
+    """
+    Retrieves a list of Xp Triggers from the DB.
+
+    :param xp_id: is the ID to search.
+    :param crew: True if the target Xp Triggers belong to a crew, False if they belong to a PC.
+    :return: a list of tuples that contains the ID of the trigger and its description.
+    """
     connection = establish_connection()
     cursor = connection.cursor()
 
@@ -1219,6 +1226,13 @@ def query_factions(name: str = None, category: str = None, tier: int = None, hol
 
 
 def query_npc_id(name: str, role: str) -> int:
+    """
+    Retrieves the ID of an NPC with the passed name and role.
+
+    :param name: represents the name of the NPC.
+    :param role: represents the role of the NPC.
+    :return: the ID of the NPC.
+    """
     connection = establish_connection()
     cursor = connection.cursor()
 

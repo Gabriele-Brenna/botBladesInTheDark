@@ -29,6 +29,10 @@
       }
     },
 
+    "change_lang": {
+      "0": "Select the language"
+    },
+
     "start_login": {
       "0": "You are approaching Doskvol, to register: <a href=\"{}\">[\uD83D\uDD10  CLICK HERE  \uD83D\uDD10]</a> "
     },
@@ -64,6 +68,22 @@
 
     "create_pc_name": {
       "0": "⚠ You already have a PC named <u>{}</u>, if you don't change name, it will be overwritten. ⚠"
+    },
+
+    "update_inline_keyboard": {
+      "name": "name",
+      "alias": "alias",
+      "look": "look",
+      "heritage": "heritage",
+      "background": "background",
+      "notes": "notes",
+      "class": "class",
+      "vice": "vice",
+      "reputation": "reputation",
+      "lair": "lair",
+      "upgrades": "upgrades",
+      "special ability": "special ability",
+      "contact": "contact"
     },
 
     "create_pc_state_switcher": {

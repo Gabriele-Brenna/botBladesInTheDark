@@ -18,6 +18,33 @@ class Owner(PC):
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None,
                  coin: int = 0, stash: int = 0, vice: Vice = Vice()) -> None:
+        """
+        Constructor of the Owner class. It takes as parameters all the common attributes of the superclass PC and
+        defines a type of PC that can own and handle coins and possessions.
+
+        :param name: string that represents the name of this Owner.
+        :param alias: string that represents the alias of this Owner,
+        :param look: string that string that describes the appearance of this Owner.
+        :param heritage: string that represents the heritage of this Owner.
+        :param background: string that represents the background of this Owner.
+        :param stress_level: int number that keeps track of the level of the stress of this Owner.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this Owner.
+        :param items: List of Items carried by this Owner.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this Owner.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this Owner.
+        :param attributes: List of Attribute objects used to model the attributes progression of this Owner.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the Owner.
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this Owner.
+        :param coin: integer value that represents the coins carried in the satchel.
+        :param stash: integer value that represents the coins stored in the stash.
+        :param vice: Vice object that contains all the information about the vice of this Owner.
+        """
         super().__init__(name, alias, look, heritage, background, stress_level, stress_limit, traumas,
                          items, harms, healing, armors, abilities, playbook, attributes, load,
                          xp_triggers, description, downtime_activities)

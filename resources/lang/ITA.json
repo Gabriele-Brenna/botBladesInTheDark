@@ -1,0 +1,1604 @@
+{
+  "Bot": {
+
+    "start": {
+      "0": "Benvenuti nel telegramma di Blades in the Dark's Bot di : Niccolo\u0301 Bergamaschi, Gabriele Brenna e Leandro Bognanni.",
+      "1": "Licenza {} : This work is based on Blades in the Dark (found at http://www.bladesinthedark.com/), product of One Seven Design, developed and authored by John Harper, and licensed for our use under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).",
+      "2": "Crea una chat di gruppo con i tuoi amici e invitali tutti a fare\n/login.\n Dopo la registrazione puoi iniziare a giocare.\n Se hai domande, usa \n/help"
+    },
+
+    "greet_chat_members": {
+      "0": "Il furfante {} è stato trascinato a Doskvol da {}", "1": "{} ha giustiziato {} per i suoi crimini"
+    },
+
+    "help_msg": {
+      "default": {
+        "0": "\uD83D\uDD2A<b>SEZIONE AIUTO</b>\uD83D\uDD2A\nPer maggiori informazioni sui comandi complessi (contrassegnati con \uD83D\uDD0E), digita \n/help seguito dal nome del comando ",
+        "1": "<i>-GENERAL-</i>\n/start - messaggio di benvenuto con crediti e istruzioni per l'avvio del bot.\n/login - registra il tuo account Telegram scegliendo un nome utente.\n/join - partecipa una partita di questa chat. \uD83D\uDD0E\n/myPC - invia la scheda del personaggio aggiornata del tuo PC attivo in questa chat.\n/myCrew - invia la scheda della squadra aggiornata dell'equipaggio in questa chat.\n/journal - invia il diario aggiornato del tuo gioco in questa chat.\n/map - invia la mappa interattiva di Doskvol con i nomi dei personaggi del gioco in questa chat.\n/changePC - cambia il PC attivo per il gioco in questa chat. \uD83D\uDD0E\n/changeState - cambia lo stato attuale del gioco in questa chat. Le possibilità sono: FREEPLAY, SCOREPHASE e DOWNTIME. \uD83D\uDD0E\n/tickClock - gestisce i progressi della squadra. \uD83D\uDD0E \n/addStress [N] - aggiunge N stress al tuo PC attivo nel gioco di questa chat.\n/addTrauma - aggiunge un nuovo trauma al tuo PC attivo nel gioco di questa chat.\n/useArmor - spunta uno dei le scatole dell'armatura del tuo PC.\n/coi n - ti permette di gestire i tuoi averi in termini di monete. Puoi aggiungere o rimuovere le monete dalla tua borsa, dalla tua scorta o dal caveau del tuo equipaggio.\n/vaultCapacity: ti consente di espandere o ridurre la capacità del caveau del tuo equipaggio.\n/upgradeCrew: gestisce l'aggiornamento del livello del tuo equipaggio (o cambia la tua situazione di presa se è debole).\n/factionStatus: gestisce le relazioni tra il tuo equipaggio e le altre fazioni del gioco.\n/addExp: ti consente di aggiungere punti esperienza agli attributi del tuo PC attivo o al tuo equipaggio.\n/addActionDots: ti consente di aggiungere punti azione ai tuoi PC attivi.\n/addUpgrade: aggiunge nuovi aggiornamenti alla tua squadra. \uD83D\uDD0E\n/addSpecialAbility - aggiunge una nuova abilità speciale al tuo PC attivo o al tuo equipaggio. \uD83D\uDD0E\n/addHarm - gestisce l'aggiunta di un nuovo danno al tuo PC attivo. \uD83D\uDD0E\n/addHarmCohort - gestisce l'aggiunta di un nuovo danno a una delle coorti del tuo equipaggio. \uD83D\uDD0E\n/changePurveyor - cambia il fornitore del vizio del tuo PC attivo.\n/migrate - cambia la natura del tuo PC attivo. \uD83D\uDD0E\n/changePCclass - modifica la classe del tuo PC attivo (disponibile solo per gli umani). \uD83D\uDD0E\n/addRep [N] - aggiunge N rappresentante al tuo equipaggio.\n/addArmorCohort - avvia la conversazione per aggiungere a una coorte del tuo equipaggio un certo livello di armatura.\n/changeLife - gestisce il ritiro di il tuo PC attivo. Puoi decidere se il PC muore o semplicemente si ritira a una vita migliore. \uD83D\uDD0E\n/addNote: consente di scrivere una sezione personalizzata nel diario del gioco. \uD83D\uDD0E\n/editNote: consente di selezionare e modificare una descrizione precedente nel diario del gioco. \uD83D\uDD0E\n/changeFrameSize - cambia la cornice del tuo PC (disponibile solo per Hull). \uD83D\uDD0E\n/addServant: aggiungi un nuovo servitore del tuo PC (disponibile solo per il vampiro).\n/addTypeCohort: aggiungi un nuovo tipo a una delle coorti del tuo equipaggio.\n/endGame: chiude il gioco in questo chatta e ti invia tutti i fogli e la versione finale del Journal.",
+        "2": "<i>-CREAZIONE-</i>\n/createGame - crea un nuovo gioco in questa chat.\n/createPC - avvia la creazione di un PC. \uD83D\uDD0E\n/createCrew - inizia la creazione dell'equipaggio. \uD83D\uDD0E\n/createClock - avvia la creazione di un nuovo orologio. \uD83D\uDD0E\n/addCohort - gestisce l'aggiunta di una nuova coorte dell'equipaggio. \uD83D\uDD0E\n/addClaim - gestisce l'aggiunta di una nuova rivendicazione dell'equipaggio, sia standard che carcere. \uD83D\uDD0E",
+        "3": "<i>-SCORE-</i>\n/score - avvia la preparazione di una nuova partitura. Questo comprende la pianificazione e la preparazione dei PC. \uD83D\uDD0E\n/useItem - consente all'utente per selezionare un oggetto trasportato. \uD83D\uDD0E\n/flashback: avvia la conversazione del flashback per consentire a un PC di richiamare un evento del passato. \uD83D\uDD0E\n/endScore: chiude il punteggio piu recente. \uD83D\uDD0E",
+        "4": "<i>-DOWNTIME-</i>\n/payoff - handles the redistribuition of the score phase's earnings. \uD83D\uDD0E \n/heat - handles the consequences of your past activities, evaluates and adds the correspinding heat amount to your crew. \uD83D\uDD0E\n/entanglement - rolls the dice and lets you decide an entanglement. It suggest also the entanglement corresponding to the game's rules. \uD83D\uDD0E\n/secretEntanglement - acts like a normal entanglement but its description is not shown to the other game's players.\n/downtimeActivity - starts a new downtime activity for your active PC in this game. \uD83D\uDD0E\n/endDowntime - ends the downtime activities for the current phase. \uD83D\uDD0E",
+        "5": "<i>-DADI-</i>\n/roll [N] - lancia N dadi e restituisce il risultato. \uD83D\uDD0E\n/actionRoll - avvia la conversazione del tiro azione con tutti i richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/fortuneRoll - avvia la conversazione del tiro della fortuna con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/resistanceRoll - avvia la conversazione di il tiro di resistenza con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/groupAction - avvia la conversazione dell'azione di gruppo con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E"
+      },
+      "commands": {
+        "error": "The command <u>{}</u> does not exist.",
+        "createpc": "Starts the creation of a PC. The information required during this conversation are the PC's <i>name, alias, background, heritage, class, vice and optionally a more detailed description</i>.\nThe new created character is stored in your personal data and you can join any game you want with him.",
+        "createcrew": "Starts the creation of the crew. The information required during this conversation are the crew's <i>type, name, reputation, lair location and description, special ability, a contact and optionally 2 starting upgrades and a more detailed description</i>.\nYou can use this command only if you joined a game in this chat.\nThe new created crew will become the crew of the game you joined in this chat. If a crew was already present, it is replaced by the new one.",
+        "join": "When you join a game you can decide to join with a PC of yours or as the Game Master. If you decide to join with a PC, you'll be redirected in your private chat to complete the PC creation. You can join several times the same game with different PCs. Keep in mind that you can join only a game per chat at time.\nIf you join as Master you'll become the new GM; if a GM was already present he will be substituted (If he had no PCs he is removed from the Game).\n",
+        "roll": "You can roll a specified pool of dice (for instance: /roll 6 will roll 6d6). You will see all your dice rolling in the form of stickers, then the final result according to Blades in the Dark rules (The highest result, CRIT or the lowest result if you rolled a pool of '0' dice)."
+      }
+    },
+
+    "change_lang": {
+      "0": "Seleziona la lingua"
+    },
+
+    "start_login": {
+      "0": "Ti stai avvicinando a Doskvol, per registrarti: <a href=\"{}\">[\uD83D\uDD10 CLICCA QUI \uD83D\uDD10]</a> "    },
+
+    "user_is_registered": {
+      "0": "Non puoi usare questo comando. Per favore fai /login"
+    },
+
+    "login": {
+      "0": "Per favore, inserisci il tuo nickname:",
+      "1": "Sei già registrato\nScrivi il tuo nuovo nome utente o /cancel"
+    },
+
+    "login_receive_username": {
+      "0": "Nome utente salvato",
+      "1": "Qualcosa è andato storto..."
+    },
+
+    "end_conv": {
+      "0": "Conversazione terminata."
+    },
+
+    "create_pc": {
+      "0": "{} sta avviando la creazione di un PC in <a href=\"{}\">chat privata</a>",
+      "1": "Completa la descrizione del tuo PC selezionando i pulsanti qui sotto.\n /done quando sei soddisfatto della tuo nuova canaglia.\n /cancel se hai cambiato idea.",
+      "keyboard" : ["Nome", "Alias", "Aspetto", "Eredità", "Background", "Note", "Classe", "Vizio"]
+    },
+
+    "create_pc_class": {
+      "0": "Questa classe non esiste ancora...",
+      "1": "Seleziona una classe esistente.\n/data per maggiori informazioni."
+    },
+
+    "create_pc_name": {
+      "0": "⚠ Hai già un PC chiamato <u>{}</u>, se non cambi nome, verrà sovrascritto. ⚠"
+    },
+
+    "update_inline_keyboard": {
+      "name": "nome",
+      "alias": "alias",
+      "look": "aspetto",
+      "heritage": "eredità",
+      "background": "background",
+      "notes": "note",
+      "class": "classe",
+      "vice": "vizio",
+      "reputation": "reputazione",
+      "lair": "covo",
+      "upgrades": "potenziamenti",
+      "special ability": "abilità speciale",
+      "contact": "contatto"
+    },
+
+    "create_pc_state_switcher": {
+      "0": "Come ti chiami?",
+      "1": "Come vorresti essere soprannominato?",
+      "2": "Descrivi brevemente il tuo aspetto",
+      "3": "Cosa puoi dire della tua eredità?",
+      "4": "Parliamo più di te. Qual è il tuo passato?",
+      "5": "Descrivi le tue caratteristiche uniche.",
+      "6": "Seleziona la tua classe.",
+      "7": "La vita di un criminale è stressante... devi avere un vizio per trovare sollievo.",
+
+      "keyboards": [[], [], [], ["Akoros","The Dagger Isles", "Iruvia", "Severos", "Skovlan","Tycheros"], ["Accademico", "Lavoratore" , "Uomo di Legge", "Militare", "Nobile", "Occulto"], []]
+    },
+
+    "create_pc_vice_name": {
+      "0": "Qual è il tuo vizio?"
+    },
+
+    "create_pc_vice_description": {
+      "0": "Come riesci ad ottenere ciò che cerchi? Spiega chi è il tuo fornitore o dove vai per soddisfare le tue esigenze."
+    },
+
+    "create_pc_vice_purveyor": {
+      "0": "Descrivi brevemente il tuo vizio"
+    },
+
+    "create_pc_end": {
+      "0": "⚠ Impossibile salvare un PC parzialmente descritto. Si prega di compilare tutti i campi."
+    },
+
+    "create_game": {
+      "0": "Inserisci il nome di un gioco"
+    },
+
+    "create_game_title": {
+      "0": "Gioco <u>{}</u> creato con successo con id: {}",
+      "1": "Un gioco chiamato <u>{}</u> esiste già in questa chat, inserisci un titolo diverso"
+    },
+
+    "join": {
+      "0": "Scrivi il nome del gioco a cui vuoi partecipare",
+      "1": "Non ci sono giochi per questa chat a cui partecipare...\n/createGame per crearne uno nuovo."
+    },
+
+    "join_game_name": {
+      "0": "Il gioco <u>{}</u> non esiste...\nPuoi creare un nuovo gioco con /createGame ",
+      "1": "Scrivi il nome del PC con cui vuoi iniziare a giocare o 'come Master' per entrare come GM del gioco.",
+      "2": "Ti sei già unito al gioco <u>{}</u> in questa chat. Puoi partecipare solo a un gioco per chat"
+    },
+
+    "join_add_player": {
+      "0": "<i>{}</i> si è unito al gioco <i>{}</i> come Master.",
+      "err": "Devi entrare con un tuo PC o come Master!",
+      "err2": "Un giocatore si è già unito a questo gioco con un PC con lo stesso nome, seleziona un altro gioco o /cancel poi /join con un altro PC"
+    },
+
+    "join_complete_pc": {
+      "0": "{} sta completando la creazione di <i>{}</i> nella <a href=\"{}\">chat privata</a>",
+      "1": "Completa il tuo PC selezionando i pulsanti sottostanti.\n /done quando sei soddisfatto.\n /cancel se hai cambiato idea.",
+      "tastiera": ["Abilità", "Punti Azione", "Amico", "Nemico"]
+    },
+
+    "join_complete_pc_state_switcher": {
+      "0": "Scrivi il nome della tua Abilità Speciale iniziale.",
+      "1": "Hai 4 punti azione da assegnare. I punti azione iniziali della tua classe sono già presenti (se vuoi puoi cambiarli)",
+      "2": "Doskvol è un luogo oscuro, ma anche qui troverai degli amici. Chi è il tuo alleato?",
+      "3": "Non sei un santo, quindi molte persone ti intralceranno. Chi è il tuo rivale?"
+    },
+
+    "join_complete_pc_ability": {
+      "0": "Questa abilità speciale non esiste ancora...",
+      "1": "Seleziona un'abilità esistente.\n/data per maggiori informazioni."
+    },
+
+    "join_complete_pc_friend": {
+      "0": "Questo NPC non appartiene al tuo gruppo di strani amici...",
+      "1": "Seleziona un altro NPC.\n/data per maggiori informazioni."
+    },
+
+    "join_complete_pc_enemy": {
+      "0": "Questo NPC non appartiene al tuo gruppo di strani amici...",
+      "1": "Seleziona un altro NPC.\n/data per maggiori informazioni."
+    },
+
+    "join_complete_pc_dots": {
+      "0": "Aggiungi o rimuovi i punti azione di tua scelta.\n{} punti rimasti.",
+      "1": "Ti rimangono {} punti azione "
+    },
+
+    "join_end": {
+      "0": "<i>{}</i> si unisce al gioco <i>{}</i> con <i>{}</i>.",
+      "1": "Devi completare tutti i campi per completare il tuo pc e partecipare al gioco"
+    },
+
+    "create_crew": {
+      "0": "Scegli che tipo di equipaggio vorresti essere",
+      "1": "Non puoi creare un equipaggio senza essere in una partita... /join per prendere parte a una partita"
+    },
+
+    "create_crew_type": {
+      "0": "Questa squadra non esiste ancora... Inseriscine un'altra",
+      "1": "Completa la descrizione della tua Crew selezionando i pulsanti qui sotto.\n /done quando sarete tutti soddisfatti.\n /cancel se avete cambiato idea.",
+      "keyboard" : ["Nome", "Reputazione", "Note", "Lair", "Potenziamenti", "Abilità speciale", "Contatto"]
+    },
+
+    "create_crew_state_switcher": {
+      "0": "Scegli il nome del tuo equipaggio",
+      "1": "Decidi una reputazione per il tuo equipaggio",
+      "2": "Scrivi la descrizione del tuo equipaggio, non dimenticare di specificare i tuoi terreni di caccia preferiti",
+      "3": "Scegli la posizione della tua tana",
+      "4": "Seleziona un paio di potenziamenti per il tuo equipaggio",
+      "5": "Scegli un'abilità speciale per il tuo equipaggio",
+      "6": "Seleziona un contatto per il tuo equipaggio",
+
+      "keyboards": [[], ["Ambizioso", "Brutale", "Audace", "Onorevole", "Professionista", "Esperto", "Sottile", "Strano"], [], ["Six Towers", "Brightstone", "Charterhall", "Nightmarket", "Coalridge", "Dunslough", "Charhollow", "Barrowcleft", "Silkshore", "The Docks", "Crow's Foot", "Whitecrown"]]
+    },
+
+    "create_crew_lair_location": {
+      "0": "Scrivi una descrizione della tua tana"
+    },
+
+    "create_crew_ability": {
+      "0": "Questa abilità speciale non esiste ancora...",
+      "1": "Seleziona un'abilità esistente.\n/data per maggiori informazioni."
+    },
+
+    "create_crew_contact": {
+      "0": "Questo NPC non appartiene al pool di contatti del tuo equipaggio...",
+      "1": "Seleziona un altro NPC.\n/data per maggiori informazioni."
+    },
+
+    "create_crew_upgrades": {
+      "0": "Aggiungi o rimuovi gli upgrade a tua scelta.\n{} punti rimasti.",
+      "1": "Ti rimangono {} upgrade "
+    },
+
+    "create_crew_end": {
+      "0": "L'equipaggio <u>{}</u> è stato aggiunto al gioco.",
+      "1": "Devi completare tutti i campi per completare la tua squadra"
+    },
+
+    "change_state": {
+      "0": "Siamo pronti per iniziare la sessione. Seleziona lo stato iniziale del tuo gioco",
+      "1": "Ora sei in <i>Gioco libero</i>, se cambi fase tutto il tuo punteggio sarà considerato terminato così come le tue attività di riposo...\n Se vuoi fare qualcosa di più questo è il momento giusto per farlo",
+      "2": "Sei nella <i>Fase Punteggio</i>, se cambi fase tutto il tuo punteggio sarà considerato terminato.",
+      "3": "Sei nella <i>Fase di fermo</i>, se cambi fase tutte le tue attività di fermo saranno considerate terminate.",
+
+      "err1": "Non puoi cambiare stato senza essere in una partita... /join per prendere parte a una partita",
+      "err2": "Devi avere una squadra, un GM e almeno un PC nel gioco per iniziare a giocare.",
+
+      "keyboard": ["FREE PLAY", "SCORE PHASE", "DOWNTIME"],
+      "callback": ["Free Play$1", "Score Phase$2", "Downtime phase$3"]
+    },
+
+    "is_game_in_wrong_phase": {
+      "0": "Non puoi fare <i>{}</i> nella fase <i><b>INIT</b></i>",
+      "1": "Non puoi fare <i>{}</i> nella fase <i><b>GIOCO LIBERO</b></i>",
+      "2": "Non puoi fare <i>{}</i> in <i><b>FASE PUNTEGGIO</b></i>",
+      "3": "Non puoi fare <i>{}</i> in <i><b>FASE DOWNTIME</b></i>"
+    },
+
+    "change_state_choice": {
+      "0": "Stato cambiato in: <i>{}</i>"
+    },
+
+    "pc_selection": {
+      "0": "Seleziona il PC",
+      "1": "Non puoi cambiare il tuo PC attivo senza essere in un gioco in questa chat... /join per prendere parte a un gioco."
+    },
+
+    "pc_selection_choice": {
+      "0": "Il tuo PC attivo nel gioco {} è ora {}."
+    },
+
+    "roll_dice": {
+      "nan": "Cos'è <i>{}</i>? Dovrebbe essere un numero...",
+      "1": "Hai ottenuto \u0031\u20E3",
+      "2": "Hai ottenuto \u0032\u20E3",
+      "3": "Hai ottenuto \u0033\u20E3",
+      "4": "Hai tirato \u0034\u20E3",
+      "5": "Hai ottenuto \u0035\u20E3",
+      "6": "Hai ottenuto \u0036\u20E3",
+      "CRIT": "\uD83D\uDD25 <u><b>CRIT</b></u> \uD83D\uDD25"
+    },
+
+    "bonus_dice": {
+      "message": "Aggiungi o rimuovi i tuoi dadi bonus. Ormai hai {} \uD83C\uDFB2",
+      "button": "Bonus \uD83C\uDFB2: {}",
+      "extended": "Se hai un'abilità speciale, una rivendicazione o qualcos'altro che può darti un aiuto, puoi modificare il numero di dadi bonus che ottieni.",
+
+      "vice_message": "Regola il risultato del tiro.",
+      "vice_button": "Risultato \uD83C\uDFB2: {}",
+      "vice_extended": "Se hai un'abilità speciale, un Rivendicazione o qualcos'altro che può darti un aiuto, puoi modificare l'esito del tiro.",
+
+      "score": "Seleziona il numero di dadi che vuoi tirare. Inizi con 1 dado di pura fortuna.",
+      "engagement": "Ingaggio \uD83C\uDFB2: {}",
+      "engagement_extended": "Seleziona il numero di dadi che vuoi tirare. Considera i dettagli del tuo piano.",
+
+      "heat": "Seleziona la quantità di calore da aggiungere o rimuovere.",
+      "heat_button": "Sospetto \u2668\uFE0F: {}",
+      "heat_description": "Modifica la quantità di calore che riceverà il tuo equipaggio. Considera le tue capacità/abilità dell'equipaggio.",
+
+      "rep": "Seleziona la quantità di rep da aggiungere al tuo equipaggio.",
+      "rep_button": "Rep : {}",
+      "rep_description": "Se hai mantenuto questa operazione completamente silenziosa dovresti guadagnare <i>0</i> Rep.\nSe possiedi un'<i>Abilità speciale</i> o un <i>Rivendicazione</i> che ti dà Rep extra, puoi contrassegnarla.",
+
+      "vault_capacity_message": "Seleziona la capacità totale del caveau del tuo equipaggio:",
+      "vault_capacity_button": "Capienza: {}",
+      "vault_capacity_rules": "Secondo le regole del gioco, la capacità predefinita del caveau dell'equipaggio è 4.\nSe il tuo equipaggio ha il miglioramento del <i>Vault</i>, la capacità può essere aumentata a 8 (livello 1) oa 16 (livello 2). \nSe hai qualcosa che può darti più spazio o qualcosa che lo riduce, segna il valore della capacità del tuo caveau.",
+
+      "factions_status_message": "Modifica lo stato del tuo equipaggio con questa fazione:",
+      "factions_status_button": "Status: {}",
+      "factions_status_description": "Lo stato rappresenta la tua relazione con un'altra fazione. Va da -3 (<i>Guerra</i>) a 3 (<i>Alleati</i>)",
+
+      "fortune_roll_extended": "Se hai qualcosa che può darti un aiuto (abilità speciali, potenziamenti dell'equipaggio, ecc.), puoi modificare il numero di dadi bonus che ottieni.\nAd esempio: se stai tirando la qualità di un oggetto è <i>buona </i> puoi aggiungere 1 dado"    },
+
+    "group_action_cohort": {
+      "0": "Seleziona la coorte che vuoi guidare",
+      "1": "Non puoi eseguire un'azione di gruppo senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "group_action": {
+      "0": "⚠️ <i><b>{}</b></i> sta avviando un'azione di gruppo: <i>{}</i>. Se qualcuno vuole unirsi\n/unire"
+    },
+
+    "action_roll": {
+      "0": "Scrivi l'<i>obiettivo</i> della tua azione.\nQual è il risultato concreto che vuoi raggiungere?",
+      "1": "Non puoi eseguire un tiro azione senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "action_roll_goal": {
+      "0": "Seleziona l'azione che desideri eseguire."
+    },
+
+    "action_roll_rating": {
+      "0": "Il <b>GM</b> deve impostare alcune informazioni: <i><b>{}</b></i> sta tentando di <i>{}</i> utilizzando < i>{}</i>\n/reply_action_roll",
+      "1": "Qual è la posizione di questo tiro?",
+      "keyboard": ["Controllato", "Rischioso", "Disperato"]
+    },
+
+    "action_roll_position": {
+      "0": "Seleziona il livello dell'effetto.",
+      "keyboard": ["Limitato", "Standard", "Ottimo"]
+    },
+
+    "action_roll_effect": {
+      "0": "\u26A0\uFE0F <i><b>{}</b></i> sta cercando di <i>{}</i>. Se qualcuno vuole aiutare\n/aiutare",
+      "1": "Ogni azione può avere delle conseguenze, se ti senti nei guai puoi sempre...",
+      "2": "<i>{}</i> anche se non sei tu a condurre l'azione, puoi comunque subirne le conseguenze, se ti senti nei guai puoi sempre...",
+      "3": "Nessuno si è unito a te nell'azione di gruppo... sembra che tu sia solo questa volta",
+      "tastiera": ["Spingi te stesso", "Accetta un Patto col Diavolo", "No grazie..."],
+      "callbacks": [1, 2, 3]
+    },
+
+    "action_roll_assistance": {
+      "0": "<i>{}</i> è pronto ad aiutare!",
+      "1": "Non puoi aiutare di nuovo...",
+      "2": "Non puoi aiutare ora...\nDovresti /unirti alla stessa partita con almeno un personaggio"
+    },
+
+    "group_action_participate": {
+      "0": "<i>{}</i> parteciperà all'azione di gruppo!",
+      "1": "Fai già parte dell'azione di gruppo...",
+      "2": "Non puoi prendere parte a un'azione di gruppo ora...\nDovresti /unirti alla stessa partita con almeno un personaggio"
+    },
+
+    "group_action_bonus_dice": {
+      "0": "Ogni azione può avere delle conseguenze, se ti senti nei guai puoi sempre...",
+      "1": "<i>{}</i> anche se non sei tu a condurre l'azione, puoi comunque subirne le conseguenze, se ti senti nei guai puoi sempre...",
+
+      "keyboard": ["Spingi te stesso", "Accetta un affare del diavolo", "No grazie..."],
+      "callbacks": [1, 2, 3]
+    },
+
+    "action_roll_bargains": {
+      "0": "Descrivi il tuo Patto col Diavolo:"
+    },
+
+    "action_roll_bonus_dice": {
+      "0": "Descrivi il risultato finale del tuo tiro.",
+      "1": "Il risultato dell'azione di gruppo è: <b>{}</b>"
+    },
+
+    "action_roll_notes": {
+      "0": "{} ha subito troppo stress. {} trauma da aggiungere.\n/addTrauma"
+    },
+
+    "send_journal": {
+      "0": "Non puoi avere un diario senza essere in un gioco... /join per prendere parte a un gioco",
+      "1": "Goditi il diario delle tue gesta a Doskvol finora!"
+    },
+
+    "send_map": {
+      "0": "Non puoi avere una mappa senza essere in una partita... /join per prendere parte a una partita",
+      "1": "Ecco la mappa della città. Usala per pianificare i tuoi spostamenti a Doskvol."
+    },
+
+    "add_cohort": {
+      "0": "Seleziona quale coorte vuoi",
+      "err": "Non puoi creare una coorte senza essere in una partita... /join per prendere parte a una partita",
+      "err2": "Non hai abbastanza exp",
+      "keyboard": ["Gang", "Expert"]
+    },
+
+    "add_cohort_choice": {
+      "0": "Che tipo di coorte vuoi?",
+      "keyboardTrue": ["Dottore", "Investigatore", "Occultista", "Assassino", "Spia"],
+      "keyboardFalse": ["Adepti", "Truffatori", "Vagabondi", "Occulti", "Teppisti"]
+    },
+
+    "add_cohort_type": {
+      "0": "Scrivi quanti pregi e difetti avrà la tua coorte (da 0 a 4)"
+    },
+
+    "add_cohort_edgflaw_num": {
+      "0": "Scegli un pregio per la tua coorte",
+      "1": "<i>{}</i> non è valido, dovrebbe essere un numero compreso tra 0 e 4..."
+    },
+
+    "add_cohort_edges": {
+      "0": "Scegli un altro bordo",
+      "1": "Scegli un difetto per la tua coorte",
+
+      "keyboard": ["Temibile", "Indipendente", "Leale", "Tenace"]
+    },
+
+    "add_cohort_flaws": {
+      "0": "Scegli un altro difetto",
+      "keyboard": ["Integerrimo", "Ferale", "Inaffidabile", "Selvaggio"]
+    },
+
+    "create_clock": {
+      "0": "Scrivi il nome dell'orologio",
+      "err": "Non puoi creare un orologio senza essere in una partita... /join per prendere parte a una partita"
+    },
+
+    "create_clock_name": {
+      "0": "Scegli in quanti segmenti deve essere suddiviso l'orologio",
+      "1": "Nome dell'orologio non valido, per creare un orologio di progetto usa /downtimeActivity...\nScrivi un altro nome",
+      "keyboard": [4, 6, 8]
+    },
+
+    "create_clock_segments": {
+      "0": "\uD83D\uDD50 <u>{}</u> ha creato un nuovo orologio (<i>{}</i>): '<i>{}</i>' \uD83D\uDD51" ,
+      "1": "<i>{}</i> non è valido, dovrebbe essere un numero compreso tra 2 e 36..."
+    },
+
+    "tick_clock": {
+      "0": "Scegli quale orologio vuoi far avanzare",
+      "err": "Non puoi segnare un orologio senza essere in una partita... /join per prendere parte a una partita",
+      "err2": "Non hai nessun orologio... /createClock per crearne uno"
+    },
+
+    "tick_clock_choice": {
+      "0": "Quanti segmenti devono essere aggiunti?"
+    },
+
+    "tick_clock_progress": {
+      "0": "<u>{}</u> ha fatto un avanzamento per l'orologio: '<i>{}</i>' \nprogresso: {}/{}",
+      "1": "<u>{}</u> ha completato l'orologio: '<i>{}</i>'",
+      "err": ""
+    },
+
+    "add_claim": {
+      "err": "Non puoi aggiungere un reclamo senza essere in una partita... /join per prendere parte a una partita",
+      "0": "Seleziona il tipo del tuo nuovo reclamo",
+      "tastiera": ["Covo", "Prigione"],
+      "callbacks": ["False", "True"]
+    },
+
+    "add_claim_type": {
+      "0": "Seleziona il reclamo che desideri."
+    },
+
+    "send_character_sheet": {
+      "0": "Non hai un PC attivo in questa chat... /join per partecipare a un gioco",
+      "1": "Ecco la scheda del tuo personaggio",
+      "err": "Non puoi vedere una scheda del personaggio senza essere in una partita... /join per prendere parte a una partita"
+    },
+
+    "send_crew_sheet": {
+      "0": "Non hai un equipaggio in questo gioco... /createCrew per crearne uno nuovo.",
+      "1": "Ecco la scheda della tua squadra",
+      "err": "Non puoi vedere un foglio di squadra senza essere in una partita... /join per prendere parte a una partita"
+    },
+
+    "resistance_roll": {
+      "0": "A cosa stai cercando di resistere?",
+      "1": "Non puoi eseguire un tiro di resistenza senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "resistance_roll_description": {
+      "0": "Seleziona quale sarà il risultato",
+      "1": "Il <b>GM</b> deve impostare alcune informazioni: <i><b>{}</b></i> sta cercando di resistere a <i>{}</i> \n/reply_resistance_roll",
+      "tastiera": ["Danno ridotto", "Danno evitato"],
+      "callbacks": ["reduced", "avoided"]
+    },
+
+    "resistance_roll_damage": {
+      "0": "Seleziona l'attributo da tirare"
+    },
+
+    "resistance_roll_bonus_dice": {
+      "0": "Descrivi il risultato finale del tuo tiro."
+    },
+
+    "resistance_roll_notes": {
+      "0": "{} ha subito troppo stress. {} trauma da aggiungere.\n/addTrauma"
+    },
+
+    "add_stress": {
+      "0": "<i>{}</i> stress aggiunto a <u>{}</u>",
+      "1": "<u>{}</u> ha subito troppo stress. <i>{}</i> trauma da aggiungere.\n/addTrauma",
+      "err": "Non puoi aggiungere stress al tuo PC senza essere in un gioco... /join per prendere parte a un gioco",
+      "err2": "Non hai nessun PC attivo... \n/join per prendere parte a un gioco"
+    },
+
+    "add_trauma": {
+      "0": "Scrivi il trauma",
+      "err": "Non puoi aggiungere traumi al tuo PC senza essere in un gioco... /join per prendere parte a un gioco",
+      "err2": "Non hai nessun PC attivo... \n/join per prendere parte a un gioco"
+    },
+
+    "add_trauma_name": {
+      "0": "<i>{}</i> ha subito troppi traumi...\n/migratePC o /die"
+    },
+
+    "score": {
+      "0": "Scegli la categoria del punteggio",
+      "err": "fase sbagliata",
+
+      "keyboard": ["Attività criminale", "Sequestro di un reclamo", "Missione speciale"]
+    },
+
+    "score_category": {
+      "0": "Scegli il tipo di target:",
+
+      "keyboard": ["NPC", "Fazione", "Altro"],
+      "callbacks": ["NPC", "Faction", "Other"]
+    },
+
+    "score_target": {
+      "0": "Seleziona il tuo obiettivo",
+      "1": "Chi o cosa è il tuo obiettivo"
+    },
+
+    "score_target_selection": {
+      "0": "Seleziona il tuo obiettivo",
+      "1": "Qual è il <i>tipo</i> del tuo piano?",
+
+      "404": "Descrizione non trovata",
+      "keyboard": ["Assalto", "Inganno", "Stealth", "Occulto", "Social", "Trasporti"]
+    },
+
+    "score_plan_type": {
+      "Altro": "Descrivi i dettagli del tuo piano.",
+      "Assalto": "Descrivi i dettagli del tuo piano. Concentrati sul <i>punto di attacco</i>",
+      "Inganno": "Descrivi i dettagli del tuo piano. Concentrati sul <i>metodo dell'inganno</i>",
+      "Stealth": "Descrivi i dettagli del tuo piano. Concentrati sul <i>punto di infiltrazione</i>",
+      "Occulto": "Descrivi i dettagli del tuo piano. Concentrati sul <i>metodo arcano</i>",
+      "Social": "Descrivi i dettagli del tuo piano. Concentrati sulla <i>connessione sociale</i>",
+      "Trasporti": "Descrivi i dettagli del tuo piano. Concentrati sul <i>percorso e i mezzi</i>"
+    },
+
+    "score_plan_details": {
+      "0": "Scegli il nome in codice (o il titolo) di questo colpo."
+    },
+
+    "score_title": {
+      "0": "<i>{}</i>, seleziona il carico totale che trasporterai durante la partitura:",
+
+      "keyboard": ["3", "5", "6"]
+    },
+
+    "score_load": {
+      "0": "{}",
+      "1": "{}",
+      "2": "{}"
+
+
+    },
+
+    "score_pcs_loads": {
+      "0": "<i>{}</i>, seleziona il carico totale che trasporterai durante la partitura:",
+
+      "keyboard": ["3", "5", "6"],
+      "nan": "<i>{}</i> non è valido. Deve essere un numero positivo."
+    },
+
+    "score_engagement": {
+      "0": "Descrivere l'ingaggio del colpo."
+    },
+
+    "heat": {
+      "0": "Qual era la natura dell'operazione?",
+      "1": "Non puoi sopportare il caldo senza essere in una partita... /join per prendere parte a una partita.",
+      "tastiera": ["Liscio e silenzioso", "Contenuto", "Rumoroso e caotico", "Selvaggio"],
+      "callbacks": [["smooth and quiet, low exposure", "0"], ["contained, standard exposure", "2"], ["loud and chaotic, high exposure", "4"], ["wild, extreme exposure", "6"]]
+    },
+
+    "heat_score_nature": {
+      "0": "Era un bersaglio di alto profilo o ben collegato?",
+      "keyboard": ["Sì", "No"],
+      "callbacks": [["True", "1"], ["False", "0"]]
+    },
+
+    "heat_target_profile": {
+      "0": "La situazione si è verificata in un terreno ostile?",
+      "keyboard": ["Sì", "No"],
+      "callbacks": [["True", "1"], ["False", "0"]]
+    },
+
+    "heat_turf_hostility": {
+      "0": "Sei in guerra con un'altra fazione?",
+      "keyboard": ["Sì", "No"],
+      "callbacks": [["True", "1"], ["False", "0"]]
+    },
+
+    "heat_war_situation": {
+      "0": "Era coinvolto un omicidio?",
+      "keyboard": ["Sì", "No"],
+      "callbacks": [["True", "2"], ["False", "0"]]
+    },
+
+    "heat_extra": {
+      "0": "Il livello di ricercato della tua squadra è <i>{}</i>"
+    },
+
+    "entanglement": {
+      "err": "Non puoi usare l'entanglement senza essere in una partita... /join per prendere parte a una partita.",
+      "0,1,2,3": {
+        "1,2,3": "Gang Trouble o I soliti sospetti",
+        "4,5": "Rivali o Morti Inquieti",
+        "6, CRIT": "Cooperazione"
+      },
+      "4,5": {
+        "1,2,3": "Problemi o domande di gruppo",
+        "4,5": "Rappresaglie o morti inquieti",
+        "6, CRIT": "Mostra di forza"
+      },
+      "6": {
+        "1,2,3": "Capovolto o Interrogatorio",
+        "4,5": "Avviso demoniaco o dimostrazione di forza",
+        "6, CRIT": "Arresto"
+      },
+      "public": "{} sta decidendo un entanglement nella <a href=\"{}\">chat privata</a>",
+      "private": "Scrivi il nome dell'entanglement o clicca semplicemente su quello suggerito (dal regolamento del gioco)"
+    },
+
+    "entanglement_name": {
+      "0": "Descrivi brevemente cosa succede con l'entanglement"
+    },
+
+    "entanglement_description": {
+      "public": "<u>{}</u> ha creato un nuovo entanglement: <i>{}</i>",
+      "secret": "<u>{}</u> ha creato un nuovo intreccio segreto..."
+    },
+
+    "end_score": {
+      "0": "Qual è il <i>risultato</i> del punteggio?",
+      "1": "Non puoi terminare un punteggio senza essere in una partita... /join per prendere parte a una partita.",
+      "2": "Per terminare una partitura, dovresti prima crearne una... \n/partitura",
+
+      "keyboard": ["Successo", "Fallimento", "Ritirata"]
+    },
+
+    "end_score_outcome": {
+      "0": "Descrivi l'esito del punteggio."
+    },
+
+    "end_score_rep": {
+      "0": "Buone notizie. Il tuo equipaggio può essere aggiornato.\nPuoi spendere <i><b>{}</b></i> monete per aumentare di uno il livello dell'equipaggio.\n/aumenta livello di equipaggio"
+    },
+
+    "payoff": {
+      "err": "Non puoi gestire una vincita senza essere in una partita... /join per prendere parte a una partita.",
+      "0": "Quante monete ha guadagnato l'equipaggio?",
+      "keyboard": [2,4,6,8,10]
+    },
+
+    "payoff_amount": {
+      "0": "Seleziona come gestire i tuoi guadagni",
+      "keyboard": ["Dividilo","Memorizza nel caveau","Decidi dopo"],
+      "callbacks": [1,2,3]
+    },
+
+    "payoff_choice": {
+      "0": "Ricordati di aggiungere le tue {} monete più tardi",
+      "1": "Descrivi il guadagno"
+    },
+
+    "armor_use": {
+      "0": "Decidi quale tipo di armatura vuoi usare:",
+      "1": "Non puoi usare un'armatura senza essere in una partita... /join per prendere parte a una partita.",
+      "keyboard": ["Standard", "Heavy", "Special"]
+    },
+
+    "armor_use_type": {
+      "0": "Descrivi a cosa stai cercando di resistere"
+    },
+
+    "armor_use_description": {
+      "0": "<i>{}</i> ha usato la sua armatura {}."
+    },
+
+    "add_coin": {
+      "err": "Non puoi aggiungere monete senza essere in una partita... /join per prendere parte a una partita.",
+      "0": "Aggiungi o rimuovi le monete facendo clic sui pulsanti"
+    },
+
+    "add_coin_amount": {
+      "0": "Non posso aggiungere altre monete qui",
+      "coins": "non puoi avere più di 4 monete",
+      "stash": "non puoi avere più di 40 monete nella tua scorta",
+      "vault": "non puoi avere più di {} monete nel tuo caveau"
+    },
+
+    "vault_capacity": {
+      "err": "Non puoi modificare la capacità del caveau dell'equipaggio senza essere in una partita... /join per partecipare a una partita."
+    },
+
+    "upgrade_crew": {
+      "err": "Non puoi aggiungere monete senza essere in una partita... /join per prendere parte a una partita.",
+      "True": "La tua presa è diventata <i><b>forte</b></i>, ma il tuo livello rimane: <i>{}</i>",
+      "False": "Il tuo livello è aumentato a <i>{}</i>, ma ora la tua presa è <i><b>debole</b></i>"
+    },
+
+    "factions_status": {
+      "err": "Non puoi modificare lo stato delle fazioni senza essere in una partita... /join per partecipare a una partita.",
+      "0": "Seleziona la fazione che vuoi aggiornare:"
+    },
+
+    "factions_status_selection": {
+      "0": "Seleziona la fazione che vuoi aggiornare:"
+    },
+
+    "factions_status_update": {
+      "0": "Seleziona la fazione che vuoi aggiornare:"
+    },
+
+    "use_item": {
+      "0": "Scegli l'oggetto che vuoi usare. Se vuoi un nuovo oggetto dovrai crearlo durante un'attività di inattività.",
+      "1": "Non puoi usare un oggetto senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "use_item_name": {
+      "0": "Scegli l'oggetto che vuoi usare.",
+      "1": "Descrivi l'uso di <i>{}</i>",
+      "2": "Non puoi usare questo oggetto perché pesa troppo",
+      "3": "Descrizione:\n{}\nPeso: {}\nUsi: {}\nQualità: {}"
+    },
+
+    "use_item_description": {
+      "0": "<i>{}</i>è stato usato"
+    },
+
+    "fortune_roll": {
+      "err": "Non puoi eseguire un tiro fortuna senza essere in una partita... /join per partecipare a una partita.",
+      "0": "Qual è l'obiettivo del tuo tiro?"
+    },
+
+    "fortune_roll_goal": {
+      "0": "Seleziona da dove vuoi prendere il pool di dadi",
+      "tastiera": ["Azione", "Attributo", "Qualità coorte", "Qualità oggetto", "Livello equipaggio", "Livello fazione"],
+      "callbacks": [1, 2, 3, 4, 5, 6]
+    },
+
+    "fortune_roll_choice": {
+      "0": "Seleziona l'attributo a cui appartiene l'azione che vuoi lanciare",
+      "1": "Seleziona l'attributo che vuoi ottenere",
+      "2": "Seleziona la fazione che vuoi usare per il tiro",
+      "3": "Seleziona l'oggetto che vuoi usare per il tiro",
+      "4": "Seleziona la coorte che vuoi usare per il tiro",
+      "5": "Seleziona l'oggetto che vuoi usare per il tiro"
+    },
+
+    "fortune_roll_action": {
+      "0": "Seleziona l'azione che desideri eseguire"
+    },
+
+    "fortune_roll_faction": {
+      "404": "Descrizione non trovata",
+      "0": "Seleziona la fazione che vuoi usare per il tiro"
+    },
+
+    "fortune_roll_bonus_dice": {
+      "0": "Descrivi il risultato finale del tuo tiro"
+    },
+
+    "fortune_roll_item": {
+      "0": "Seleziona l'oggetto che vuoi usare per il rotolo",
+      "1": "Descrizione:\n{}\nPeso: {}\nUsi: {}\nQualità: {}"
+    },
+
+    "add_exp": {
+      "0": "Aggiungi o rimuovi l'exp facendo clic sui pulsanti",
+      "err": "Non puoi aggiungere exp senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "add_exp_amount": {
+      "crew": "La tua exp può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi. Ogni punto può essere usato per ottenere due potenziamenti o una nuova abilità",
+      "playbook": "La tua esperienza può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi.",
+      "insight": "La tua esperienza può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi.",
+      "prowess": "La tua esperienza può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi.",
+      "resolve": "La tua exp può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi.",
+      "crew_points": "Il tuo equipaggio ha ora {} punti da spendere.",
+      "playbook_points": "Il tuo playbook ha ora {} punti/punti da spendere.",
+      "insight_points": "La tua intuizione ora ha {} punto/punti da spendere.",
+      "prowess_points": "La tua abilità ora ha {} punto/punti da spendere.",
+      "resolve_points": "La tua determinazione ora ha {} punti/punti da spendere."
+    },
+
+    "add_action_dots": {
+      "0": "Seleziona l'attributo dell'azione che vuoi aggiornare.",
+
+      "err": "Non hai un PC attivo in questo gioco... /join per prendere parte a un gioco."
+    },
+
+    "add_action_dots_attribute_selection": {
+      "0": "Seleziona l'azione che desideri aggiornare.\nPuoi aggiungere altri {} punti."
+    },
+
+    "add_action_dots_keyboard": {
+      "0": "Seleziona l'azione che vuoi aggiornare.\nPuoi aggiungere {} altri punti.",
+      "1": "Seleziona l'attributo dell'azione che vuoi aggiornare."
+    },
+
+    "add_upgrade": {
+      "0": "Seleziona il gruppo di upgrade che vuoi scegliere",
+      "err": "Non puoi aggiungere un potenziamento equipaggio senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "add_upgrade_group": {
+      "0": "Seleziona l'aggiornamento o gli aggiornamenti che desideri per il tuo equipaggio. Hai {} punti da spendere."
+    },
+
+    "add_upgrade_selection": {
+      "0": "Seleziona l'upgrade o gli upgrade che desideri per il tuo equipaggio. Hai {} punti da spendere.",
+      "1": "Seleziona il gruppo di upgrade che vuoi scegliere"
+    },
+
+    "add_ability": {
+      "0": "Seleziona dove vuoi aggiungere un'abilità speciale",
+      "1": "Non hai nessun punto disponibile da spendere per un'abilità speciale",
+      "keyboard": ["Equipaggio", "PC", "Strutture", "Caratteristiche telaio"],
+      "callbacks": [1,2,3,4],
+      "err": "Non puoi aggiungere un'abilità speciale senza essere in una partita... /join per prendere parte a una partita.",
+      "noPoints": "Non hai alcun punto disponibile per una nuova abilità speciale."
+    },
+
+    "add_ability_owner": {
+      "0": "Seleziona l'abilità speciale che desideri aggiungere"
+    },
+
+    "add_ability_selection": {
+      "0": "Seleziona l'abilità speciale che vuoi aggiungere",
+      "1": "La tua nuova abilità speciale è stata aggiunta",
+      "2": "{}: {}",
+      "3": "Ti permette di selezionare abilità speciali da altri {} tipi",
+      "pc": "carattere",
+      "crew": "equipaggio"
+    },
+
+    "downtime": {
+      "0": "Seleziona l'attività di inattività che vuoi fare",
+      "err": "Non puoi svolgere un'attività di inattività senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai un PC attivo in questo gioco... /join per prendere parte a un gioco.",
+      "keyboard": ["Acquisisci asset", "Crafting", "Progetto a lungo termine", "Recupera", "Riduci calore", "Train", "Indulge Vice", "Aiuta coorte", "Sostituisci coorte"],
+      "callbacks": [1,2,3,4,5,6,7,8,9]
+    },
+
+    "downtime_choice": {
+      "1": "Cosa vuoi acquisire?",
+      "2": "Cosa vuoi creare?",
+      "3": "Seleziona un progetto",
+      "new": "Nuovo progetto",
+      "4": "Seleziona un metodo di guarigione",
+      "keyboard4": ["NPC", "PC", "Coorte", "Improvvisare"],
+      "callbacks4": [1,2,3,4],
+      "5": "Seleziona l'attributo dell'azione che vuoi eseguire.",
+      "6": "Seleziona cosa vuoi allenare",
+
+      "8": "Seleziona la coorte che vuoi aiutare a recuperare",
+      "9": "Seleziona la coorte che vuoi sostituire"
+    },
+
+    "downtime_asset": {
+      "0": "Scrivi la qualità minima",
+      "1": "Il <b>GM</b> deve impostare alcune informazioni: <u>{}</u> vuole acquisire la risorsa: <i>{}</i>\n/reply_downtime",
+      "keyboard": ["-1", "0", "1", "2", "3", "4", "5", "6", "7"]
+    },
+
+    "downtime_item": {
+      "0": "Scrivi la qualità minima",
+      "1": "Il <b>GM</b> deve impostare alcune informazioni: <u>{}</u> vuole creare un oggetto: <i>{}</i>\n/reply_downtime",
+      "keyboard": ["-1", "0", "1", "2", "3", "4", "5", "6", "7"]
+    },
+
+    "downtime_minimum_quality": {
+      "err": "La qualità minima dovrebbe essere un numero, -1 se non esiste una qualità minima per questa risorsa"
+    },
+
+    "downtime_bonus_dice": {
+      "0": "Scrivi quanti livelli di qualità vuoi aggiungere (la qualità minima impostata è {} e la qualità effettiva della tua risorsa è {})"
+    },
+
+    "downtime_added_quality": {
+      "err": "La qualità aggiunta dovrebbe essere un numero positivo, 0 se non vuoi aumentarla",
+      "0": "Non hai potuto perseguire il tuo obiettivo: requisito minimo di qualità non soddisfatto..."
+    },
+
+    "payment_keyboard": {
+      "0": "Hai <i>{}</i> monete da pagare. Seleziona un metodo di pagamento.",
+      "keyboard": ["Pagamento automatico (equipaggio)", "Pagamento automatico (possesso)", "Fai in seguito"],
+      "callbacks": [1,2,3]
+    },
+    "downtime_payment": {
+      "0": "Scrivi qualche descrizione in più dell'attività",
+      "1": "Scrivi la descrizione dell'articolo (inconvenienti inclusi)"
+    },
+
+    "downtime_notes": {
+      "0": "Scrivi qualche descrizione in più dell'attività",
+
+      "filled": "L'orologio del progetto <i>{}</i> è stato completato!",
+      "time_healed": "Sei guarito <i>{}</i> volte",
+      "traumas": "Hai sofferto troppo stress. <i>{}</i> trauma da aggiungere.\n/addTrauma",
+      "wanted_level": "La tua squadra ha ora raggiunto il livello di ricercato <i>{}</i>"
+    },
+
+    "downtime_attribute_choice": {
+      "0": "Seleziona l'azione da eseguire"
+    },
+
+    "missing_cohorts": {
+      "0": "Non hai coorti valide..."
+    },
+
+    "downtime_project_choice": {
+      "0": "Crea un nuovo orologio per il progetto.\n/createClock_longTermProject",
+      "1": "Seleziona l'attributo dell'azione che vuoi eseguire."
+    },
+
+    "downtime_recover_choice": {
+      "1": "Seleziona l'NPC che ti aiuterà",
+      "2": "Seleziona il PC che ti aiuterà",
+      "3": "Seleziona la coorte che ti aiuterà"
+    },
+
+    "downtime_npc_selection": {
+      "0": "Seleziona l'NPC che ti aiuterà",
+      "404": "Descrizione non trovata"
+    },
+
+    "downtime_adjust_roll": {
+      "0": "Oh no! {} esagerato!\nIl GM deve scegliere una conseguenza...",
+      "keyboard": ["Vantarsi", "Perso", "Toccato", "Attrazione guai"]
+    },
+
+    "downtime_master_choice": {
+      "0": "Il GM ha selezionato <i>{}</i>.\nScrivi cos'è successo",
+      "1": "Il GM ha selezionato <i>{}</i>. Ci saranno conseguenze...\n/entanglements"
+    },
+
+    "add_harm_cohort": {
+      "0": "Seleziona la coorte",
+      "err": "Non puoi danneggiare una coorte senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai una coorte viva..."
+    },
+
+    "add_harm_cohort_choice": {
+      "0": "Scrivi come possono danneggiare i livelli assunti dalla coorte\n(i numeri negativi sono accettabili se si desidera ridurre il livello di danno)"
+    },
+
+    "add_harm_cohort_level": {
+      "err": "Dovresti scrivere un numero intero..."
+    },
+
+    "add_harm": {
+      "0": "Descrivi il danno",
+      "err": "Non puoi aggiungere un danno senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai nessun PC attivo..."
+    },
+
+    "add_harm_description": {
+      "0": "Seleziona il livello del danno",
+      "keyboard": ["Ridotto (1)", "Moderato (2)", "Grave (3)"],
+      "callbacks": [1,2,3]
+    },
+
+    "add_harm_level": {
+      "0": "Il livello di danno selezionato era già pieno... il danno è stato aggiunto al livello <i>{}</i>",
+      "1": "Hai superato il livello 3 di danno...\nE' un danno fatale? /die or /migratePC"
+    },
+
+    "end_downtime": {
+      "err": "Non puoi terminare le attività di inattività senza essere in un gioco... /join per prendere parte a un gioco.",
+      "0": "Le attività di inattività sono terminate.\n/changeState per spostare il gioco alla fase successiva.",
+      "trauma": "<i>{}</i> ha subito troppo stress. /trauma per aggiungere <b>{}</b> trauma."
+    },
+
+    "change_vice_purveyor": {
+      "err": "Non puoi cambiare il tuo vice fornitore senza essere in una partita... /join per prendere parte a una partita.",
+      "0": "Chi ti fornirà assistenza per prenderti cura del tuo vizio?",
+      "1": "Non hai nessun PC attivo in questo gioco... /join per aggiungere un tuo PC in questo gioco.",
+      "2": "Non sei più umano...\nNessuno ti aiuterà a liberarti... volontariamente.\nSei il fornitore di te stesso."
+    },
+
+    "migrate_pc": {
+      "err": "Non hai ancora nessun PC attivo nel gioco... /join per prendere parte a un gioco con il tuo PC.",
+      "0": "Come <i>Ghost</i>, puoi scegliere quale <i>Unquiet Dead</i> vuoi diventare.",
+      "1": "Come <i>{}</i>, se decidi di migrare diventerai un: ",
+      "GhostKeyboard": ["Costrutto", "Vampiro"],
+      "GhostCallbacks": ["Hull", "Vampire"],
+      "OthersKeyboard": ["Fantasma"],
+      "OthersCallbacks": ["Ghost"]
+    },
+
+    "migrate_pc_selection": {
+      "0": "<i>{}</i> ha cambiato natura: ora è un <i>{}</i>!",
+      "Vampire": "Vampiro",
+      "Ghost": "Come Fantasma, l'ira ti pervade. Chi sono i tuoi nemici o cosa guida la tua rabbia?",
+      "Hull": "Come Costrutto, la tua autonomia è ridotta alla volontà del tuo padrone. Quali sono le funzioni del tuo nuovo modulo? Scegline 3.",
+      "functions": ["custodire", "distruggere", "scoprire", "acquisire", "lavorare"]
+    },
+
+    "migrate_pc_ghost_enemies": {
+      "0": "Puoi aggiungere un altro nemico.\n/done quando hai finito."
+    },
+
+    "migrate_pc_enemies_selected" : {
+      "0": "<i>{}</i> ha cambiato natura: ora è un <i>{}</i>!",
+      "Ghost": "Fantasma"
+    },
+
+    "migrate_pc_hull_functions": {
+      "0": "Scegli altri {}.",
+      "1": "<i>{}</i> ha cambiato natura: ora è un <i>{}</i>!",
+      "Hull": "Costrutto"
+    },
+
+    "add_reputation": {
+      "0": "Hai raggiunto il livello massimo di reputazione.\nUsa /upgradeCrew per aumentare il livello del tuo equipaggio o cambiare la tua presa; non dimenticare di pagare <i>{}</i> monete prima.\nPuoi usare / moneta per gestire il tuo possesso",
+      "1": "<i>{}</i> reputazione aggiunta all'equipaggio",
+      "err": "Non puoi aggiungere reputazione senza essere in una partita... /join per prendere parte a una partita."
+    },
+
+    "add_armor_cohort": {
+      "0": "Seleziona la coorte",
+      "err": "Non puoi aggiungere un'armatura a una coorte senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai una coorte viva..."
+    },
+
+    "add_armor_cohort_choice": {
+      "0": "Scrivi quanti livelli di armatura vuoi aggiungere alla coorte (scrivi un numero negativo se vuoi invece rimuovere l'armatura)"
+    },
+
+    "add_armor_cohort_level": {
+      "err": "Dovresti scrivere un numero..."
+    },
+
+    "change_pc_class": {
+      "err": "Non hai ancora nessun PC attivo nel gioco... /join per prendere parte a un gioco con il tuo PC.",
+      "0": "Seleziona o scrivi la tua nuova classe.",
+      "1": "Sei un <i>Unquiet Dead</i>: non puoi cambiare classe, puoi solo /migrare in un'altra forma..."
+    },
+
+    "change_pc_class_selection": {
+      "0": "Questa classe non esiste ancora...\nSeleziona o scrivine una esistente.",
+      "1": "<i>{}</i> ha cambiato classe: ora è un <i>{}</i>!"
+    },
+
+    "andare in pensione": {
+      "err": "Non puoi aggiungere un danno senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai nessun PC attivo..",
+      "0": "Il tuo pc sta passando a una vita migliore... quale?",
+      "keyboard": ["Morte", "Pensionamento"],
+      "callbacks": ["die", "retire"]
+    },
+
+    "retire_choice": {
+      "0": "\u26A0\uFE0F Sei sicuro di voler <i><b>{}</b></i> sul tuo PC?\nPremendo 'YES' il tuo PC svanirà nel nulla e il tuo non potrai più usarlo.\nSe hai cambiato idea... /cancel",
+      "keyboard": ["SI"]
+    },
+
+    "retire_disclaimer": {
+      "0": "Descrivi come il tuo pc {}"
+    },
+
+    "retire_description": {
+      "0": "Devi fare:\n- /changePc per impostare un nuovo pc come attivo se hai un altro pc;\n- /join se vuoi continuare come un nuovo mascalzone"
+    },
+
+    "flashback": {
+      "err": "Non puoi eseguire un flashback senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai nessun PC attivo...",
+      "0": "Cosa vuoi ottenere con questo flashback?"
+    },
+
+    "flashback_goal": {
+      "0": "<u>{}</u> sta avendo un flashback: <i>{}</i>\nIl GM deve decidere quanto stress costerà questo flashback",
+      "keyboard": [0,1,2,3,4,5]
+    },
+
+    "flashback_stress": {
+      "err": "Dovresti scrivere un numero...",
+      "0": "Il GM deve anche impostare cosa comporta questo flashback",
+      "keyboard": ["Azione", "Fortuna", "Già realizzato"],
+      "callbacks": ["/actionRoll", "/fortuneRoll", "None"]
+    },
+
+    "flashback_entail": {
+      "0": "Il flashback verrà risolto con\n{}",
+      "1": "Il flashback è già compiuto semplicemente pagando il costo dello stress",
+      "2": "Hai sofferto troppo stress. {} Trauma da aggiungere.\n/addTrauma"
+    },
+
+    "incarceration_roll": {
+      "err": "Non puoi eseguire un tiro di incarcerazione senza essere in una partita... /join per prendere parte a una partita.",
+      "0": "Seleziona chi sta eseguendo l'azione",
+      "keyboard": ["PC attivo", "NPC"],
+      "callbacks": [1,2]
+    },
+
+    "incarceration_roll_choice": {
+      "0": "Seleziona il tuo contatto"
+    },
+
+    "incarceration_roll_bonus_dice": {
+      "0": "Scrivi alcune note extra sull'incarcerazione"
+    },
+
+    "incarceration_roll_npc": {
+      "0": "Seleziona il tuo contatto",
+      "404": "Descrizione non trovata"
+    },
+
+    "incarceration_roll_notes": {
+      "prison_claim": "Hai conquistato <i>{}</i> una nuova rivendicazione in prigione.\n/addClaim",
+      "coins": "Hai raggiunto il livello massimo di reputazione.\nUsa /upgradeCrew per aumentare il livello del tuo equipaggio o cambiare la tua presa; non dimenticare di pagare <i>{}</i> monete prima.\nPuoi usare / moneta per gestire il tuo possesso",
+      "traumas": "Sei traumatizzato dall'esperienza in prigione e hai avuto un trauma <i>{}</i>. \n/addTrauma",
+      "status": "Puoi aggiungere <i>+{}</i> stato di fazione con una fazione che hai assistito mentre hai scontato la tua pena"
+    },
+
+    "add_note": {
+      "0": "Scrivi il titolo della tua nota"
+    },
+
+    "add_note_title": {
+      "0": "Scrivi il testo della nota"
+    },
+
+    "edit_note": {
+      "0": "Inserisci la posizione della nota (1 è la più recente, più grande è il numero più vecchia è la nota)"
+    },
+
+    "edit_note_position": {
+      "0": "Questa è la nota che hai selezionato:\n\n\"{}\"\n\nÈ quella che vuoi?",
+      "err": "Devi inserire un numero maggiore di uno.",
+      "err1": "Devi inserire una cifra",
+      "err2": "Non ci sono abbastanza note. Inserisci un numero più piccolo.",
+      "keyboard": ["Si", "No"],
+      "callback": ["Yes", "No"]
+    },
+
+    "edit_note_correct": {
+      "0": "Inserisci il nuovo testo della nota"
+    },
+
+    "end_game": {
+      "0": "Sei sicuro? Tutti i progressi in questo gioco e tutti i personaggi verranno eliminati.",
+      "keyboard": ["Si", "No"],
+      "callbacks": [1,2]
+    },
+
+    "end_game_choice": {
+      "0": "Scrivi alcune note per descrivere la fine dell'avventura"
+    },
+
+    "end_game_notes": {
+      "0": "Il gioco è stato annullato.\n/createGame e /join per iniziarne uno nuovo.\nQuesti sono tutti i file dell'ultimo gioco:"
+    },
+
+    "change_frame_size": {
+      "0": "Seleziona la dimensione della cornice",
+      "err": "Non hai un PC attivo in questa chat... /join per partecipare a un gioco",
+      "err2": "Non puoi cambiare la dimensione del telaio se non sei uno Costrutto",
+      "keyboard": ["Piccolo", "Medio", "Pesante"],
+      "callbacks": ["S","M","H"]
+    },
+
+    "add_type_cohort": {
+      "0": "Seleziona una coorte",
+      "err": "Non puoi aggiungere un tipo a una coorte senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai abbastanza esperienza",
+      "err3": "Non hai una coorte viva..."
+    },
+
+    "add_type_cohort_choice": {
+      "0": "Scrivi il tipo da aggiungere",
+      "keyboard_expert": ["Dottore", "Investigatore", "Occultista", "Assassino", "Spia"],
+      "keyboard_gang": ["Adepti", "Rooks", "Rovers", "Skulks", "Teppisti"]
+    },
+
+    "add_servant": {
+      "0": "Seleziona un nuovo servitore",
+      "err": "Non puoi aggiungere un servitore senza essere in una partita... /join per prendere parte a una partita.",
+      "err2": "Non hai un pc attivo...",
+      "err3": "Non puoi aggiungere un servitore, non sei un vampiro"
+    },
+
+    "create_sa": {
+      "0": "Scrivi il nome dell'abilità speciale"
+    },
+
+    "create_sa_name": {
+      "0": "Scrivi la descrizione dell'abilità speciale",
+      "err": "Abilità speciale già presente, scrivi un altro nome"
+    },
+
+    "create_sa_description": {
+      "0": "Nuova abilità speciale creata, ora tutti possono usarla!"
+    },
+
+    "create_xp_trigger": {
+      "0": "Scrivi la descrizione del trigger xp"
+    },
+
+    "create_xp_trigger_name": {
+      "0": "Seleziona che tipo di trigger è questo",
+      "keyboard": ["Crew", "Personaggio"],
+      "callbacks": [1,2]
+    },
+
+    "create_xp_trigger_crew_char": {
+      "0": "Nuovo trigger XP creato, ora tutti possono usarlo!"
+    },
+
+    "creare_item": {
+      "0": "Scrivi il nome dell'oggetto"
+    },
+
+    "create_item_name": {
+      "0": "Scrivi la descrizione dell'oggetto",
+      "err": "Elemento già esistente, scrivi un altro nome"
+    },
+
+    "create_item_description": {
+      "0": "Scrivi il peso dell'articolo"
+    },
+
+    "create_item_weight": {
+      "0": "Scrivi gli usi dell'oggetto",
+      "err": "Deve essere un numero (peso > 0)"
+    },
+
+    "create_item_usage": {
+      "0": "Nuovo oggetto creato, ora tutti possono usarlo!",
+      "err": "Deve essere un numero (-1 per utilizzi illimitati)"
+    },
+
+    "creare_char_sheet": {
+      "0": "Scrivi il nome del foglio"
+    },
+
+    "create_char_sheet_name": {
+      "0": "Scrivi la descrizione del foglio",
+      "err": "Scheda caratteri già presente, scrivi un altro nome"
+    },
+
+    "create_char_sheet_description": {
+      "0": "Seleziona 3 azioni per assegnare i punti iniziali"
+    },
+
+    "create_char_sheet_dots": {
+      "err": "Scrivi un'azione esistente",
+      "0": "Seleziona 5 amici/nemici per il foglio: 0/5",
+      "1": "Seleziona altri punti azione: {}/3"
+    },
+
+    "create_char_sheet_friends": {
+      "0": "Seleziona un altro: {}/5",
+      "1": "Seleziona le voci peculiari di questa scheda: 0/6",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_char_sheet_items": {
+      "0": "Seleziona gli elementi peculiari di questo foglio: {}/6",
+      "1": "Seleziona le abilità speciali per questa scheda: 0/8",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_char_sheet_sa": {
+      "0": "Seleziona le abilità speciali per questo foglio: {}/8",
+      "1": "Seleziona il trigger XP per questo foglio",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_char_sheet_xp": {
+      "0": "Seleziona il trigger XP per questo foglio",
+      "200": "Nuova Scheda Personaggio aggiunta, ora tutti possono usarla!",
+      "404": "Descrizione non trovata",
+      "500": "Ops! Qualcosa è andato storto e la scheda del personaggio non è stata salvata!\nRiprova più tardi."
+    },
+
+    "create_hg": {
+      "0": "Scrivi il nome del terreno di caccia"
+    },
+
+    "create_hg_name": {
+      "0": "Scrivi la descrizione del terreno di caccia",
+      "err": "Caccia già presente, scrivi un altro nome"
+    },
+
+    "create_hg_description": {
+      "0": "Nuovo terreno di caccia creato, ora tutti possono usarlo!"
+    },
+
+    "creare_upgrade": {
+      "0": "Scrivi il nome dell'aggiornamento"
+    },
+
+    "create_upgrade_name": {
+      "0": "Scrivi la descrizione dell'aggiornamento",
+      "err": "Aggiorna già esistente, scrivi un altro nome"
+    },
+
+    "create_upgrade_description": {
+      "0": "Scrivi la qualità totale per l'aggiornamento"
+    },
+
+    "create_upgrade_tot_quality": {
+      "0": "Nuovo aggiornamento creato, ora tutti possono usarlo!",
+      "err": "Deve essere un numero (1 > tot_quality > 4)"
+    },
+
+    "create_npc": {
+      "0": "Scrivi il nome dell'npc"
+    },
+
+    "create_npc_name": {
+      "0": "Scrivi il ruolo dell'npc"
+    },
+
+    "create_npc_role": {
+      "0": "Seleziona la fazione dell'npc"
+    },
+
+    "create_npc_faction": {
+      "404": "Descrizione non trovata",
+      "0": "Seleziona la fazione dell'npc",
+      "1": "Scrivi la descrizione dell'npc"
+    },
+
+    "create_npc_description": {
+      "0": "Nuovo npc creato, ora tutti possono usarlo!"
+    }
+  },
+
+  "Journal": {
+    "write_title": {
+      "0": "BLADES IN THE DARK - {}"
+    },
+    "fase_scrittura": {
+      "1": "GIOCO LIBERO",
+      "2": "FASE DEL COLPO",
+      "3": "FASE DI DOWNTIME"
+    },
+    "write_fortune_roll": {
+      "0": "TIRO FORTUNA",
+      "1": "MOTIVAZIONE",
+      "2": "{} tira {}",
+      "3": "L'obiettivo è: {}",
+      "4": "RISULTATO",
+      "5": "Il risultato del tiro è {}"
+    },
+    "write_score": {
+      "0": "PUNTEGGIO: {} (<i>{}</i>)",
+      "1": "TIPO DI PIANO",
+      "2": "DETTAGLI",
+      "3": "PARTECIPANTI",
+      "4": "PC",
+      "5": "Carica",
+      "6": "INCEGNAMENTO",
+      "7": "Il tiro di ingaggio determina che {}.",
+      "8": "BERSAGLIO"
+    },
+    "write_action": {
+      "0": "TIRO AZIONE",
+      "1": "SITUAZIONE",
+      "2": "L'obiettivo di <b>{}</b> è: {}<br>L'azione eseguita è {}",
+      "3": "La posizione per questa azione è {}.<br>L'azione avrà un effetto {} se ha successo.",
+      "4": "L'azione è stata assistita da:<i>{}</i>",
+      "5": "<i>{}</i> ha deciso di spingersi oltre.",
+      "6": "<i>{}</i> accetta un <b>Devil's Bargain</b>: <span class=\"user\">{}</span>",
+      "7": "RISULTATO",
+      "8": "Il risultato del tiro è {}.",
+      "9": "PARTECIPANTI",
+      "10": "<b>{}</b> ha chiesto l'aiuto di una coorte: {}",
+      "11": "<b><i>{}</i> rotolato {}</b>",
+      "12": "AZIONE DI GRUPPO"
+    },
+    "write_end_score": {
+      "0": "RISULTATO DEL COLPO: <span class=\"utente\">{}</span> "
+    },
+    "write_payoff": {
+      "0": "PAGAMENTI",
+      "1": "BOTTINO",
+      "2": "L'equipaggio ha guadagnato {} monete {}",
+      "3": "conservato nel caveau della tana.",
+      "4": "ridistribuito tra i membri.",
+      "5": "e i membri dell'equipaggio decideranno in seguito come distribuirli."
+    },
+    "write_heat": {
+      "0": "SOSPETTO",
+      "1": "La tua recente operazione è stata <b><i>{}</i></b>, causando <b><i>{}</i></b>",
+      "2": "L'obiettivo era di alto profilo o ben collegato.",
+      "3": "La situazione si è verificata su un terreno ostile.",
+      "4": "L'equipaggio è attualmente in guerra con un'altra fazione.",
+      "5": "I cadaveri non passano inosservati...",
+      "6": "Il tuo equipaggio ora ha {} livelli di calore",
+      "7": "La tua squadra ora ha {} livelli ricercati"
+    },
+    "write_entanglement": {
+      "0": "ENTANGLEMENT",
+      "1": "COMPLICAZIONI"
+    },
+    "write_secret_entanglement": {
+      "0": "ENTANGLEMENT",
+      "1": "<b>COMPLICAZIONI</b>"
+    },
+    "write_activity": {
+      "default": {
+        "0": "ATTIVITÀ",
+        "1": "<b><i>{}</i></b> ha deciso di <b><i>{}</i></b> {}",
+        "2": "Essi tirano a {} e {}"
+      },
+      "acquisire_asset": {
+        "0": "ACQUISTA BENE",
+        "1": "<b><i>{}</i></b> vuole acquisire <i>{}</i>{}",
+        "2": ", con la qualità minima impostata su <b>{}</b>",
+        "3": "Il risultato è: <i>{}</i>.",
+        "4": "La qualità dell'asset è: {}",
+        "5": "<b><i>{}</i></b> ha aumentato la qualità della risorsa a {}",
+        "6": "<b><i>{}</i></b> è riuscito ad acquisire l'asset",
+        "7": "<b><i>{}</i></b> non ha potuto acquisire la risorsa"
+      },
+      "Crafting": {
+        "0": "CRAFTING",
+        "1": "<b><i>{}</i></b> vuole creare: <i>{}</i>{}",
+        "2": "La qualità minima è: {}",
+        "3": "Il risultato è: {}",
+        "4": "La qualità dell'articolo è: {}",
+        "5": "<b><i>{}</i></b> ha aumentato la qualità dell'articolo a {}",
+        "7": "<b><i>{}</i></b> è riuscito a creare <i>{}</i>",
+        "8": "<b><i>{}</i></b> non è stato in grado di creare <i>{}</i>"
+      },
+      "long_term_project": {
+        "0": "PROGETTO A LUNGO TERMINE",
+        "1": "<b><i>{}</i></b> sta lavorando a un progetto: <br> <i>{}</i>",
+        "2": "Il progetto è stato completato",
+        "3": "<b><i>{}</i></b> ha rotolato {}({}) e ha segnato l'orologio del progetto di {}"
+      },
+      "recover": {
+        "0": "RECUPERA",
+        "1": "<b><i>{}</i></b> vuole guarire",
+        "2": "<b><i>{}</i></b> chiede cure a {}",
+        "3": "<b><i>{}</i></b> ripara i propri danni, ma questo gli costerà un po' di stress",
+        "4": "<b><i>{}</i></b> spunta {} segmenti da {} dell'orologio di guarigione"
+      },
+      "reduce_heat": {
+        "0": "RIDUZIONE CALORE",
+        "1": "<b><i>{}</i></b> cerca di ridurre il calore usando: {}",
+        "2": "Il risultato è {}",
+        "3": "<b><i>{}</i></b> ha ridotto il calore dell'equipaggio di {}"
+      },
+      "Allenamento": {
+        "0": "ALLENAMENTO",
+        "1": "<b><i>{}</i></b> si è allenato {} e ha guadagnato {} punti XP"
+      },
+      "indulge_vice": {
+        "0": "ADDOLARE IL MORSO",
+        "1": "<b><i>{}</i></b> ha deciso di assecondare il proprio vizio",
+        "2": "Il risultato è {}",
+        "3": "<b><i>{}</i></b> ha cancellato {} segmenti di stress",
+        "4": "Oh no! <b><i>{}</i></b> esagerato e {}",
+        "5": "vantarsi delle loro imprese (il tuo equipaggio prende +2 batteria): {}",
+        "6": "si è perso (vagando per Doskvol e non riesce a trovare la strada di casa... ma il loro male sarà guarito quando tornerà): {}",
+        "7": "tapped (il vice fornitore li interrompe...): {}",
+        "8": "guai attratti, ci saranno conseguenze...",
+        "CRIT": "tutti loro"
+      },
+      "help_cohort": {
+        "0": "AIUTO COORTE",
+        "1": "<b><i>{}</i></b> sta aiutando {}",
+        "2": "Il danno della coorte ora è {}",
+        "3": "La coorte non ha più danni."
+      },
+      "replace_cohort": {
+        "0": "SOSTITUIRE COORTE",
+        "1": "<b><i>{}</i></b> sta sostituendo la sua coorte: {}"
+      }
+    },
+    "write_add_claim": {
+      "0": "NUOVO RECLAMO",
+      "1": "L'equipaggio ha un nuovo {} reclamo: <b>{}</b>",
+      "2": "tana",
+      "3": "prigione"
+
+    },
+    "write_incarcerazione": {
+      "0": "CARCERE",
+      "1": "<b><i>{}</i></b> è andato in prigione!",
+      "2": "Essi tirano un {}",
+      "3": "Ti fai un nome. Guadagni <b>+3 REP</b> per il tuo equipaggio, <b>1 diritto alla prigione</b> e <b>+1 stato di fazione</b> con una fazione che hai assistito mentre hai servito il tuo tempo.",
+      "4": "Fai bene il tuo tempo. Il tuo equipaggio ottiene <b>1 diritto alla prigione</b> e <b>+1 stato di fazione</b> con una fazione che hai assistito mentre hai scontato il tuo tempo.",
+      "5": "Tieni la testa bassa e fai il tuo tempo senza incidenti.",
+      "6": "E' orribile. Subisci un livello di <b>TRAUMA</b> dall'esperienza."
+    },
+    "write_flashback": {
+      "0": "FLASHBACK",
+      "1": "<b><i>{}</i></b> ha avuto il seguente flashback: {}",
+      "2": "Il GM ha impostato <b>{}</b> come costo dello stress",
+      "3": "Questo flashback verrà risolto con {}",
+      "True": "un tiro d'azione",
+      "False": "un tiro di fortuna",
+      "4": "Il flashback si realizza semplicemente pagando il costo dello stress"
+    },
+    "write_resistance_roll": {
+      "0": "TIRO RESISTENZA",
+      "1": "{} sta cercando di affrontare la seguente situazione: {}",
+      "2": "<b>{}</b> usato {} e rotolato {}. {}",
+      "3": "Il loro stress è aumentato di {}",
+      "4": "Il loro stress è diminuito di {}",
+      "5": "Il danno sarà <i>{}</i>",
+      "6": "Il tuo stress non è cambiato"
+    },
+    "write_clock": {
+      "0": "<b><i>{}</i></b> ha creato un nuovo orologio: <br><i>{}</i>",
+      "1": "<b><i>{}</i></b> ha modificato l'orologio: <br><i>{}</i>",
+      "2": "<b><i>{}</i></b> ha segnato l'orologio '{}' di {} segmenti",
+      "3": "<b><i>{}</i></b> ha completato l'orologio '{}'"
+    },
+    "write_armor_use": {
+      "0": "USO ARMATURA",
+      "1": "<b><i>{}</i></b> ha usato la sua <i>{}</i> armatura"
+    },
+    "write_use_item": {
+      "0": "USO OGGETTO",
+      "1": "<b><i>{}</i></b> ha utilizzato <i>{}</i> per questo motivo: <span class=\"user\">{}</span >"
+    },
+    "write_end_downtime": {
+      "0": "FINE DOWNTIME",
+      "1": "I farabutti dovrebbero tornare al lavoro adesso..."
+    },
+    "write_change_vice_purveyor": {
+      "0": "CAMBIO DI FORNITORE DEL VIZIO",
+      "1": "<b><i>{}</i></b> ha trovato un nuovo fornitore per il suo vizio: <b><i>{}</i></b> si prenderà cura di questo farabutto."
+    },
+    "write_pc_migration": {
+      "0": "MIGRAZIONE",
+      "1": "<b><i>{}</i></b> ha cambiato natura: ora è un <b><i>{}</i></b>!"
+    },
+    "write_change_pc_class": {
+      "0": "CAMBIO DI CLASSE",
+      "1": "<b><i>{}</i></b> ha cambiato la sua classe in: <b><i>{}</i></b>!"
+    },
+    "write_retire": {
+      "die": {
+        "0": "MORTE",
+        "1": "<b><i>{}</i></b> è passato a una vita migliore <i>morendo</i>"
+      },
+      "retire": {
+        "0": "RITIRARE",
+        "1": "<b><i>{}</i></b> è passato a una vita migliore <i>ritirandosi</i>"
+      }
+    },
+    "results": {
+      "action": {
+        "controlled": {
+          "CRIT": "Lo fai con maggiore effetto.",
+          "6": "Lo fai.",
+          "4,5": "Esiti. Ritirati e prova un approccio diverso, oppure fallo con una piccola conseguenza: si verifica una piccola complicazione, hai un effetto ridotto, subisci un danno minore, finisci in una posizione rischiosa. ",
+          "1,2,3": "Hai vacillato. Vai avanti cogliendo un'opportunità rischiosa, oppure ritirati e prova un approccio diverso."
+        },
+        "risky": {
+          "CRIT": "Lo fai con maggiore effetto.",
+          "6": "Fallo tu.",
+          "4,5": "Lo fai, ma c'è una conseguenza: subisci un danno, si verifica una complicazione, hai un effetto ridotto, finisci in una posizione disperata.",
+          "1,2,3": "Le cose vanno male. Soffri un danno, si verifica una complicazione, finisci in una posizione disperata, perdi questa opportunità."
+        },
+        "desperate": {
+          "CRIT": "Lo fai con maggiore effetto.",
+          "6": "Fallo tu.",
+          "4,5": "Lo fai, ma c'è una conseguenza: subisci un grave danno, si verifica una grave complicazione, hai un effetto ridotto.",
+          "1,2,3": "È il peggior risultato. Subisci gravi danni, si verifica una grave complicazione, perdi questa opportunità di azione."
+        },
+        "others": {
+          "CRIT": "Lo fai con maggiore effetto.",
+          "6": "Fallo tu.",
+          "4,5": "Lo fai, ma c'è una conseguenza.",
+          "1,2,3": "Le cose vanno male."
+        }
+      },
+
+      "engagement": {
+        "CRIT": "hai già superato il primo ostacolo e sei in una posizione <i>controllata</i>",
+        "6": "sei in una posizione <i>controllata</i> quando inizia l'azione",
+        "4,5": "sei in una posizione <i>rischiosa</i> quando inizia l'azione",
+        "1,2,3": "sei in una posizione <i>disperata</i> quando inizia l'azione"
+      }
+    },
+    "write_end_game": {
+      "0": "FINE",
+      "1": "Questo è tutto, mascalzoni!!!"
+    }
+  }
+}

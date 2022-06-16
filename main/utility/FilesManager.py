@@ -21,11 +21,22 @@ def path_finder(file_name: str) -> str:
 
 
 def get_resources_folder() -> str:
+    """
+    Localize the resources' folder of the project.
+
+    :return: the path of the resources' directory.
+    """
     resources_path = Path(__file__).parent.parent.parent.resolve()
     return os.path.join(resources_path, "resources")
 
 
 def get_font(font_name: str) -> str:
+    """
+    Localize the file of the passed font's name in the resources' folder.
+
+    :param font_name: is the name of the font.
+    :return: the path of the file.
+    """
     resource = get_resources_folder()
     font_folder = os.path.join(resource, "fonts")
     return os.path.join(font_folder, font_name)

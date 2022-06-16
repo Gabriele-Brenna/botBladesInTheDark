@@ -1053,6 +1053,19 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["language".casefold(), "changeLang".casefold(), "changeLanguage".casefold(),
+                                          "lang".casefold()], change_lang)],
+            states={
+                0: [CallbackQueryHandler(change_lang_choice)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_lang_end)],
+            name="conv_changeLang",
+            persistent=True
+        )
+    )
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

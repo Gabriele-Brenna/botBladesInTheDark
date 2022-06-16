@@ -315,7 +315,11 @@ def paste_pc_class(pc_class: str, sheet: Image):
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))
     draw = ImageDraw.Draw(box)
 
-    bold = ImageFont.truetype(get_font("verdanab.ttf"), 50)
+    if len(pc_class) > 7:
+        dimension = 40
+    else:
+        dimension = 50
+    bold = ImageFont.truetype(get_font("verdanab.ttf"), dimension)
 
     draw.text((box_dim[0] / 2, box_dim[1] / 2), text=pc_class.upper(), font=bold, fill="black", anchor="mm")
 

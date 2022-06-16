@@ -7,6 +7,19 @@ class Cohort:
     """
     def __init__(self, type: List[str] = None, armor: int = 0, elite: bool = False, harm: int = 0, expert: bool = False,
                  flaws: List[str] = None, edges: List[str] = None, scale: int = 0, quality: int = 0) -> None:
+        """
+        Constructor of Cohort. It takes all the parameters necessary to model this object.
+
+        :param type: a list of strings that represents the cohort's types.
+        :param armor: an int that represents the level of armor of the cohort.
+        :param elite: a boolean value: True if the cohort is elite, False otherwise.
+        :param harm: an int that represents the level of harm of the cohort.
+        :param expert: a boolean value: True if the cohort is an expert, False if it's a gang.
+        :param flaws: a list of strings that represents the flaws of the cohort.
+        :param edges: a list of strings that represents the edges of the cohort.
+        :param scale: represents the quantity of the members of the cohort.
+        :param quality: represents the quality of the cohort.
+        """
         if type is None:
             type = []
         if isinstance(type, str):

@@ -14,6 +14,30 @@ class Crew(Organization, ISavable, IDrawable):
                  heat: int = 0, wanted_level: int = 0, crew_exp: Playbook = Playbook(10, 0, 0),
                  cohorts: List[Cohort] = None, coins: int = 0, vault_capacity: int = 4, xp_triggers: List[str] = None,
                  prison_claims: List[Claim] = None) -> None:
+        """
+        Constructor of the Crew.
+
+        :param name: string that represents the name of this Crew.
+        :param type: a string value that represents the class of the Crew.
+                It is used to extract information from the DB.
+        :param reputation: string that represents the reputation of this Crew,
+        :param lair: a Lair object that models the headquarters of the Crew
+        :param upgrades: a list that contains all the Upgrades acquired by the Crew.
+        :param contact: the NPC contact of the Crew.
+        :param description: A string that contains a brief description of this crew.
+        :param abilities: List of SpecialAbility objects.
+        :param rep: an int value that represents the Rep level of the Crew.
+        :param tier: an int value that represents the Tier level of the Crew.
+        :param hold: a boolean value that represents the hold of the Crew: True if the hold is Strong, False if Weak.
+        :param heat: an int value that represents the Heat level of the Crew
+        :param wanted_level: an int value that represents the Wanted Level of the Crew
+        :param crew_exp: a Playbook object that keeps track of the crew advancement.
+        :param cohorts: a list that contains the Crew's cohorts.
+        :param coins: an int value that represents the coins the Crew owns.
+        :param vault_capacity: an int value that represents the capacity of the Crew's vault.
+        :param xp_triggers: a list of strings that contains all the Crew's Xp triggers.
+        :param prison_claims: a list of Claim oblects that represents the Prison Claims of the Crew
+        """
         super().__init__(name, tier, hold)
         self.type = type
         if abilities is None:
