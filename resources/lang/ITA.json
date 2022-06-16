@@ -18,7 +18,8 @@
         "2": "<i>-CREAZIONE-</i>\n/createGame - crea un nuovo gioco in questa chat.\n/createPC - avvia la creazione di un PC. \uD83D\uDD0E\n/createCrew - inizia la creazione dell'banda. \uD83D\uDD0E\n/createClock - avvia la creazione di un nuovo orologio. \uD83D\uDD0E\n/addCohort - gestisce l'aggiunta di una nuova cricca dell'banda. \uD83D\uDD0E\n/addClaim - gestisce l'aggiunta di una nuova rivendicazione dell'banda, sia standard che carcere. \uD83D\uDD0E",
         "3": "<i>-SCORE-</i>\n/score - avvia la preparazione di una nuovo colpo. Questo comprende la pianificazione e la preparazione dei PC. \uD83D\uDD0E\n/useItem - consente all'utente per selezionare un oggetto trasportato. \uD83D\uDD0E\n/flashback: avvia la conversazione del flashback per consentire a un PC di richiamare un evento del passato. \uD83D\uDD0E\n/endScore: chiude il colpo piu recente. \uD83D\uDD0E",
         "4": "<i>-DOWNTIME-</i>\n/payoff - gestisce la ridistribuzione dei guadagni della fase del colpo. \uD83D\uDD0E \n/heat - gestisce le conseguenze delle tue attività passate, valuta e aggiunge il la quantità di calore corrispondente al tuo equipaggio. \uD83D\uDD0E\n/entanglement - lancia i dadi e ti permette di decidere un entanglement. Suggerisce anche l'entanglement corrispondente alle regole del gioco. \uD83D\uDD0E\n/secretEntanglement - si comporta come un normale entanglement ma la sua descrizione non viene mostrata agli altri giocatori del gioco.\n/downtimeActivity: avvia una nuova attività di downtime per il tuo PC attivo in questo gioco. \uD83D\uDD0E\n/endDowntime: termina le attività di downtime per la fase corrente. \uD83D\uDD0E",
-        "5": "<i>-DADI-</i>\n/roll [N] - lancia N dadi e restituisce il risultato. \uD83D\uDD0E\n/actionRoll - avvia la conversazione del tiro azione con tutti i richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/fortuneRoll - avvia la conversazione del tiro della fortuna con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/resistanceRoll - avvia la conversazione di il tiro di resistenza con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/groupAction - avvia la conversazione dell'azione di gruppo con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E"
+        "5": "<i>-DADI-</i>\n/roll [N] - lancia N dadi e restituisce il risultato. \uD83D\uDD0E\n/actionRoll - avvia la conversazione del tiro azione con tutti i richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/fortuneRoll - avvia la conversazione del tiro della fortuna con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/resistanceRoll - avvia la conversazione di il tiro di resistenza con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/groupAction - avvia la conversazione dell'azione di gruppo con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E",
+        "6": "<i>-PERSONALIZZAZIONE-</i>\nI comandi in questa sezione guidano la creazione di elementi di gioco che saranno disponibili per tutti gli utenti\n/createItem - permette la creazione di un nuovo oggetto.\n /createSpecialAbility - consente la creazione di una nuova Abilità Speciale.\n/createXpTrigger - consente la creazione di un nuovo XpTrigger.\n/createHuntingGround - consente la creazione di un nuovo Terreno di caccia.\n/createUpgrade - consente la creazione di un nuovo Upgrade.\n/createNPC - consente la creazione di un nuovo NPC associandolo a una fazione.\n/createClaim - consente la creazione di una nuova rivendicazione.\n/createCharacterSheet - consente la creazione di un nuovo archetipo di personaggio umano. \n/createCrewSheet - consente la creazione di un nuovo archetipo di banda."
       },
       "commands": {
         "error": "The command <u>{}</u> does not exist.",
@@ -1357,6 +1358,24 @@
 
     "create_npc_description": {
       "0": "Nuovo npc creato, ora tutti possono usarlo!"
+    },
+
+    "create_claim": {
+      "0": "Scrivi il nome della rivendicazione"
+    },
+
+    "create_claim_name": {
+      "0": "Scrivi la descrizione della rivendicazione",
+      "err": "Rivendicazione già esistente, scrivi un altro nome"
+    },
+
+    "create_claim_description": {
+      "0": "Selezione il tipo della rivendicazione",
+      "keyboard": ["Covo", "Prigione"]
+    },
+
+    "create_claim_prison": {
+      "0": "New claim created, now everyone can use it!"
     }
   },
 

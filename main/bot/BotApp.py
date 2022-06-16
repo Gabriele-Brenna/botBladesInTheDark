@@ -1089,6 +1089,21 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
+            entry_points=[CommandHandler(["createClaim".casefold(), "inventClaim".casefold()],
+                                         create_claim)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_claim_name)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_claim_description)],
+                2: [CallbackQueryHandler(create_claim_prison)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_sa_end)],
+            name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
             entry_points=[CommandHandler(["languageJournal".casefold(), "changeLangJournal".casefold(),
                                           "changeLanguageJournal".casefold(),
                                           "langJournal".casefold(), "languageLog".casefold(),
