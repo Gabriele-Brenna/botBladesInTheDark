@@ -99,10 +99,10 @@ class Hull(PC, ISavable):
         """
         Allows the selection of the frame for your Hull.
 
-        :param frame_type: is the selected type of framee
+        :param frame_type: is the selected type of frame
         :return: True if a correct frame type was given, False otherwise
         """
-        if frame_type.lower() == "s" or "m" or "h":
+        if frame_type.lower() in ["s", "m", "h"]:
             self.frame = frame_type
             return True
         return False

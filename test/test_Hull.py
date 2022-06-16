@@ -26,3 +26,7 @@ class TestHull(TestCase):
         self.assertEqual(self.jeeg, temp_obj)
         print(temp_obj)
         print(temp_str)
+
+    def test_select_frame(self):
+        self.assertTrue(self.jeeg.select_frame("H"))
+        self.assertFalse(self.jeeg.select_frame("l"))

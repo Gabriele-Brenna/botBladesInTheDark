@@ -1,14 +1,22 @@
 from unittest import TestCase
 
+from character.Ghost import Ghost
+from character.Human import Human
+from character.NPC import NPC
 from character.PC import PC
 from component.Clock import Clock
 from game.Game import Game
+from game.Player import Player
 from game.Score import Score
+from organization.Faction import Faction
 
 
 class TestGame(TestCase):
     def setUp(self) -> None:
         self.game = Game()
+        self.game.users.append(Player("A", 1, False))
+        self.game.users.append(Player("B", 2, True))
+        self.game.users.append(Player("C", 3, False))
 
     def test_create_clock(self):
         self.assertEqual(Clock("Clock101", 4, 0), self.game.create_clock())
@@ -62,3 +70,39 @@ class TestGame(TestCase):
         self.assertEqual(Score("Score2", [None]), self.game.get_main_score())
         self.game.scores[0].participants.append(PC())
         self.assertEqual(Score("Score1", [PC()]), self.game.get_main_score())
+
+    def test_get_master(self):
+        self.assertEqual(Player("B", 2, True), self.game.get_master())
+
+        self.game.users.clear()
+        self.assertEqual(None, self.game.get_master())
+
+    def test_get_pcs(self):
+        self.assertEqual([], self.game.get_pcs_list())
+        self.assertEqual([], self.game.get_owners_list())
+
+        self.game.users[0].characters.append(Human("Pippo"))
+        self.game.users[1].characters.append(Human("Paperino"))
+
+        self.assertEqual([Human("Pippo"), Human("Paperino")], self.game.get_pcs_list())
+
+        self.game.users[0].characters.append(Ghost("Casper"))
+        self.assertEqual([Human("Pippo"), Human("Paperino")], self.game.get_owners_list())
+
+    def test_get_player_by_id(self):
+        self.assertEqual(Player("C", 3, False), self.game.get_player_by_id(3))
+
+        self.assertEqual(None, self.game.get_player_by_id(5))
+
+    def test_get_faction_by_name(self):
+        self.assertEqual(None, self.game.get_faction_by_name("Red Sashes"))
+
+        self.game.factions.append(Faction("Red Sashes"))
+        self.assertEqual(Faction("Red Sashes"), self.game.get_faction_by_name("Red Sashes"))
+
+    def test_get_npc_by_name_and_role(self):
+        self.assertEqual(None, self.game.get_npc_by_name_and_role("Irimina", "A vicious noble"))
+
+        self.game.NPCs.append(NPC("Irimina", "A vicious noble"))
+        self.assertEqual(NPC("Irimina", "A vicious noble"),
+                         self.game.get_npc_by_name_and_role("Irimina", "A vicious noble"))

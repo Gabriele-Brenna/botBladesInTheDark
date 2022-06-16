@@ -395,7 +395,12 @@ class TestDBReader(TestCase):
         self.assertTrue(len(query_claims()) >= 52)
         print(query_claims())
 
-    # TODO: test query_factions & query_npcs
+    def test_query_factions(self):
+        self.assertEqual([Faction("Gondoliers", 3, True)], query_factions("Gondoliers"))
+
+        self.assertEqual([], query_factions("GangDelBosco"))
+
+        self.assertEqual(60, len(query_factions()))
 
     def test_query_traumas(self):
         self.assertEqual([("Chaotic", "")], query_traumas("chaotic"))
