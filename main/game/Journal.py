@@ -20,7 +20,7 @@ class Journal:
             notes = []
         self.notes = notes
         self.indentation = indentation
-        with open(path_finder("{}.json".format(lang.upper())), 'r') as f:
+        with open(path_finder("{}.json".format(lang.upper())), 'r', encoding="utf8") as f:
             self.lang = json.load(f)["Journal"]
         self.log = BeautifulSoup("", 'html.parser')
         self.score_tag = None
@@ -32,7 +32,7 @@ class Journal:
 
         :param lang: the name of the file containing the language
         """
-        with open(path_finder(lang), 'r') as f:
+        with open(path_finder(lang), 'r', encoding="utf8") as f:
             self.lang = json.load(f)["Journal"]
 
     def get_note(self, number: int):

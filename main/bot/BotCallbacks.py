@@ -612,7 +612,7 @@ def join_complete_pc_ability(update: Update, context: CallbackContext) -> int:
     if ability:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["join", "pc", "abilities"], value=ability,
-                                  btn_label="ability", lang_source="join_complete_pc", split_row=2)
+                                  btn_label="special ability", lang_source="join_complete_pc", split_row=2)
 
         return 2
     else:
@@ -715,7 +715,7 @@ def join_complete_pc_action_selection(update: Update, context: CallbackContext) 
 
         if calc_total_dots(action_dots) == 7:
             store_value_and_update_kb(update, context, tags=["join", "pc", "action_dots"], value=action_dots,
-                                      btn_label="Action Dots", lang_source="join_complete_pc", split_row=2)
+                                      btn_label="action dots", lang_source="join_complete_pc", split_row=2)
             return 2
 
         context.user_data["join"]["message"].edit_text(text=placeholders["0"].format(
@@ -8910,7 +8910,7 @@ def create_sa_description(update: Update, context: CallbackContext) -> int:
 
 def create_sa_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the creation of the creation of a special ability conversation and
+    Ends the creation of a special ability conversation and
     deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
@@ -8930,7 +8930,7 @@ def create_sa_end(update: Update, context: CallbackContext) -> int:
 
 def create_xp_trigger(update: Update, context: CallbackContext) -> int:
     """
-    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+    Starts the conversation that handles the creation of a new xp trigger and asks the user the name of it.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -8997,7 +8997,7 @@ def create_xp_trigger_crew_char(update: Update, context: CallbackContext) -> int
 
 def create_xp_trigger_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the creation of the creation of a xp trigger conversation and
+    Ends the creation of a xp trigger conversation and
     deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
@@ -9017,7 +9017,7 @@ def create_xp_trigger_end(update: Update, context: CallbackContext) -> int:
 
 def create_item(update: Update, context: CallbackContext) -> int:
     """
-    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+    Starts the conversation that handles the creation of a new item and ask the user the name of it.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9036,8 +9036,7 @@ def create_item(update: Update, context: CallbackContext) -> int:
 
 def create_item_name(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the xp trigger description in the user_data,
-    then asks if is a trigger for a crew or not.
+    Stores the information about the item name in the user_data and asks the item's description.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9064,7 +9063,7 @@ def create_item_name(update: Update, context: CallbackContext) -> int:
 
 def create_item_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the description of the item in the user_data and asks the item's weight.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9084,7 +9083,7 @@ def create_item_description(update: Update, context: CallbackContext) -> int:
 
 def create_item_weight(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the item's weight in the user_data, then asks the item's usages.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9114,7 +9113,7 @@ def create_item_weight(update: Update, context: CallbackContext) -> int:
 
 def create_item_usages(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the item's usages in the user_data, then adds the new item to the database.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9184,8 +9183,7 @@ def create_char_sheet(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_name(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the xp trigger description in the user_data,
-    then asks if is a trigger for a crew or not.
+    Stores the information about the sheet's name in the user_data, then asks the descriiption.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9214,7 +9212,7 @@ def create_char_sheet_name(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the description in the user_data, then asks the initial dots.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9237,7 +9235,8 @@ def create_char_sheet_description(update: Update, context: CallbackContext) -> i
 
 def create_char_sheet_dots(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the actions in the user_data, .
+    Stores the information about the action dots in the user_data. If the selected action does not exists or if the user
+    selected less than 3 dots this state is returned. Otherwise, it sends the friend request.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9300,8 +9299,8 @@ def create_char_sheet_dots(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the 6 strange friends in the user_data. Sends the enemy request.
+    The conversation advances to the next state when the user selects a total of 6 NPCs.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9381,8 +9380,8 @@ def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_items(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the 6 items in the user_data. Sends the special ability request.
+    The conversation advances to the next state when the user selects a total of 6 items.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9464,8 +9463,8 @@ def create_char_sheet_items(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_sa(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the 8 special abilities in the user_data. Sends the xp trigger request.
+    The conversation advances to the next state when the user selects a total of 8 NPCs.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9542,8 +9541,8 @@ def create_char_sheet_sa(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_xp(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the xp trigger in the user_data. Finally passes all the information to the controller
+    to insert the new created sheet in the DB.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9606,7 +9605,7 @@ def create_char_sheet_xp(update: Update, context: CallbackContext) -> int:
 
 def create_char_sheet_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the creation of an item conversation and
+    Ends the creation of a new character sheet conversation and
     deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
@@ -9626,7 +9625,7 @@ def create_char_sheet_end(update: Update, context: CallbackContext) -> int:
 
 def create_hg(update: Update, context: CallbackContext) -> int:
     """
-    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+    Starts the conversation that handles the creation of a new hunting ground and ask the user the name of it.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9645,7 +9644,7 @@ def create_hg(update: Update, context: CallbackContext) -> int:
 
 def create_hg_name(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the special ability name in the user_data, then asks for the description.
+    Stores the information about the hunting ground name in the user_data, then asks for the description.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9671,7 +9670,7 @@ def create_hg_name(update: Update, context: CallbackContext) -> int:
 
 def create_hg_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the description in the user_data, then adds the new hunting ground to the database.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9692,7 +9691,7 @@ def create_hg_description(update: Update, context: CallbackContext) -> int:
 
 def create_hg_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the creation of the creation of a special ability conversation and
+    Ends the creation of a hunting ground conversation and
     deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
@@ -9732,7 +9731,7 @@ def create_upgrade(update: Update, context: CallbackContext) -> int:
 def create_upgrade_name(update: Update, context: CallbackContext) -> int:
     """
     Stores the information about the upgrade name in the user_data,
-    then asks if is a trigger for a crew or not.
+    then sends the description request.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9760,7 +9759,7 @@ def create_upgrade_name(update: Update, context: CallbackContext) -> int:
 
 def create_upgrade_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data.
+    Stores the information about the description of the upgrade in the user_data.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9780,7 +9779,7 @@ def create_upgrade_description(update: Update, context: CallbackContext) -> int:
 
 def create_upgrade_tot_quality(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the tot quality in the user_data, then adds the new upgrade to the database.
+    Stores the information about the upgrade's total quality in the user_data, then adds the new upgrade to the database.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9832,7 +9831,7 @@ def create_upgrade_end(update: Update, context: CallbackContext) -> int:
 
 def create_npc(update: Update, context: CallbackContext) -> int:
     """
-    Starts the conversation that handles the creation of a new special ability and ask the user the name of it.
+    Starts the conversation that handles the creation of a new NPC and ask the user the name of it.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9851,7 +9850,7 @@ def create_npc(update: Update, context: CallbackContext) -> int:
 
 def create_npc_name(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the special ability name in the user_data, then asks for the description.
+    Stores the information about the NPC's name in the user_data, then asks for its role.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9873,7 +9872,8 @@ def create_npc_name(update: Update, context: CallbackContext) -> int:
 
 def create_npc_role(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the special ability name in the user_data, then asks for the description.
+    Stores the information about the NPC's role in the user_data, then sends the InlineKeyboard to select
+    the NPC's faction.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9909,7 +9909,7 @@ def create_npc_role(update: Update, context: CallbackContext) -> int:
 
 def create_npc_faction(update: Update, context: CallbackContext) -> int:
     """
-    Handles the choice of the faction used to perform the roll.
+    Stores the information about the NPC's faction in the user_data, then asks the NPC's description.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9968,7 +9968,7 @@ def create_npc_faction(update: Update, context: CallbackContext) -> int:
 
 def create_npc_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the description in the user_data, then adds the new NPC to the database.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -9989,7 +9989,7 @@ def create_npc_description(update: Update, context: CallbackContext) -> int:
 
 def create_npc_end(update: Update, context: CallbackContext) -> int:
     """
-    Ends the creation of the creation of a special ability conversation and
+    Ends the creation of a NPC conversation and
     deletes all the saved information from the user_data.
 
     :param update: instance of Update sent by the user.
@@ -10085,8 +10085,8 @@ def create_crew_sheet(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_type(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the xp trigger description in the user_data,
-    then asks if is a trigger for a crew or not.
+    Stores the information about the crew's type in the user_data,
+    then asks the type's description.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10115,7 +10115,8 @@ def create_crew_sheet_type(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_description(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the description in the user_data, then adds the new special ability to the database.
+    Stores the information about the description in the user_data, then sends the InlineKeyboard
+    to select the contact NPCs.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10154,8 +10155,8 @@ def create_crew_sheet_description(update: Update, context: CallbackContext) -> i
 
 def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the crew contacts in the user_data. Sends the InlineKeyboard for the special abilities
+    requests.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10235,8 +10236,8 @@ def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_sa(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the crew's special abilities in the user_data.
+    When the user selects 7 abilities, the xp trigger request is sent.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10313,8 +10314,8 @@ def create_crew_sheet_sa(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_xp(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information the crew's xp trigger in the user_data.
+    Sends the crew's hunting grounds request.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10390,8 +10391,8 @@ def create_crew_sheet_xp(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_hg(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the crew's hunting grounds in the user_data.
+    Sends the InlineKeyboard for the crew's Upgrades request.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10471,8 +10472,8 @@ def create_crew_sheet_hg(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_upgrades(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the crew's Upgrades in the user_data.
+    When the user selects 5 upgrades sends starting upgrades request.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10553,8 +10554,8 @@ def create_crew_sheet_upgrades(update: Update, context: CallbackContext) -> int:
 
 def create_crew_sheet_starting_upgrades(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about an NPC or Faction target in the chat_data.
-    Sends the score's plan type request.
+    Stores the information about the crew's starting Upgrades in the user_data.
+    When the user selects 2 upgrades calls create_crew_sheet_end().
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10645,7 +10646,17 @@ def create_crew_sheet_end(update: Update, context: CallbackContext) -> int:
 
 
 def change_lang_journal(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the change of the language of the game's journal. It sends the InlineKeyboard with the supported languages.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
     placeholders = get_lang(context, change_lang_journal.__name__)
+    if is_user_not_in_game(update, placeholders["err"]):
+        return change_lang_journal_end(update, context)
+
     languages_callbacks = os.listdir(path_finder("lang"))
     languages = [lang.split(".")[0] for lang in languages_callbacks]
     message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
@@ -10656,6 +10667,13 @@ def change_lang_journal(update: Update, context: CallbackContext) -> int:
 
 
 def change_lang_journal_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Reads the user's choice and forwards it to the controller to change the journal's language.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: call to change_lang_journal_end().
+    """
     query = update.callback_query
     query.answer()
     choice = query.data

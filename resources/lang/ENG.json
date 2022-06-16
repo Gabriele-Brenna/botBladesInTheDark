@@ -83,7 +83,10 @@
       "lair": "lair",
       "upgrades": "upgrades",
       "special ability": "special ability",
-      "contact": "contact"
+      "contact": "contact",
+      "action dots": "action dots",
+      "friend": "friend",
+      "enemy": "enemy"
     },
 
     "create_pc_state_switcher": {
@@ -452,7 +455,7 @@
     "segments_clock": {
       "0": "Choose which clock you want to change",
       "err": "You cannot edit a clock without being in a game... /join to take part in a game",
-      "err2": "You dont' have any clock... /createClock to make one"
+      "err2": "You don't have any clock... /createClock to make one"
     },
 
     "segments_clock_choice": {
@@ -1409,7 +1412,8 @@
     },
 
     "change_lang_journal": {
-      "0": "Select the language of the journal"
+      "0": "Select the language of the journal",
+      "err": "You can't select the Journal's language without being in a game...\n/join to take part in a game."
     },
 
     "promote_cohort": {
