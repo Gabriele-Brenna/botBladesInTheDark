@@ -16,7 +16,6 @@ from game.Player import Player
 from game.Score import Score
 from organization.Cohort import Cohort
 from organization.Crew import Crew
-from organization.Upgrade import Upgrade
 from utility.FilesLoader import load_games
 from utility.ISavable import save_to_json
 from utility.htmlFactory import MapFactory

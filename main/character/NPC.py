@@ -1,5 +1,3 @@
-import copy
-
 from character.Character import Character
 from organization.Organization import Organization
 from utility.ISavable import ISavable
@@ -10,7 +8,7 @@ class NPC(Character, ISavable):
     Non-Playable-PC of the game.
     """
 
-    def __init__(self, name: str = "", role: str = "", faction: Organization = None, description: str = "") -> None:
+    def __init__(self, name: str = "", role: str = "", faction: Organization = None, description: str = None) -> None:
         super().__init__(name, description)
         self.role = role
         self.faction = faction

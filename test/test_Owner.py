@@ -28,3 +28,7 @@ class TestOwner(TestCase):
         self.assertEqual(30, self.owner.stash)
         self.assertFalse(self.owner.stash_coins(32))
         self.assertEqual(30, self.owner.stash)
+
+    def test_can_store_coins(self):
+        self.assertTrue(self.owner.can_store_coins(5))
+        self.assertFalse(self.owner.can_store_coins(200))

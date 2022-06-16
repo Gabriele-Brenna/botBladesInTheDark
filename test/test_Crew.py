@@ -2,6 +2,7 @@ import json
 from unittest import TestCase
 
 from organization.Claim import Claim
+from organization.Cohort import Cohort
 from organization.Crew import Crew
 from organization.Lair import Lair
 from character.NPC import NPC
@@ -38,7 +39,7 @@ class TestCrew(TestCase):
             wanted_level=1,
             contact=NPC("Rolan", "a drug-dealer"),
             description="a guild of smugglers",
-            upgrades=[Upgrade("Vehicle", 1, 2), Upgrade("Barge", 1, 1)],
+            upgrades=[Upgrade("Vehicle", 1, 2), Upgrade("Barge", 1, 1), Upgrade("Vault", 1, 2)],
             vault_capacity=8,
             coins=3
         )
@@ -130,6 +131,7 @@ class TestCrew(TestCase):
 
     def test_upgrade_vault(self):
         self.assertEqual(16, self.smugglers.upgrade_vault())
+        self.assertEqual(8, self.smugglers.upgrade_vault(False))
 
     def test_add_upgrade(self):
         self.assertEqual(Upgrade("Vehicle", 2, 2), self.smugglers.add_upgrade("veHicle"))
@@ -138,10 +140,16 @@ class TestCrew(TestCase):
         self.assertEqual(Upgrade("Gear", 1, 1), self.shadows.add_upgrade("Gear"))
         self.assertTrue((self.shadows.upgrades.__contains__(Upgrade("Gear", 1, 1))))
 
+        self.assertEqual(Upgrade("Vault", 1, 2), self.shadows.add_upgrade("Vault"))
+        self.assertEqual(self.shadows.vault_capacity, 8)
+
     def test_remove_upgrade(self):
         self.assertIsNone(self.shadows.remove_upgrade("Workshop"))
         self.assertEqual(Upgrade("Tools", 0, 1), self.shadows.remove_upgrade("Tools"))
         self.assertEqual(Upgrade("Boat", 1, 2), self.shadows.remove_upgrade("boat"))
+
+        self.assertEqual(Upgrade("Vault", 0, 2), self.smugglers.remove_upgrade("Vault"))
+        self.assertEqual(self.smugglers.vault_capacity, 4)
 
     def test_calc_rep(self):
         score1 = Score(target_tier=3)
@@ -154,11 +162,22 @@ class TestCrew(TestCase):
         self.assertEqual(1, self.shadows.calc_rep(score2.target_tier))
 
     def test_change_crew_type(self):
-        self.shadows.change_crew_type("Bravos")
+        self.assertTrue(self.shadows.change_crew_type("Bravos"))
         self.assertEqual("Bravos", self.shadows.type)
+        self.assertFalse(self.shadows.change_crew_type("Witchers"))
 
     def test_save_and_load_json(self):
         temp_str = json.dumps(self.smugglers.save_to_dict(), indent=5)
         temp_obj = Crew.from_json(json.loads(temp_str))
         self.assertEqual(temp_obj, self.smugglers)
 
+    def test_add_cohort(self):
+        self.shadows.add_cohort(Cohort(["Thugs"], expert=False))
+        self.shadows.add_cohort(Cohort(["Doctor"], expert=True))
+
+        self.assertEqual(
+            Cohort(["Thugs"], expert=False, scale=self.shadows.tier, quality=self.shadows.tier),
+            self.shadows.cohorts[0])
+        self.assertEqual(
+            Cohort(["Doctor"], expert=True, scale=0, quality=self.shadows.tier+1), self.shadows.cohorts[1]
+        )

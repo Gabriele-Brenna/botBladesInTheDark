@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Union, Optional
+from typing import List, Tuple, Dict, Union
 
 from character.Action import Action
 from character.Attribute import Attribute

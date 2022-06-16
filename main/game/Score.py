@@ -1,7 +1,5 @@
-import copy
 from typing import List, Union
 
-from character.PC import PC
 from organization.Faction import Faction
 from character.NPC import NPC
 from utility.ISavable import ISavable

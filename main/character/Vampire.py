@@ -1,5 +1,3 @@
-import copy
-
 from character.PC import *
 from component.Clock import Clock
 from controller.DBreader import *

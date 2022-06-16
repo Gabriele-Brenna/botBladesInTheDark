@@ -35,6 +35,12 @@ class TestScore(TestCase):
         self.robbery.calc_target_tier()
         self.assertEqual(5, self.robbery.target_tier)
 
+    def test_calc_target_tier_no_NPC_nor_faction(self):
+        self.robbery.target = "Kingsman"
+
+        self.robbery.calc_target_tier()
+        self.assertEqual(1, self.robbery.target_tier)
+
     def test_save_and_load_json(self):
         self.score_npc = Score("Scoring", target=self.NPC_target)
         temp_str = json.dumps(self.score_npc.save_to_dict(), indent=5)

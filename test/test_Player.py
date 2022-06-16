@@ -28,6 +28,7 @@ class TestPlayer(TestCase):
 
         self.assertEqual("Cutter", self.player.get_character_by_name("Marg").pc_class)
 
+
     def test_migrate_character_type(self):
         self.player.migrate_character_type("marg", "Ghost")
         self.assertIsInstance(self.player.characters[0], Ghost)
@@ -69,3 +70,5 @@ class TestPlayer(TestCase):
                           "wear during the session.",
                           "You displayed your dominance or slayed without mercy."],
                          self.player.characters[1].xp_triggers)
+
+        self.assertFalse(self.player.migrate_character_type(self.player.name, "Hunter"))

@@ -1,4 +1,3 @@
-import copy
 from typing import List
 
 from character.Attribute import Attribute
@@ -11,7 +10,7 @@ from character.Owner import Owner
 from character.Playbook import Playbook
 from component.SpecialAbility import SpecialAbility
 from character.Vice import Vice
-from utility.FilesManager import get_resources_folder, path_finder
+from utility.FilesManager import path_finder
 from utility.IDrawable import image_to_bytes
 from utility.ISavable import ISavable, pop_dict_items
 from PIL import Image
