@@ -29,6 +29,10 @@
       }
     },
 
+    "change_lang": {
+      "0": "Select the language"
+    },
+
     "start_login": {
       "0": "You are approaching Doskvol, to register: <a href=\"{}\">[\uD83D\uDD10  CLICK HERE  \uD83D\uDD10]</a> "
     },
@@ -64,6 +68,25 @@
 
     "create_pc_name": {
       "0": "⚠ You already have a PC named <u>{}</u>, if you don't change name, it will be overwritten. ⚠"
+    },
+
+    "update_inline_keyboard": {
+      "name": "name",
+      "alias": "alias",
+      "look": "look",
+      "heritage": "heritage",
+      "background": "background",
+      "notes": "notes",
+      "class": "class",
+      "vice": "vice",
+      "reputation": "reputation",
+      "lair": "lair",
+      "upgrades": "upgrades",
+      "special ability": "special ability",
+      "contact": "contact",
+      "action dots": "action dots",
+      "friend": "friend",
+      "enemy": "enemy"
     },
 
     "create_pc_state_switcher": {
@@ -426,7 +449,21 @@
     "tick_clock_progress": {
       "0": "<u>{}</u> has made an advancement for the clock: '<i>{}</i>' \nprogress: {}/{}",
       "1": "<u>{}</u> completed the clock: '<i>{}</i>'",
-      "err": ""
+      "err": "Should be a number, write again"
+    },
+
+    "segments_clock": {
+      "0": "Choose which clock you want to change",
+      "err": "You cannot edit a clock without being in a game... /join to take part in a game",
+      "err2": "You don't have any clock... /createClock to make one"
+    },
+
+    "segments_clock_choice": {
+      "0": "Write the number of segments"
+    },
+
+    "segments_clock_segments": {
+      "err": "Should be a number (segments > 1)"
     },
 
     "add_claim": {
@@ -1322,6 +1359,67 @@
 
     "create_npc_description": {
       "0": "New npc created, now everyone can use it!"
+    },
+
+    "create_crew_sheet": {
+      "0": "Write the name for the sheet"
+    },
+
+    "create_crew_sheet_type": {
+      "0": "Write the description of the sheet",
+      "err": "Crew sheet already present, write another name"
+    },
+
+    "create_crew_sheet_description": {
+      "0": "Select the contacts for the crew: 0/6"
+    },
+
+    "create_crew_sheet_contacts": {
+      "0": "Select the contacts for the crew: {}/6",
+      "1": "Select the special abilities for this sheet: 0/7",
+      "404": "Description not found"
+    },
+
+    "create_crew_sheet_sa": {
+      "0": "Select the special abilities for this sheet: {}/7",
+      "1": "Select the xp trigger for this sheet",
+      "404": "Description not found"
+    },
+
+    "create_crew_sheet_xp": {
+      "0": "Select the xp trigger for this sheet",
+      "1": "Select the hunting grounds for the crew: 0/4",
+      "404": "Description not found"
+    },
+
+    "create_crew_sheet_hg": {
+      "0": "Select the hunting grounds for the crew: {}/4",
+      "1": "Select the upgrades specific for the crew: 0/5",
+      "404": "Description not found"
+    },
+
+    "create_crew_sheet_upgrades": {
+      "0": "Select the upgrades specific for the crew: {}/5",
+      "1": "Select the starting upgrades for the crew: 0/2",
+      "404": "Description not found"
+    },
+
+    "create_crew_sheet_starting_upgrades": {
+      "0": "Select the starting upgrades for the crew: {}/2",
+      "200": "New Character Sheet added, now everyone can use it!",
+      "404": "Description not found",
+      "500": "Ops! Something went wrong and the Crew Sheet couldn't been saved!\nRetry later."
+    },
+
+    "change_lang_journal": {
+      "0": "Select the language of the journal",
+      "err": "You can't select the Journal's language without being in a game...\n/join to take part in a game."
+    },
+
+    "promote_cohort": {
+      "0": "Select the cohort",
+      "err": "You can't promote a cohort without being in a game... /join to take part in a game.",
+      "err2": "You don't have any alive cohort..."
     },
 
     "send_codex": {

@@ -33,6 +33,38 @@ class Human(Owner, ISavable):
                  load: int = 0, xp_triggers: List[str] = None, description: str = "",
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0, vice: Vice = Vice(),
                  pc_class: str = "", friend: NPC = NPC(), enemy: NPC = NPC()) -> None:
+        """
+        Constructor of the Human. It takes all the necessary parameters It takes as parameters all the common attributes
+        of the superclass Owner and the peculiar attributes of this class, that are the pc_class, the friend and the
+        enemy.
+
+        :param name: string that represents the name of this Human.
+        :param alias: string that represents the alias of this Human,
+        :param look: string that string that describes the appearance of this Human.
+        :param heritage: string that represents the heritage of this Human.
+        :param background: string that represents the background of this Human.
+        :param stress_level: int number that keeps track of the level of the stress of this Human.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this Human.
+        :param items: List of Items carried by this Human.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this Human.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this Human.
+        :param attributes: List of Attribute objects used to model the attributes progression of this Human.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the Human
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this Human
+        :param coin: integer value that represents the coins carried in the satchel.
+        :param stash: integer value that represents the coins stored in the stash.
+        :param vice: Vice object that contains all the information about the vice of this Human.
+        :param pc_class: a string value that represents the class of the Human.
+                It is used to extract information from the DB.
+        :param friend: an NPC object that represents the friend of this Human.
+        :param enemy: an NPC object that represents the friend of this Human.
+        """
         if xp_triggers is None and pc_class != "":
             xp_triggers = query_xp_triggers(pc_class)
 

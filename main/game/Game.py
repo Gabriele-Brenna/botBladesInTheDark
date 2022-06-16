@@ -185,16 +185,35 @@ class Game:
         return owners
 
     def get_player_by_id(self, user_id: int) -> Player:
+        """
+        Returns the Player with the passed ID.
+
+        :param user_id: is the ID to search
+        :return: a Player object.
+        """
         for player in self.users:
             if player.player_id == user_id:
                 return player
 
     def get_faction_by_name(self, name: str) -> Faction:
+        """
+        Returns the Faction with the passed name.
+
+        :param name: is the name to search.
+        :return: a Faction object.
+        """
         for elem in self.factions:
             if elem.name.lower() == name.lower():
                 return elem
 
     def get_npc_by_name_and_role(self, name: str, role: str) -> NPC:
+        """
+        Returns the NPC with the passed name and role.
+
+        :param name: is the name to search.
+        :param role: is the role to search.
+        :return: a NPC object.
+        """
         for npc in self.NPCs:
             if npc.name.lower() == name.lower() and npc.role.lower() == role.lower():
                 return npc

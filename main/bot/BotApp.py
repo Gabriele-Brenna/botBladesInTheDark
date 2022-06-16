@@ -280,6 +280,20 @@ def start_bot():
 
     dispatcher.add_handler(
         ConversationHandler(
+            entry_points=[CommandHandler(["segments".casefold(), "segmentsClock".casefold(), "changeClock".casefold(),
+                                          "editClock".casefold()], segments_clock)],
+            states={
+                0: [CallbackQueryHandler(segments_clock_choice)],
+                1: [MessageHandler(Filters.text & ~Filters.command, segments_clock_segments)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), segments_clock_end)],
+            name="conv_segmentsClock",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
             entry_points=[CommandHandler(["addClaim".casefold(), "newClaim".casefold()],
                                          add_claim)],
             states={
@@ -1049,6 +1063,67 @@ def start_bot():
             },
             fallbacks=[CommandHandler("cancel".casefold(), create_sa_end)],
             name="conv_createSpecialAbility",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["createCrewSheet".casefold(), "inventCrewSheet".casefold()],
+                                         create_crew_sheet)],
+            states={
+                0: [MessageHandler(Filters.text & ~Filters.command, create_crew_sheet_type)],
+                1: [MessageHandler(Filters.text & ~Filters.command, create_crew_sheet_description)],
+                2: [CallbackQueryHandler(create_crew_sheet_contacts)],
+                3: [CallbackQueryHandler(create_crew_sheet_sa)],
+                4: [CallbackQueryHandler(create_crew_sheet_xp)],
+                5: [CallbackQueryHandler(create_crew_sheet_hg)],
+                6: [CallbackQueryHandler(create_crew_sheet_upgrades)],
+                7: [CallbackQueryHandler(create_crew_sheet_starting_upgrades)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), create_crew_sheet_end)],
+            name="conv_createCrewSheet",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["languageJournal".casefold(), "changeLangJournal".casefold(),
+                                          "changeLanguageJournal".casefold(),
+                                          "langJournal".casefold(), "languageLog".casefold(),
+                                          "changeLangLog".casefold(), "changeLanguageLog".casefold(),
+                                          "langLog".casefold()], change_lang_journal)],
+            states={
+                0: [CallbackQueryHandler(change_lang_journal_choice)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_lang_journal_end)],
+            name="conv_changeLangJournal",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["eliteCohort".casefold(), "promoteCohort".casefold()], promote_cohort)],
+            states={
+                0: [CallbackQueryHandler(promote_cohort_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), promote_cohort_end)],
+            name="conv_promoteCohort",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["language".casefold(), "changeLang".casefold(), "changeLanguage".casefold(),
+                                          "lang".casefold()], change_lang)],
+            states={
+                0: [CallbackQueryHandler(change_lang_choice)]
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), change_lang_end)],
+            name="conv_changeLang",
             persistent=True
         )
     )

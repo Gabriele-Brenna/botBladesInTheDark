@@ -20,11 +20,20 @@ class Journal:
             notes = []
         self.notes = notes
         self.indentation = indentation
-        with open(path_finder("{}.json".format(lang.upper())), 'r') as f:
+        with open(path_finder("{}.json".format(lang.upper())), 'r', encoding="utf8") as f:
             self.lang = json.load(f)["Journal"]
         self.log = BeautifulSoup("", 'html.parser')
         self.score_tag = None
         self.write_heading("Journal", self.log)
+
+    def change_lang(self, lang: str):
+        """
+        Changes the language of the journal
+
+        :param lang: the name of the file containing the language
+        """
+        with open(path_finder(lang), 'r', encoding="utf8") as f:
+            self.lang = json.load(f)["Journal"]
 
     def get_note(self, number: int):
         """
@@ -89,7 +98,14 @@ class Journal:
         :param method: if not None the specific method lang dictionary is returned
         :return: a dict
         """
-        return self.lang[method]
+        try:
+            return self.lang[method]
+        except:
+            lang = self.lang
+            self.change_lang("ENG.json")
+            lang_to_return = self.lang[method]
+            self.lang = lang
+            return lang_to_return
 
     def get_codex(self, game_name: str, info: Dict[str, List[Tuple]]) -> str:
         """

@@ -172,6 +172,8 @@ def setup(game: Game) -> None:
             game.journal.score_tag = None
         game.journal.indentation = len(game.scores)
 
+        game.journal.change_lang(db_game["Language"])
+
     if db_game["State"] is not None:
         game.state = db_game["State"]
 

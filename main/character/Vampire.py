@@ -27,6 +27,37 @@ class Vampire(Owner, ISavable):
                  downtime_activities: List[str] = None, coin: int = 0, stash: int = 0,
                  strictures: List[SpecialAbility] = None, dark_servants: List[NPC] = None,
                  migrating_character: PC = None) -> None:
+        """
+        Constructor of the Vampire. It takes as parameters all the common attributes of the superclass Owner and the
+        peculiar attributes of this class, that are the strictures and the dark_servants.
+        It is also possible to pass only a PC object: in this case the PC will be transformed into a Vampire; all the
+        attributes in common between the PC's class and this class are maintained.
+
+        :param name: string that represents the name of this Vampire.
+        :param alias: string that represents the alias of this Vampire,
+        :param look: string that string that describes the appearance of this Vampire.
+        :param heritage: string that represents the heritage of this Vampire.
+        :param background: string that represents the background of this Vampire.
+        :param stress_level: int number that keeps track of the level of the stress of this Vampire.
+        :param stress_limit: int number that the limit of the level of stress.
+        :param traumas: List of strings that contains all the trauma of this Vampire.
+        :param items: List of Items carried by this Vampire.
+        :param harms: List of list of strings, each one representing a level of harm.
+        :param healing: Clock object used to keep track of the healing progress of this Vampire.
+        :param armors: List of boolean values that keeps track of the used armors.
+        :param abilities: List of SpecialAbility objects.
+        :param playbook: Playbook object to model the personal progression of this Vampire.
+        :param attributes: List of Attribute objects used to model the attributes progression of this Vampire.
+        :param load: int number that represents the total carried weight.
+        :param xp_triggers: List of strings that represents the Xp triggers of the Vampire
+        :param description: A string that contains a brief description of this character.
+        :param downtime_activities: List that contains the downtime activities completed by this Vampire
+        :param coin: integer value that represents the coins carried in the satchel.
+        :param stash: integer value that represents the coins stored in the stash.
+        :param strictures: List of SpecialAbility object representing the Vampir's strictures.
+        :param dark_servants: List of NPC containing all the servants of this Vampire.
+        :param migrating_character: PC object that needs to be converted into a Ghost.
+        """
 
         if migrating_character is not None:
             self.migrate(migrating_character)
