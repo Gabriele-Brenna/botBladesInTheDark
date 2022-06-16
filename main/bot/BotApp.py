@@ -1098,7 +1098,19 @@ def start_bot():
                 0: [CallbackQueryHandler(change_lang_journal_choice)]
             },
             fallbacks=[CommandHandler("cancel".casefold(), change_lang_journal_end)],
-            name="conv_changeLang",
+            name="conv_changeLangJournal",
+            persistent=True
+        )
+    )
+
+    dispatcher.add_handler(
+        ConversationHandler(
+            entry_points=[CommandHandler(["eliteCohort".casefold(), "promoteCohort".casefold()], promote_cohort)],
+            states={
+                0: [CallbackQueryHandler(promote_cohort_choice)],
+            },
+            fallbacks=[CommandHandler("cancel".casefold(), promote_cohort_end)],
+            name="conv_promoteCohort",
             persistent=True
         )
     )

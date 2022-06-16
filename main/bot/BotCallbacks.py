@@ -315,9 +315,11 @@ def create_pc_class(update: Update, context: CallbackContext) -> int:
     """
     placeholders = get_lang(context, create_pc_class.__name__)
 
-    if exists_character(update.message.text):
+    pc_class = update.message.text
+
+    if pc_class in query_character_sheets(spirit=False):
         store_value_and_update_kb(update, context, tags=["create_pc", "pc", "pc_class"],
-                                  value=update.message.text, btn_label="class", split_row=3)
+                                  value=pc_class, btn_label="class", split_row=3)
         update.message.delete()
 
         return 0
@@ -7747,7 +7749,7 @@ def change_pc_class_selection(update: Update, context: CallbackContext) -> int:
 
     new_class = update.effective_message.text
 
-    if not exists_character(new_class):
+    if new_class not in query_character_sheets(spirit=False):
         message = update.effective_message.reply_text(placeholders["0"], parse_mode=ParseMode.HTML,
                                                       reply_markup=custom_kb(
                                                           query_character_sheets(canon=True, spirit=False),
@@ -10582,7 +10584,7 @@ def create_crew_sheet_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_createCrewSheet--------------------------------------------------------
 
 
-# ------------------------------------------conv_changeLang-------------------------------------------------------------
+# ------------------------------------------conv_changeLangJournal------------------------------------------------------
 
 
 def change_lang_journal(update: Update, context: CallbackContext) -> int:
@@ -10621,7 +10623,76 @@ def change_lang_journal_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_changeLang-------------------------------------------------------------
+# ------------------------------------------conv_changeLangJournal------------------------------------------------------
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+
+
+def promote_cohort(update: Update, context: CallbackContext) -> int:
+    """
+    Checks if the user is in the correct phase and starts the conversation that handles the promotion of armor to a cohort.
+    Adds the dict "promote_cohort" in user_data.
+    Finally, sends the inline keyboard to choose the cohort.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, promote_cohort.__name__)
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return add_armor_cohort_end(update, context)
+
+    add_tag_in_telegram_data(context, ["promote_cohort", "invocation_message"], update.message)
+
+    cohorts = controller.get_cohorts_of_crew(update.message.chat_id, get_user_id(update), elite=False)
+    if not cohorts:
+        message = context.user_data["promote_cohort"]["invocation_message"].reply_text(placeholders["err2"])
+        auto_delete_message(message, 15)
+        return add_armor_cohort_end(update, context)
+    cohorts = ["{}: {}".format(cohort[0], cohort[1]) for cohort in cohorts]
+    callbacks = [i + 1 for i in range(len(cohorts))]
+    message = context.user_data["promote_cohort"]["invocation_message"].reply_text(
+        placeholders["0"], reply_markup=custom_kb(cohorts, True, 1, callbacks))
+    add_tag_in_telegram_data(context, ["promote_cohort", "message"], message)
+
+    return 0
+
+
+def promote_cohort_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Calls the controller method promote_cohort_of_crew with the user choice, then calls add_armor_cohort_end.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    context.user_data["promote_cohort"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = int(query.data) - 1
+
+    controller.promote_cohort_of_crew(query_game_of_user(update.effective_message.chat_id, get_user_id(update)), choice)
+
+    return add_armor_cohort_end(update, context)
+
+
+def promote_cohort_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the promote cohort conversation and deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "promote_cohort")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
