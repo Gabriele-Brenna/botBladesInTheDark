@@ -286,7 +286,7 @@ def insert_state(game_id: int, state: int) -> bool:
     return False
 
 
-def insert_lang(game_id: int, lang: str = "ENG") -> bool:
+def insert_lang(game_id: int, lang: str = "ENG.json") -> bool:
     """
     Insert the preferred language for the game.
 

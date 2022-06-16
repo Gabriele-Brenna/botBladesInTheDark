@@ -448,6 +448,19 @@ class Controller:
 
         insert_journal(game.identifier, game.journal.get_log_string())
 
+    def get_healing_clock(self,  chat_id: int, user_id: int, pc_name: str) -> str:
+        """
+        Retrieves the healing clock of the selected PC
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the active PC
+        :return: the string representation of the healing clock
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        clock = game.get_player_by_id(user_id).get_character_by_name(pc_name).healing
+        return "{}: {}/{}".format(clock.name, clock.progress, clock.segments)
+
     def get_clocks_of_game(self, game_id: int, projects: bool = False) -> List[str]:
         """
         Retrieves the list of clocks of the specified game.
@@ -493,6 +506,22 @@ class Controller:
             insert_journal(game.identifier, game.journal.get_log_string())
 
         return filled, new_clock.__dict__
+
+    def edit_clock_of_game(self, chat_id: int, user_id: int, pc_name: str, old_clock: dict, segments: int):
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        clock_to_edit = Clock(**old_clock)
+
+        if "healing" in clock_to_edit.name.lower():
+            player = game.get_player_by_id(user_id)
+            player.get_character_by_name(pc_name).healing.edit(segments=segments)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+        else:
+            for clock in game.clocks:
+                if clock_to_edit == clock:
+                    clock.edit(segments=segments)
+                    insert_clock_json(game.identifier, save_to_json(game.clocks))
+                    break
 
     def add_claim_to_game(self, game_id: int, claim: dict):
         """
@@ -2329,6 +2358,19 @@ class Controller:
             update_user_characters(user_id, game.identifier, save_to_json(player.characters))
 
         insert_npc_json(game.identifier, save_to_json(game.NPCs))
+
+    def change_journal_language(self, game_id: int, lang: str):
+        """
+        Changes the journal language of the selected game and updates the database
+
+        :param game_id: the game's id
+        :param lang: the name of the file containing the language
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.journal.change_lang(lang)
+
+        insert_lang(game_id, lang)
 
     def __repr__(self) -> str:
         return str(self.games)

@@ -1,4 +1,5 @@
 import copy
+import os
 
 from telegram.utils import helpers
 from bot.BotUtils import *
@@ -2726,6 +2727,130 @@ def tick_clock_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_tickClock--------------------------------------------------------------
+
+
+# ------------------------------------------conv_segmentsClock----------------------------------------------------------
+
+
+def segments_clock(update: Update, context: CallbackContext) -> int:
+    """
+    Handles the advancement of a clock checking if the user has already joined a game, and it's not in the INIT phase.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, segments_clock.__name__)
+
+    if is_game_in_wrong_phase(update, context, placeholders["err"]):
+        return create_clock_end(update, context)
+
+    add_tag_in_telegram_data(context, ["segments_clock", "invocation_message"], update.message)
+    chat_id = update.message.chat_id
+
+    clocks = controller.get_clocks_of_game(query_game_of_user(chat_id, get_user_id(update)))
+    try:
+        clocks.append(
+            controller.get_healing_clock(chat_id, get_user_id(update), context.user_data["active_PCs"][chat_id]))
+    except:
+        pass
+    if not clocks:
+        update.message.reply_text(placeholders["err2"])
+        return segments_clock_end(update, context)
+
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(clocks, inline=True, split_row=1))
+    add_tag_in_telegram_data(context, ["segments_clock", "message"], message)
+
+    add_tag_in_telegram_data(context, ["segments_clock", "old_clock"], {})
+
+    return 0
+
+
+def segments_clock_choice(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the chosen clock in the user_data and advances the conversation to
+    the next state that regards the number of segmentss to advance the clock.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, segments_clock_choice.__name__)
+    context.user_data["segments_clock"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+
+    name = choice.split(": ")[0]
+
+    choice = choice.split(": ")[1]
+
+    progress = int(choice.split("/")[0])
+    segments = int(choice.split("/")[1])
+
+    add_tag_in_telegram_data(context, ["segments_clock", "old_clock", "name"], name)
+    add_tag_in_telegram_data(context, ["segments_clock", "old_clock", "segments"], segments)
+    add_tag_in_telegram_data(context, ["segments_clock", "old_clock", "progress"], progress)
+
+    message = context.user_data["segments_clock"]["invocation_message"].reply_text(placeholders["0"])
+    add_tag_in_telegram_data(context, ["segments_clock", "message"], message)
+
+    return 1
+
+
+def segments_clock_segments(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the number of segmentss in the user_data and advances the conversation to
+    the end state; before advancing to the next state the clock is segmentsed and stored
+    calling the Controller method segments_clock_of_game().
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: next conversation's state.
+    """
+    placeholders = get_lang(context, segments_clock_segments.__name__)
+    context.user_data["segments_clock"]["message"].delete()
+
+    num = update.message.text
+
+    try:
+        num = int(num)
+        if num < 1:
+            raise ValueError
+    except ValueError:
+        message = context.user_data["segments_clock"]["invocation_message"].reply_text(
+            placeholders["err"].format(update.message.text), parse_mode=ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["segments_clock", "message"], message)
+        update.message.delete()
+        return 1
+
+    add_tag_in_telegram_data(context, ["segments_clock", "segments"], num)
+    chat_id = update.message.chat_id
+    controller.edit_clock_of_game(chat_id, get_user_id(update), context.user_data["active_PCs"][chat_id],
+                                  context.user_data["segments_clock"]["old_clock"],
+                                  context.user_data["segments_clock"]["segments"])
+
+    return segments_clock_end(update, context)
+
+
+def segments_clock_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the conversation when /cancel is received then deletes the information collected so far
+    and exits the conversation.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END.
+    """
+    delete_conv_from_telegram_data(context, "segments_clock")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_segmentsClock----------------------------------------------------------
+
 
 # ------------------------------------------conv_addClaim---------------------------------------------------------------
 
@@ -7335,21 +7460,21 @@ def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
     elif choice == "Ghost":
         # enemies
         message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
-                                                                         parse_mode=ParseMode.HTML,
-                                                                         reply_markup=custom_kb(
-                                                                             controller.get_game_npcs(
-                                                                                 query_game_of_user(
-                                                                                     update.effective_message.chat_id,
-                                                                                     get_user_id(update)))))
+                                                                                   parse_mode=ParseMode.HTML,
+                                                                                   reply_markup=custom_kb(
+                                                                                       controller.get_game_npcs(
+                                                                                           query_game_of_user(
+                                                                                               update.effective_message.chat_id,
+                                                                                               get_user_id(update)))))
         add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
         add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "ghost_enemies"], value=[])
         return 1
     elif choice == "Hull":
         # functions RK
         message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
-                                                                         parse_mode=ParseMode.HTML,
-                                                                         reply_markup=custom_kb(
-                                                                             placeholders["functions"]))
+                                                                                   parse_mode=ParseMode.HTML,
+                                                                                   reply_markup=custom_kb(
+                                                                                       placeholders["functions"]))
         add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
         add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "hull_functions"], value=[])
         return 2
@@ -9875,6 +10000,628 @@ def create_npc_end(update: Update, context: CallbackContext) -> int:
 
 
 # ------------------------------------------conv_createNPC--------------------------------------------------------------
+
+
+# ------------------------------------------conv_createCrewSheet--------------------------------------------------------
+
+
+def create_crew_sheet(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that handles the creation of a new crew sheet and ask the user the name of it.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_crew_sheet.__name__)
+
+    add_tag_in_telegram_data(context, ["crew_sheet", "invocation_message"], update.message)
+
+    message = context.user_data["crew_sheet"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["crew_sheet", "message"], message)
+
+    return 0
+
+
+def create_crew_sheet_type(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the xp trigger description in the user_data,
+    then asks if is a trigger for a crew or not.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_type.__name__)
+    context.user_data["crew_sheet"]["message"].delete()
+
+    crew_type = update.message.text
+
+    if crew_type.lower in [sheet.lower for sheet in query_crew_sheets()]:
+        message = context.user_data["crew_sheet"]["invocation_message"].reply_text(
+            placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["crew_sheet", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["crew_sheet", "crew_type"], crew_type)
+
+    message = context.user_data["crew_sheet"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["crew_sheet", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_crew_sheet_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the description in the user_data, then adds the new special ability to the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_description.__name__)
+    context.user_data["crew_sheet"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["crew_sheet", "CrewSheet", "description"], update.message.text)
+
+    npcs = [npc["name"] + ", " + npc["role"] for npc in query_npcs(as_dict=True)]
+
+    buttons_list = []
+    buttons = []
+    for i in range(len(npcs)):
+        buttons.append(npcs[i])
+        if (i + 1) % 8 == 0:
+            buttons_list.append(buttons.copy())
+            buttons.clear()
+    if buttons:
+        buttons_list.append(buttons.copy())
+    add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+    add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+    add_tag_in_telegram_data(context, ["crew_sheet", "Crew_Contact", "contacts"], [])
+
+    context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+        "invocation_message"].reply_text(
+        placeholders["0"],
+        parse_mode=ParseMode.HTML,
+        reply_markup=build_multi_page_kb(buttons_list[0]))
+
+    update.message.delete()
+    return 2
+
+
+def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_contacts.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    contacts = context.user_data["crew_sheet"]["Crew_Contact"]["contacts"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        name = choice.split("$")[0]
+        name, role = name.split(", ")
+        if "$" in choice:
+            buttons = context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons.remove(choice.split("$")[0])
+            contacts.append(query_npc_id(name, role))
+
+            if len(contacts) >= 6:
+                sa = [sa["name"] for sa in query_special_abilities(pc=False, as_dict=True)]
+
+                buttons_list = []
+                buttons = []
+                for i in range(len(sa)):
+                    buttons.append(sa[i])
+                    if (i + 1) % 8 == 0:
+                        buttons_list.append(buttons.copy())
+                        buttons.clear()
+                if buttons:
+                    buttons_list.append(buttons.copy())
+                add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+                add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+                add_tag_in_telegram_data(context, ["crew_sheet", "Crew_Sa", "sas"], [])
+
+                context.user_data["crew_sheet"]["query_menu"].delete()
+
+                context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+                    "invocation_message"].reply_text(
+                    placeholders["1"],
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=build_multi_page_kb(buttons_list[0]))
+                return 3
+
+        else:
+
+            description = query_npcs(name=name, role=role, as_dict=True)[0]["description"]
+
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 2
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"].format(len(contacts)), reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 2
+
+
+def create_crew_sheet_sa(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_sa.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    sas = context.user_data["crew_sheet"]["Crew_Sa"]["sas"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        name = choice
+        if "$" in choice:
+            name = choice.split("$")[0]
+            buttons = context.user_data["crew_sheet"]["buttons_list"][
+                context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons.remove(name)
+            sas.append(name)
+
+            if len(sas) >= 7:
+                triggers = [str(trigger[0]) for trigger in query_xp_triggers_id_description(crew=True)]
+
+                buttons_list = []
+                buttons = []
+                for i in range(len(triggers)):
+                    buttons.append(triggers[i])
+                    if (i + 1) % 8 == 0:
+                        buttons_list.append(buttons.copy())
+                        buttons.clear()
+                if buttons:
+                    buttons_list.append(buttons.copy())
+                add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+                add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+                context.user_data["crew_sheet"]["query_menu"].delete()
+
+                context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+                    "invocation_message"].reply_text(
+                    placeholders["1"],
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=build_multi_page_kb(buttons_list[0]))
+                return 4
+
+        else:
+            description = query_special_abilities(special_ability=name, as_dict=True)[0]["description"]
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 3
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"].format(len(sas)), reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 3
+
+
+def create_crew_sheet_xp(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_xp.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        if "$" in choice:
+            choice = choice.split("$")[0]
+            buttons = context.user_data["crew_sheet"]["buttons_list"][
+                context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons.remove(choice)
+            add_tag_in_telegram_data(context, ["crew_sheet", "Crew_Xp", "xp_id"], int(choice))
+
+            add_tag_in_telegram_data(context, ["crew_sheet", "Crew_Hg", "hgs"], [])
+
+            hgs = query_hunting_grounds(only_names=True)
+
+            buttons_list = []
+            buttons = []
+            for i in range(len(hgs)):
+                buttons.append(hgs[i])
+                if (i + 1) % 8 == 0:
+                    buttons_list.append(buttons.copy())
+                    buttons.clear()
+            if buttons:
+                buttons_list.append(buttons.copy())
+            add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+            add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+            context.user_data["crew_sheet"]["query_menu"].delete()
+
+            context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+                "invocation_message"].reply_text(
+                placeholders["1"],
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_multi_page_kb(buttons_list[0]))
+
+            return 5
+
+        else:
+            description = query_xp_triggers_id_description(int(choice))[0][1]
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 4
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"], reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 4
+
+
+def create_crew_sheet_hg(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_hg.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    hgs = context.user_data["crew_sheet"]["Crew_Hg"]["hgs"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        name = choice
+        if "$" in choice:
+            name = choice.split("$")[0]
+            buttons = context.user_data["crew_sheet"]["buttons_list"][
+                context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons.remove(name)
+            hgs.append(name)
+
+            if len(hgs) >= 4:
+                add_tag_in_telegram_data(context, ["crew_sheet", "Crew_Upgrade", "upgrades"], [])
+
+                upgrades = [upgrade["name"] for upgrade in query_upgrades(group="Specific", as_dict=True)]
+
+                buttons_list = []
+                buttons = []
+                for i in range(len(upgrades)):
+                    buttons.append(upgrades[i])
+                    if (i + 1) % 8 == 0:
+                        buttons_list.append(buttons.copy())
+                        buttons.clear()
+                if buttons:
+                    buttons_list.append(buttons.copy())
+                add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+                add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+                context.user_data["crew_sheet"]["query_menu"].delete()
+
+                context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+                    "invocation_message"].reply_text(
+                    placeholders["1"],
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=build_multi_page_kb(buttons_list[0]))
+
+                return 6
+
+        else:
+            description = query_hunting_grounds(name, only_names=False)[0]
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 5
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"].format(len(hgs)), reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 5
+
+
+def create_crew_sheet_upgrades(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_upgrades.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    upgrades = context.user_data["crew_sheet"]["Crew_Upgrade"]["upgrades"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        name = choice
+        if "$" in choice:
+            name = choice.split("$")[0]
+            buttons = context.user_data["crew_sheet"]["buttons_list"][
+                context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons.remove(name)
+            upgrades.append(name)
+
+            if len(upgrades) >= 5:
+                add_tag_in_telegram_data(context, ["crew_sheet", "Crew_StartingUpgrade", "upgrades"], [])
+
+                starting_upgrades = [upgrade["name"] for upgrade in query_upgrades(common=True, as_dict=True)]
+                starting_upgrades += upgrades
+
+                buttons_list = []
+                buttons = []
+                for i in range(len(starting_upgrades)):
+                    buttons.append(starting_upgrades[i])
+                    if (i + 1) % 8 == 0:
+                        buttons_list.append(buttons.copy())
+                        buttons.clear()
+                if buttons:
+                    buttons_list.append(buttons.copy())
+                add_tag_in_telegram_data(context, ["crew_sheet", "buttons_list"], buttons_list)
+                add_tag_in_telegram_data(context, ["crew_sheet", "query_menu_index"], 0)
+
+                context.user_data["crew_sheet"]["query_menu"].delete()
+
+                context.user_data["crew_sheet"]["query_menu"] = context.user_data["crew_sheet"][
+                    "invocation_message"].reply_text(
+                    placeholders["1"],
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=build_multi_page_kb(buttons_list[0]))
+
+                return 7
+
+        else:
+            description = query_upgrades(name, as_dict=True)[0]["description"]
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 6
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"].format(len(upgrades)), reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 6
+
+
+def create_crew_sheet_starting_upgrades(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about an NPC or Faction target in the chat_data.
+    Sends the score's plan type request.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_crew_sheet_starting_upgrades.__name__)
+
+    query = update.callback_query
+    query.answer()
+
+    choice = query.data
+    index = context.user_data["crew_sheet"]["query_menu_index"]
+
+    starting_upgrades = context.user_data["crew_sheet"]["Crew_StartingUpgrade"]["upgrades"]
+
+    if choice == "RIGHT":
+        index += 1
+        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+
+    elif choice == "LEFT":
+        index -= 1
+        if index == -len(context.user_data["crew_sheet"]["buttons_list"]):
+            index = 0
+
+        context.user_data["crew_sheet"]["query_menu_index"] = index
+    else:
+        name = choice
+        if "$" in choice:
+            name = choice.split("$")[0]
+            if query_upgrades(name, as_dict=True)[0]["tot_quality"] < 2:
+                buttons = context.user_data["crew_sheet"]["buttons_list"][
+                    context.user_data["crew_sheet"]["query_menu_index"]]
+                buttons.remove(name)
+            new_su = (name, 1)
+            if new_su in starting_upgrades:
+                starting_upgrades[0] = (name, 2)
+            else:
+                starting_upgrades.append(new_su)
+
+            if len(starting_upgrades) >= 2 or starting_upgrades[0][1] >= 2:
+                info = context.user_data["crew_sheet"]
+
+                if not insert_crew_info(info):
+                    message = context.user_data["crew_sheet"]["invocation_message"].reply_text(placeholders["500"])
+                    auto_delete_message(message, 15)
+
+                    return create_crew_sheet_end(update, context)
+
+                message = context.user_data["crew_sheet"]["invocation_message"].reply_text(placeholders["200"])
+                auto_delete_message(message, 15)
+
+                return create_crew_sheet_end(update, context)
+
+        else:
+            description = query_upgrades(name, as_dict=True)[0]["description"]
+            if description is None or description == "":
+                description = placeholders["404"]
+            auto_delete_message(update.effective_message.reply_text(
+                text=description, quote=False), description)
+            return 7
+
+    context.user_data["crew_sheet"]["query_menu"].edit_text(
+        placeholders["0"].format(len(starting_upgrades)), reply_markup=build_multi_page_kb(
+            context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]))
+    return 7
+
+
+def create_crew_sheet_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the creation of a crew sheet conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "crew_sheet")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_createCrewSheet--------------------------------------------------------
+
+
+# ------------------------------------------conv_changeLang-------------------------------------------------------------
+
+
+def change_lang_journal(update: Update, context: CallbackContext) -> int:
+    placeholders = get_lang(context, change_lang_journal.__name__)
+    languages_callbacks = os.listdir(path_finder("lang"))
+    languages = [lang.split(".")[0] for lang in languages_callbacks]
+    message = update.message.reply_text(placeholders["0"], reply_markup=custom_kb(
+        languages, True, 1, languages_callbacks))
+    add_tag_in_telegram_data(context, ["change_lang_journal", "message"], message)
+    add_tag_in_telegram_data(context, ["change_lang_journal", "invocation_message"], update.message)
+    return 0
+
+
+def change_lang_journal_choice(update: Update, context: CallbackContext) -> int:
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    controller.change_journal_language(query_game_of_user(update.effective_message.chat_id, get_user_id(update)),
+                                       choice)
+
+    return change_lang_journal_end(update, context)
+
+
+def change_lang_journal_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the change language journal conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "change_lang_journal")
+
+    return end_conv(update, context)
+
+
+# ------------------------------------------conv_changeLang-------------------------------------------------------------
 
 
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
