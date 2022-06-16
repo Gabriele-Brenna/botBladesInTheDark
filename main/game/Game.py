@@ -177,11 +177,11 @@ class Game:
             if user_id is not None and player.player_id == user_id:
                 for pc in player.characters:
                     if isinstance(pc, Owner):
-                        owners += player.characters
+                        owners.append(pc)
             elif user_id is None:
                 for pc in player.characters:
                     if isinstance(pc, Owner):
-                        owners += player.characters
+                        owners.append(pc)
         return owners
 
     def get_player_by_id(self, user_id: int) -> Player:

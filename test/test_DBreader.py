@@ -396,6 +396,13 @@ class TestDBReader(TestCase):
         self.assertTrue(len(query_claims()) >= 52)
         print(query_claims())
 
+    def test_query_factions(self):
+        self.assertEqual([Faction("Gondoliers", 3, True)], query_factions("Gondoliers"))
+
+        self.assertEqual([], query_factions("GangDelBosco"))
+
+        self.assertEqual(60, len(query_factions()))
+
     def test_query_npcs(self):
         self.assertEqual([NPC("Irimina", "A vicious noble")], query_npcs(npc_id=2))
         self.assertEqual([NPC("Irimina", "A vicious noble")], query_npcs(name="Irimina"))
@@ -403,9 +410,6 @@ class TestDBReader(TestCase):
                          query_npcs(role="A bluecoat"))
         self.assertEqual([{'name': 'Irimina', 'description': None, 'role': 'A vicious noble', 'faction': None}],
                          query_npcs(npc_id=2, as_dict=True))
-
-
-    # TODO: test query_factions & query_npcs
 
     def test_query_traumas(self):
         self.assertEqual([("Chaotic", "")], query_traumas("chaotic"))
