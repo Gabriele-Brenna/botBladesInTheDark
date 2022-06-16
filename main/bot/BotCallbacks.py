@@ -10701,7 +10701,7 @@ def change_lang_journal_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_changeLangJournal------------------------------------------------------
 
 
-# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+# ------------------------------------------conv_promoteCohort----------------------------------------------------------
 
 
 def promote_cohort(update: Update, context: CallbackContext) -> int:
@@ -10767,7 +10767,116 @@ def promote_cohort_end(update: Update, context: CallbackContext) -> int:
     return end_conv(update, context)
 
 
-# ------------------------------------------conv_addArmorCohort---------------------------------------------------------
+# ------------------------------------------conv_promoteCohort----------------------------------------------------------
+
+
+# ------------------------------------------conv_createSpecialAbility---------------------------------------------------
+
+
+def create_claim(update: Update, context: CallbackContext) -> int:
+    """
+    Starts the conversation that handles the creation of a new claim and ask the user the name of it.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+
+    placeholders = get_lang(context, create_claim.__name__)
+
+    add_tag_in_telegram_data(context, ["create_claim", "invocation_message"], update.message)
+
+    message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_claim", "message"], message)
+
+    return 0
+
+
+def create_claim_name(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the claim name in the user_data, then asks for the description.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_claim_name.__name__)
+    context.user_data["create_claim"]["message"].delete()
+
+    name = update.message.text
+    if name in [claim["name"] for claim in query_claims(as_dict=True)]:
+        message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        add_tag_in_telegram_data(context, ["create_claim", "message"], message)
+        return 0
+
+    add_tag_in_telegram_data(context, ["create_claim", "info", "name"], name)
+
+    message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    add_tag_in_telegram_data(context, ["create_claim", "message"], message)
+
+    update.message.delete()
+    return 1
+
+
+def create_claim_description(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the description in the user_data, then asks for the type of the claim sending an
+    inline keyboard.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: the next state of the conversation.
+    """
+    placeholders = get_lang(context, create_claim_description.__name__)
+    context.user_data["create_claim"]["message"].delete()
+
+    add_tag_in_telegram_data(context, ["create_claim", "info", "description"], update.message.text)
+
+    message = context.user_data["create_claim"]["invocation_message"].reply_text(
+        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(placeholders["keyboard"], True, 1, [1,2]))
+    add_tag_in_telegram_data(context, ["create_claim", "message"], message)
+
+    update.message.delete()
+    return 2
+
+
+def create_claim_prison(update: Update, context: CallbackContext) -> int:
+    """
+    Stores the information about the type in the user_data, then adds the new claim to the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: calls create_claim_end.
+    """
+    placeholders = get_lang(context, create_claim_description.__name__)
+    context.user_data["create_claim"]["message"].delete()
+
+    query = update.callback_query
+    query.answer()
+    choice = query.data
+
+    add_tag_in_telegram_data(context, ["create_claim", "info", "prison"], choice == 2)
+
+    insert_claim(**context.user_data["create_claim"]["info"])
+
+    message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["0"], ParseMode.HTML)
+    auto_delete_message(message, 15)
+
+    return create_claim_end(update, context)
+
+
+def create_claim_end(update: Update, context: CallbackContext) -> int:
+    """
+    Ends the creation of a claim conversation and
+    deletes all the saved information from the user_data.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return: ConversationHandler.END
+    """
+    delete_conv_from_telegram_data(context, "create_claim")
+
+    return end_conv(update, context)
 
 
 def send_codex(update: Update, context: CallbackContext):
