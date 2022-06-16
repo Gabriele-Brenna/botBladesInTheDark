@@ -579,11 +579,9 @@
     },
 
     "score_load": {
-      "0": "{}",
-      "1": "{}",
-      "2": "{}"
-
-
+      "0": "{} will join this score.",
+      "1": "You already joined this score.",
+      "2": "You are organizing the score. You are already a participant!"
     },
 
     "score_pcs_loads": {

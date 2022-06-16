@@ -10,6 +10,10 @@ from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
 
+"""
+Factory of the PC. Contains all the methods to paste the attributes of all the subclasses of PC and build the PNG of the
+Character Sheets.
+"""
 
 def paste_name(name: str, sheet: Image):
     name_box_dim = (300, 20)

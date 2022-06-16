@@ -3,14 +3,17 @@ from PIL import ImageFont
 import textwrap
 
 from character.Playbook import Playbook
-from organization.Claim import Claim
 from organization.Cohort import Cohort
 from organization.Lair import Lair
-from organization.Upgrade import Upgrade
 from utility.FilesManager import path_finder, get_font
 from utility.imageFactory.factoryUtils import average_char_size
 
 from controller.DBreader import *
+
+"""
+Factory of the Crew. Contains all the methods to paste the attributes of the Crew and build the PNG of the
+Crew Sheets.
+"""
 
 
 def paste_crew_name(name: str, sheet: Image):
@@ -319,7 +322,6 @@ def paste_crew_type(crew_type: str, sheet: Image):
 
 
 def paste_crew_type_description(crew_type: str, sheet: Image):
-
     description = query_sheet_descriptions(crew_type)[0]
     box_dim = (94, 60)
     box = Image.new('RGBA', box_dim, (220, 221, 222, 255))

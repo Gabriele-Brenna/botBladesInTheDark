@@ -71,6 +71,12 @@ class Owner(PC):
         return 0 <= self.stash + coins <= 40
 
     def can_store_coins(self, coins: int) -> bool:
+        """
+        Check if a given amount of coins can be subdivided into this Owner's coins and stash.
+
+        :param coins: is the amount of coins
+        :return: True if the coin can be added, False otherwise
+        """
         free_purse_space = 4 - self.coin
         free_stash_space = 40 - self.stash
 

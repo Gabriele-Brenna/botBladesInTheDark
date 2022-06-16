@@ -578,11 +578,9 @@
     },
 
     "score_load": {
-      "0": "{}",
-      "1": "{}",
-      "2": "{}"
-
-
+      "0": "{} parteciperà a questo colpo.",
+      "1": "Stai già partecipando al colpo.",
+      "2": "Sei l'organizzatore del colpo. Sei già un partecipante!"
     },
 
     "score_pcs_loads": {
@@ -810,9 +808,9 @@
       "resolve": "La tua exp può essere {} al massimo. Dopodiché guadagnerai un punto ogni volta che la completi.",
       "crew_points": "Il tuo banda ha ora {} punti da spendere.",
       "playbook_points": "Il tuo playbook ha ora {} punti da spendere.",
-      "insight_points": "La tua intuizione ora ha {} punti da spendere.",
-      "prowess_points": "La tua abilità ora ha {} punti da spendere.",
-      "resolve_points": "La tua determinazione ora ha {} punti da spendere."
+      "insight_points": "Il tuo attributo insight ora ha {} punti da spendere.",
+      "prowess_points": "Il tuo attributo prowess ora ha {} punti da spendere.",
+      "resolve_points": "Il tuo attributo resolve ora ha {} punti da spendere."
     },
 
     "add_action_dots": {

@@ -12,8 +12,8 @@ def delimiter_rect(draw: ImageDraw, box_dim: Tuple[int, int]):
 def average_char_size(text: str, font):
     """
     Return the average size of a char in the given text using the given font
-    :param text:
-    :param font:
+    :param text: is the text to measure.
+    :param font: is the font of the text.
     :return:
     """
     max_c = 0
