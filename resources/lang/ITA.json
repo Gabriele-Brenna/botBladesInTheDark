@@ -34,7 +34,8 @@
     },
 
     "start_login": {
-      "0": "Ti stai avvicinando a Doskvol, per registrarti: <a href=\"{}\">[\uD83D\uDD10 CLICCA QUI \uD83D\uDD10]</a> "    },
+      "0": "Ti stai avvicinando a Doskvol, per registrarti: <a href=\"{}\">[\uD83D\uDD10 CLICCA QUI \uD83D\uDD10]</a> "
+    },
 
     "user_is_registered": {
       "0": "Non puoi usare questo comando. Per favore fai /login"
@@ -1357,6 +1358,72 @@
 
     "create_npc_description": {
       "0": "Nuovo npc creato, ora tutti possono usarlo!"
+    },
+
+    "create_crew_sheet": {
+      "0": "Scrivi il nome di questa banda."
+    },
+
+    "create_crew_sheet_type": {
+      "0": "Scrivi la descrizione di questa banda",
+      "err": "Questa banda esiste già, scegli un altro nome."
+    },
+
+    "create_crew_sheet_description": {
+      "0": "Seleziona i contatti della tua banda: 0/6"
+    },
+
+    "create_crew_sheet_contacts": {
+      "0": "Seleziona i contatti della tua banda: {}/6",
+      "1": "Seleziona le abilità speciali della banda: 0/7",
+      "404": "Descrizione non trovata."
+    },
+
+    "create_crew_sheet_sa": {
+      "0": "Seleziona le abilità speciali della banda: {}/7",
+      "1": "Seleziona il trigger Xp della banda",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_crew_sheet_xp": {
+      "0": "Seleziona il trigger Xp della banda",
+      "1": "Seleziona i terreni di caccia della banda: 0/4",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_crew_sheet_hg": {
+      "0": "Seleziona i terreni di caccia della banda: {}/4",
+      "1": "Seleziona i potenziamenti specifici della banda: 0/5",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_crew_sheet_upgrades": {
+      "0": "Seleziona i potenziamenti specifici della banda: {}/5",
+      "1": "Seleziona i potenziamenti iniziali della banda: 0/2",
+      "404": "Descrizione non trovata"
+    },
+
+    "create_crew_sheet_starting_upgrades": {
+      "0": "Seleziona i potenziamenti iniziali della banda: {}/2",
+      "200": "Nuova Scheda della Banda aggiunta, ora tutti possono usarla!",
+      "404": "Descrizione non trovata",
+      "500": "Ops! Qualcosa è andato storto e la Scheda della Banda non è stata salvata!\nProva più tardi."
+    },
+
+    "change_lang_journal": {
+      "0": "Seleziona la lingua del Diario",
+      "err": "Non puoi cambiare la lingua del DIario senza essere in una partita...\n/join per prendere parte ad una partita."
+    },
+
+    "promote_cohort": {
+      "0": "Seleziona la cricca",
+      "err": "Non puoi promuovere una cricca senza essere in una partita... /join per prendere parte ad una partita.",
+      "err2": "Non possiedi cricche ancora in vita..."
+    },
+
+    "send_codex": {
+      "0": "Questo è il Codex di \"Blades In The Dark\"!\nQua troverai tutte le informazioni che potrebbero servirti durante le tue avventure.\nPer esempio, quando cerchi una Banda o un Personaggio puoi scegliere tra quelli presenti in questo file",
+      "404": "Per vedere il Codex dovresti essere in una partita... /join per prendere parte ad una partita."
     }
   },
 

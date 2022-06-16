@@ -1406,7 +1406,7 @@
 
     "create_crew_sheet_starting_upgrades": {
       "0": "Select the starting upgrades for the crew: {}/2",
-      "200": "New Character Sheet added, now everyone can use it!",
+      "200": "New Crew Sheet added, now everyone can use it!",
       "404": "Description not found",
       "500": "Ops! Something went wrong and the Crew Sheet couldn't been saved!\nRetry later."
     },
@@ -1423,7 +1423,7 @@
     },
 
     "send_codex": {
-      "0": "This is the Codex of \"Blades In The Dark\"!\nIn here you will find all the information you may need during your journey.\nFor instance, when you select a crew or a character you can choose between all the one presented to you in this file",
+      "0": "This is the Codex of \"Blades In The Dark\"!\nIn here you will find all the information you may need during your journey.\nFor instance, when you select a crew or a character you can choose among all the one presented to you in this file",
       "404": "You can't visualize the codex without being in a game... /join to take part in a game"
     }
   },
