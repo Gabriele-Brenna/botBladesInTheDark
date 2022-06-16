@@ -249,11 +249,11 @@ class TestDBReader(TestCase):
         self.connection.commit()
 
     def test_query_char_strange_friends(self):
-        cutter_friends = [{'name': 'Marlane', 'description': '', 'role': 'A pugilist', 'faction': None},
-                          {'name': 'Chael', 'description': '', 'role': 'A vicious thug', 'faction': None},
-                          {'name': 'Mercy', 'description': '', 'role': 'A cold killer', 'faction': None},
-                          {'name': 'Grace', 'description': '', 'role': 'An extortionist', 'faction': None},
-                          {'name': 'Sawtooth', 'description': '', 'role': 'A physicker', 'faction': None}]
+        cutter_friends = [{'name': 'Marlane', 'description': None, 'role': 'A pugilist', 'faction': None},
+                          {'name': 'Chael', 'description': None, 'role': 'A vicious thug', 'faction': None},
+                          {'name': 'Mercy', 'description': None, 'role': 'A cold killer', 'faction': None},
+                          {'name': 'Grace', 'description': None, 'role': 'An extortionist', 'faction': None},
+                          {'name': 'Sawtooth', 'description': None, 'role': 'A physicker', 'faction': None}]
 
         friends = []
         for i in range(len(cutter_friends)):
@@ -262,12 +262,12 @@ class TestDBReader(TestCase):
         self.assertEqual(friends, query_char_strange_friends("cutter"))
 
     def test_query_crew_contacts(self):
-        smugglers_contacts = [{'name': 'Elynn', 'description': '', 'role': 'A dock worker', 'faction': None},
-                              {'name': 'Rolan', 'description': '', 'role': 'A drug dealer', 'faction': None},
-                              {'name': 'Sera', 'description': '', 'role': 'An arms dealer', 'faction': None},
-                              {'name': 'Nyelle', 'description': '', 'role': 'A spirit trafficker', 'faction': None},
-                              {'name': 'Decker', 'description': '', 'role': 'An anarchist', 'faction': None},
-                              {'name': 'Esme', 'description': '', 'role': 'A tavern owner', 'faction': None}]
+        smugglers_contacts = [{'name': 'Elynn', 'description': None, 'role': 'A dock worker', 'faction': None},
+                              {'name': 'Rolan', 'description': None, 'role': 'A drug dealer', 'faction': None},
+                              {'name': 'Sera', 'description': None, 'role': 'An arms dealer', 'faction': None},
+                              {'name': 'Nyelle', 'description': None, 'role': 'A spirit trafficker', 'faction': None},
+                              {'name': 'Decker', 'description': None, 'role': 'An anarchist', 'faction': None},
+                              {'name': 'Esme', 'description': None, 'role': 'A tavern owner', 'faction': None}]
 
         contacts = []
         for i in range(len(smugglers_contacts)):
@@ -395,6 +395,15 @@ class TestDBReader(TestCase):
         self.assertEqual(6, len(query_claims(prison=True, canon=True)))
         self.assertTrue(len(query_claims()) >= 52)
         print(query_claims())
+
+    def test_query_npcs(self):
+        self.assertEqual([NPC("Irimina", "A vicious noble")], query_npcs(npc_id=2))
+        self.assertEqual([NPC("Irimina", "A vicious noble")], query_npcs(name="Irimina"))
+        self.assertEqual([NPC("Conway", "A bluecoat"), NPC("Laroze", "A bluecoat"), NPC("Darmot", "A bluecoat")],
+                         query_npcs(role="A bluecoat"))
+        self.assertEqual([{'name': 'Irimina', 'description': None, 'role': 'A vicious noble', 'faction': None}],
+                         query_npcs(npc_id=2, as_dict=True))
+
 
     # TODO: test query_factions & query_npcs
 

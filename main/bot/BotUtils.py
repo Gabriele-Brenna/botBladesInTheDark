@@ -4,7 +4,6 @@ from typing import *
 
 from telegram.ext import *
 from telegram import *
-from telegram.error import BadRequest
 from controller.DBreader import *
 from controller.DBwriter import *
 from utility.FilesManager import *

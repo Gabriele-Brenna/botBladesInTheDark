@@ -1,5 +1,4 @@
 import copy
-import os
 
 from telegram.utils import helpers
 from bot.BotUtils import *
@@ -3691,7 +3690,8 @@ def resistance_roll_bonus_dice(update: Update, context: CallbackContext) -> int:
 
 def resistance_roll_notes(update: Update, context: CallbackContext) -> int:
     """
-    Stores the final description of the resistance roll in the chat_data, calls the controller method to apply the roll's
+    Stores the final description of the resistance roll in the chat_data,
+    calls the controller method to apply the roll's
     effects and sends the notification for the PCs who suffered a new trauma after this action.
     Finally, calls resistance_roll_end.
 
@@ -4758,8 +4758,8 @@ def add_coin_amount(update: Update, context: CallbackContext) -> int:
 
         choice = choice.split(" ")
 
-        if controller.check_add_coin(chat_id, get_user_id(update), pc_name, choice[0].lower(), int(choice[1]) +
-                                                                                               context.user_data[
+        if controller.check_add_coin(
+                chat_id, get_user_id(update), pc_name, choice[0].lower(), int(choice[1]) + context.user_data[
                                                                                                    "add_coin"]["info"][
                                                                                                    choice[0].lower()]):
 
@@ -7250,7 +7250,8 @@ def add_harm_cohort_choice(update: Update, context: CallbackContext) -> int:
 
 def add_harm_cohort_level(update: Update, context: CallbackContext) -> int:
     """
-    If the user writes a valid value, calls the controller method commit_add_cohort_harm, then calls add_harm_cohort_end.
+    If the user writes a valid value, calls the controller method commit_add_cohort_harm,
+    then calls add_harm_cohort_end.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -7461,13 +7462,9 @@ def migrate_pc_selection(update: Update, context: CallbackContext) -> int:
         return migrate_pc_end(update, context)
     elif choice == "Ghost":
         # enemies
-        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(placeholders[choice],
-                                                                                   parse_mode=ParseMode.HTML,
-                                                                                   reply_markup=custom_kb(
-                                                                                       controller.get_game_npcs(
-                                                                                           query_game_of_user(
-                                                                                               update.effective_message.chat_id,
-                                                                                               get_user_id(update)))))
+        message = context.user_data["migrate_pc"]["invocation_message"].reply_text(
+            placeholders[choice], parse_mode=ParseMode.HTML, reply_markup=custom_kb(
+                controller.get_game_npcs(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))))
         add_tag_in_telegram_data(context, tags=["migrate_pc", "message"], value=message)
         add_tag_in_telegram_data(context, tags=["migrate_pc", "info", "ghost_enemies"], value=[])
         return 1
@@ -9332,7 +9329,8 @@ def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
         name = choice.split("$")[0]
         name, role = name.split(", ")
         if "$" in choice:
-            buttons = context.user_data["char_sheet"]["buttons_list"][context.user_data["char_sheet"]["query_menu_index"]]
+            buttons = context.user_data["char_sheet"]["buttons_list"][
+                context.user_data["char_sheet"]["query_menu_index"]]
             buttons.remove(choice.split("$")[0])
             npcs.append(query_npc_id(name, role))
 
@@ -9779,7 +9777,8 @@ def create_upgrade_description(update: Update, context: CallbackContext) -> int:
 
 def create_upgrade_tot_quality(update: Update, context: CallbackContext) -> int:
     """
-    Stores the information about the upgrade's total quality in the user_data, then adds the new upgrade to the database.
+    Stores the information about the upgrade's total quality in the user_data,
+    then adds the new upgrade to the database.
 
     :param update: instance of Update sent by the user.
     :param context: instance of CallbackContext linked to the user.
@@ -10188,7 +10187,8 @@ def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
         name = choice.split("$")[0]
         name, role = name.split(", ")
         if "$" in choice:
-            buttons = context.user_data["crew_sheet"]["buttons_list"][context.user_data["crew_sheet"]["query_menu_index"]]
+            buttons = context.user_data["crew_sheet"]["buttons_list"][
+                context.user_data["crew_sheet"]["query_menu_index"]]
             buttons.remove(choice.split("$")[0])
             contacts.append(query_npc_id(name, role))
 
@@ -10706,7 +10706,8 @@ def change_lang_journal_end(update: Update, context: CallbackContext) -> int:
 
 def promote_cohort(update: Update, context: CallbackContext) -> int:
     """
-    Checks if the user is in the correct phase and starts the conversation that handles the promotion of armor to a cohort.
+    Checks if the user is in the correct phase and starts the conversation that handles
+    the promotion of armor to a cohort.
     Adds the dict "promote_cohort" in user_data.
     Finally, sends the inline keyboard to choose the cohort.
 
@@ -10805,7 +10806,8 @@ def create_claim_name(update: Update, context: CallbackContext) -> int:
 
     name = update.message.text
     if name in [claim["name"] for claim in query_claims(as_dict=True)]:
-        message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["err"], ParseMode.HTML)
+        message = context.user_data["create_claim"]["invocation_message"].reply_text(placeholders["err"],
+                                                                                     ParseMode.HTML)
         add_tag_in_telegram_data(context, ["create_claim", "message"], message)
         return 0
 
@@ -10833,7 +10835,7 @@ def create_claim_description(update: Update, context: CallbackContext) -> int:
     add_tag_in_telegram_data(context, ["create_claim", "info", "description"], update.message.text)
 
     message = context.user_data["create_claim"]["invocation_message"].reply_text(
-        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(placeholders["keyboard"], True, 1, [1,2]))
+        placeholders["0"], ParseMode.HTML, reply_markup=custom_kb(placeholders["keyboard"], True, 1, [1, 2]))
     add_tag_in_telegram_data(context, ["create_claim", "message"], message)
 
     update.message.delete()

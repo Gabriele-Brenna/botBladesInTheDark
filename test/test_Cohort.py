@@ -17,6 +17,13 @@ class TestCohort(TestCase):
         self.gang.add_harm(-1)
         self.assertEqual(self.gang.harm, 0)
 
+    def test_add_harm_out_of_bound(self):
+        self.gang.add_harm(10)
+        self.assertEqual(self.gang.harm, 4)
+
+        self.expert.add_harm(-10)
+        self.assertEqual(self.expert.harm, 0)
+
     def test_add_type(self):
         self.gang.add_type("Rooks")
         self.assertEqual(self.gang.type, ["Thugs", "Rooks"])

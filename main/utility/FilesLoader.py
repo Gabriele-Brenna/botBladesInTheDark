@@ -1,14 +1,10 @@
 import copy
-import json
-from typing import List
 
 from bs4 import BeautifulSoup
 
 from character.Ghost import Ghost
 from character.Hull import Hull
 from character.Human import Human
-from character.Item import Item
-from character.NPC import NPC
 from character.Vampire import Vampire
 from component.Clock import Clock
 from controller.DBreader import *

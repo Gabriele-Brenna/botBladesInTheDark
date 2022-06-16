@@ -1,16 +1,6 @@
 from abc import abstractmethod
-from typing import List
 
-from PIL.Image import Image
-
-from character.Action import Action
-from character.Attribute import Attribute
 from character.Character import Character
-from component.Clock import Clock
-from controller.DBreader import query_special_abilities, query_attributes, query_initial_dots
-from character.Item import Item
-from character.Playbook import Playbook
-from component.SpecialAbility import SpecialAbility
 from utility.IDrawable import IDrawable
 from utility.ISavable import ISavable, pop_dict_items
 

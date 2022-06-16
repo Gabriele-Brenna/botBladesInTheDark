@@ -1,5 +1,3 @@
-import copy
-
 from organization.Organization import Organization
 from utility.ISavable import ISavable
 

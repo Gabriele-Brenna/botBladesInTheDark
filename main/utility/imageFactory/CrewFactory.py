@@ -3,10 +3,8 @@ from PIL import ImageFont
 import textwrap
 
 from character.Playbook import Playbook
-from organization.Claim import Claim
 from organization.Cohort import Cohort
 from organization.Lair import Lair
-from organization.Upgrade import Upgrade
 from utility.FilesManager import path_finder, get_font
 from utility.imageFactory.factoryUtils import average_char_size
 
