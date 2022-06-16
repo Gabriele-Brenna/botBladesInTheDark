@@ -126,6 +126,7 @@ class TestDBReader(TestCase):
 
         dict1 = {'Crew_JSON': '{"Assassins": "Hit man"}', 'Crafted_Item_JSON': '{"Aerondight": "Magical silver sword"}',
                  'NPC_JSON': '{"Dandelion": "An humble bard"}',
+                 'Language': 'ENG.json',
                  'Faction_JSON': '{"The Unseen": "One you see them you can not unsee them"}',
                  'Score_JSON': '{"Jenny o the Woods": "Love can make you become a nightwraith"}',
                  'Clock_JSON': '{"Healing": "How long will it take?"}', 'Journal': 'Welcome to Blades in the Dark',
