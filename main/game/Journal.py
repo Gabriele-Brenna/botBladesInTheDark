@@ -1,6 +1,6 @@
 import json
 import math
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict
 
 from bs4.element import Doctype
 from bs4 import *
@@ -24,7 +24,7 @@ class Journal:
             self.lang = json.load(f)["Journal"]
         self.log = BeautifulSoup("", 'html.parser')
         self.score_tag = None
-        self.write_heading()
+        self.write_heading("Journal", self.log)
 
     def get_note(self, number: int):
         """
@@ -91,19 +91,58 @@ class Journal:
         """
         return self.lang[method]
 
-    def write_heading(self):
+    def get_codex(self, game_name: str, info: Dict[str, List[Tuple]]) -> str:
+        """
+        Method used to get all the information contained in the database as html file.
+
+        :param game_name: str representing the name of the game
+        :param info: dictionary containing all the info about the database
+        :return: the str containing the codex's html source
+        """
+        codex = BeautifulSoup("", "html.parser")
+        self.write_heading("Codex", codex)
+
+        body_tag = codex.select_one("body")
+        body_tag.append(self.create_h1_tag("Codex - {}".format(game_name), log=codex))
+
+        style = {"style": """
+        margin: 1%;
+        width: 98%;"""}
+
+        for key in info:
+            body_tag.append(self.create_h2_tag(key, log=codex))
+            body_tag.append(self.create_table_tag(info[key], attrs=style, log=codex))
+
+        return str(codex)
+
+    def read_codex(self, game_name: str, info: Dict[str, List[Tuple]]) -> bytes:
+        """
+        Gives the binary encoding of the Codex.
+
+        :param game_name: str representing the name of the game
+        :param info: dictionary containing all the info about the database
+        :return: bytes used to create the html document of the Codex.
+        """
+        parser = MyHTMLParser()
+        parser.feed(self.get_codex(game_name, info))
+        return bytes(parser.get_parsed_string(), 'UTF-8')
+
+    def write_heading(self, title: str, log: BeautifulSoup):
         """
         Method used to write all the heading in the attribute journal representing the html file of the journal.
+
+        :param title: str representing the title of the page
+        :param log: represents the html file
         """
         doctype = Doctype('html')
-        self.log.append(doctype)
+        log.append(doctype)
 
-        html_tag = self.log.new_tag("html", lang="en")
+        html_tag = log.new_tag("html", lang="en")
 
-        head_tag = self.log.new_tag("head")
+        head_tag = log.new_tag("head")
         html_tag.append(head_tag)
 
-        meta_tag = self.log.new_tag("meta", charset="UTF-8")
+        meta_tag = log.new_tag("meta", charset="UTF-8")
         head_tag.append(meta_tag)
 
         head_tag.append(BeautifulSoup('''<link rel="preconnect" href="https://fonts.googleapis.com"> 
@@ -111,113 +150,21 @@ class Journal:
         <link href="https://fonts.googleapis.com/css2?family=Merienda+One&family=Mochiy+Pop+One&family=Rye&family=Syne+Mono&family=Vast+Shadow&display=swap" rel="stylesheet">''',
                                       'html.parser'))
 
-        title_tag = self.log.new_tag("title")
-        title_tag.string = "Blades in The Dark - Journal"
+        title_tag = log.new_tag("title")
+        title_tag.string = "Blades in The Dark - {}".format(title)
         head_tag.append(title_tag)
 
-        style_tag = self.log.new_tag("style")
-        style_tag.append('''
-            body{
-                background-color: rgb(0, 0, 0);
-	            width: 80%; padding-left: 10%;
-            }
-            div {
-                background-color: rgb(35, 37, 43);
-            	border-radius: 10px;
-            	border: 2px solid rgb(224, 233, 241);
-            	margin: 1%;
-            	border-style: dotted;
-            }
-            h1{
-            	color: rgb(167, 85, 34);
-				font-family: "Rye";
-				font-size: 45px;
-				font-weight: bold;
-				text-align: center;
-            	padding-left: 2%;
-            }
-            h2{
-            	color: #e3ded9; padding-left: 1%;
-            	border-bottom: 4px solid rgb(167, 85, 34);
-            	margin-right: 30%;
-            	border-bottom-style: groove;
-            	margin-left: 1%;
-				font-family: 'Marker Felt';
-            }
-            h3{
-            	color: #b5abab;
-            	padding-left: 2%;
-				font-family: "Mochiy Pop One";
-            }
-            h4{
-            	color: #c3afaf;
-            	padding-left: 2%;
-				font-family: "Merienda One";
-            }
-            p{
-            	color: #ffffff;
-            	font-family: "Syne Mono";
-            	padding-left: 5%
-            }
-            ul{
-            	color: #FFFFFF; 
-            	font-family: "Comic Sans MS",sans-serif;
-            }
-            summary{
-            	color: #a9a9a9;
-            }
-            table, th, td{
-            	border: 1px solid #ffffff; 
-            	margin-left: 125px
-            }
-            th, td{
-            	text-align: center; 
-            	padding-left: 20px; 
-            	padding-right: 20px; 
-            	padding-block: 10px
-            }
-            th{
-            	color: #FFFFFF
-            }
-            .secret{
-            	color: #2f2f2f;
-            	background-color:#2f2f2f;
-            }
-            .secret:hover{
-            	color: white;
-            }
-			.state{
-				font-family: "Vast Shadow";
-				font-size: xx-large;
-				margin-bottom: 5%;
-				margin-top: 1%;
-				color: rgb(161, 64, 0);
-				text-align: center;
-				border-bottom: 4px solid rgb(167, 85, 34);
-			}
-			.piechart {
-            	width: 80px;
-            	height: 80px;
-            	border-radius: 50%;
-				border: solid white 1px;
-				align-self: center;
-        	}
-			.clock {
-				height:auto;
-				display:flex;
-			} 
-			.one {
-				width:70%;
-				margin:10px;
-				border: none;
-			} 
-        ''')
+        style_tag = log.new_tag("style")
+
+        with open(path_finder("Style.css"), 'r') as f:
+            style_str = f.read()
+        style_tag.append(style_str)
 
         head_tag.append(style_tag)
 
-        self.log.append(html_tag)
+        log.append(html_tag)
 
-        self.log.select_one("html").append(self.log.new_tag("body"))
+        log.select_one("html").append(log.new_tag("body"))
 
     def create_title_tag(self, game_name: str):
         """
@@ -226,8 +173,7 @@ class Journal:
         :param game_name: str representing the name of the game
         """
         placeholder = self.get_lang(self.write_title.__name__)
-        title_tag = self.log.new_tag("h1")
-        title_tag.string = placeholder["0"].format(game_name)
+        title_tag = self.create_h1_tag(placeholder["0"].format(game_name))
 
         return title_tag
 
@@ -332,27 +278,11 @@ class Journal:
 
         div_tag.append(self.create_h3_tag(placeholder["3"]))
 
-        table_tag = self.log.new_tag("table")
-        tr_tag = self.log.new_tag("tr")
-        th_tag = self.log.new_tag("th")
-        th_tag.string = placeholder["4"]
-        tr_tag.append(th_tag)
-        th_tag = self.log.new_tag("th")
-        th_tag.string = placeholder["5"]
-        tr_tag.append(th_tag)
-        table_tag.append(tr_tag)
-
+        content = [(placeholder["4"], placeholder["5"])]
         for i in range(len(pc_load)):
-            tr_tag = self.log.new_tag("tr")
-            th_tag = self.log.new_tag("th")
-            th_tag.string = pc_load[i][0]
-            tr_tag.append(th_tag)
-            th_tag = self.log.new_tag("th")
-            th_tag.string = str(pc_load[i][1])
-            tr_tag.append(th_tag)
-            table_tag.append(tr_tag)
+            content.append((pc_load[i][0], str(pc_load[i][1])))
 
-        div_tag.append(table_tag)
+        div_tag.append(self.create_table_tag(content))
 
         div_tag.append(self.create_h3_tag(placeholder["6"]))
 
@@ -1199,102 +1129,201 @@ class Journal:
             return int(5 * (math.log(self.indentation) + 1)) + 1
         return 1
 
-    def create_div_tag(self, attrs: dict):
+    def create_div_tag(self, attrs: dict, log: BeautifulSoup = None):
         """
         Method used to create a "div" tag.
 
         :param attrs: attributes of the div tag
+        :param log: the log representing the html file
         :return: a "div" Tag
         """
-        return self.log.new_tag("div", attrs=attrs)
+        if log is None:
+            log = self.log
+        return log.new_tag("div", attrs=attrs)
 
-    def create_h2_tag(self, content: str, attrs: dict = None):
+    def create_h1_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
+        """
+        Method used to create a "h1" tag.
+
+        :param content: content of the "h1" tag
+        :param attrs: attributes of the h1 tag. If there are no attributes is set to None
+        :param log: the log representing the html file
+        :return: a "h1" Tag
+        """
+        if log is None:
+            log = self.log
+        if attrs:
+            h1_tag = log.new_tag("h1", attrs=attrs)
+        else:
+            h1_tag = log.new_tag("h1")
+        h1_tag.append(BeautifulSoup(content, 'html.parser'))
+        return h1_tag
+
+    def create_h2_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "h2" tag
 
         :param content: content of the "h2" tag
         :param attrs: attributes of the h2 tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "h2" Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            h2_tag = self.log.new_tag("h2", attrs=attrs)
+            h2_tag = log.new_tag("h2", attrs=attrs)
         else:
-            h2_tag = self.log.new_tag("h2")
+            h2_tag = log.new_tag("h2")
         h2_tag.append(BeautifulSoup(content, 'html.parser'))
         return h2_tag
 
-    def create_h3_tag(self, content: str, attrs: dict = None):
+    def create_h3_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "h3" tag.
 
         :param content: content of the "h3" tag
         :param attrs: attributes of the h3 tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "h3" Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            h3_tag = self.log.new_tag("h3", attrs=attrs)
+            h3_tag = log.new_tag("h3", attrs=attrs)
         else:
-            h3_tag = self.log.new_tag("h3")
+            h3_tag = log.new_tag("h3")
         h3_tag.append(BeautifulSoup(content, 'html.parser'))
         return h3_tag
 
-    def create_h4_tag(self, content: str, attrs: dict = None):
+    def create_h4_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "h4" tag.
 
         :param content: content of the h4 tag
         :param attrs: attributes of the h4 tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "h4" Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            h4_tag = self.log.new_tag("h4", attrs=attrs)
+            h4_tag = log.new_tag("h4", attrs=attrs)
         else:
-            h4_tag = self.log.new_tag("h4")
+            h4_tag = log.new_tag("h4")
         h4_tag.append(BeautifulSoup(content, 'html.parser'))
         return h4_tag
 
-    def create_p_tag(self, content: str, attrs: dict = None):
+    def create_p_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "p" tag.
 
         :param content: content of the p tag
         :param attrs: attributes of the p tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "p" Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            p_tag = self.log.new_tag("p", attrs=attrs)
+            p_tag = log.new_tag("p", attrs=attrs)
         else:
-            p_tag = self.log.new_tag("p")
+            p_tag = log.new_tag("p")
         p_tag.append(BeautifulSoup(content, 'html.parser'))
         return p_tag
 
-    def create_details_tag(self, attrs: dict = None):
+    def create_details_tag(self, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "details" tag.
 
         :param attrs: attributes of the details tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "details" Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            d_tag = self.log.new_tag("details", attrs=attrs)
+            d_tag = log.new_tag("details", attrs=attrs)
         else:
-            d_tag = self.log.new_tag("details")
+            d_tag = log.new_tag("details")
         return d_tag
 
-    def create_summary_tag(self, content: str, attrs: dict = None):
+    def create_summary_tag(self, content: str, attrs: dict = None, log: BeautifulSoup = None):
         """
         Method used to create a "summary" tag.
 
         :param content: content of the summary tag
         :param attrs: attributes of the summary tag. If there are no attributes is set to None
+        :param log: the log representing the html file
         :return: a "summary Tag
         """
+        if log is None:
+            log = self.log
         if attrs:
-            s_tag = self.log.new_tag("summary", attrs=attrs)
+            s_tag = log.new_tag("summary", attrs=attrs)
         else:
-            s_tag = self.log.new_tag("summary")
+            s_tag = log.new_tag("summary")
         s_tag.append(BeautifulSoup(content, 'html.parser'))
         return s_tag
+
+    def create_table_tag(self, content: List[Tuple], attrs: dict = None, log: BeautifulSoup = None):
+        """
+        Method used to create a "table" tag.
+
+        :param content: content of the table tag
+        :param attrs: attributes of the table tag. If there are no attributes is set to None
+        :param log: the log representing the html file
+        :return: a table tag
+        """
+        if log is None:
+            log = self.log
+        if attrs is not None:
+            table_tag = log.new_tag("table", attrs=attrs)
+        else:
+            table_tag = log.new_tag("table", attrs={"style": "margin-left: 125px;"})
+        tr_tag = log.new_tag("tr")
+        for i in range(len(content[0])):
+            tr_tag.append(self.create_th_tag(content[0][i], log))
+        table_tag.append(tr_tag)
+        for i in range(1, len(content)):
+            tr_tag = log.new_tag("tr")
+            for j in range(len(content[i])):
+                if content[i][j] is None:
+                    tr_tag.append(self.create_td_tag("", log))
+                elif isinstance(content[i][j], bool):
+                    if content[i][j]:
+                        tr_tag.append(self.create_td_tag("*", log))
+                    else:
+                        tr_tag.append(self.create_td_tag("", log))
+                elif isinstance(content[i][j], int):
+                    tr_tag.append(self.create_td_tag(str(content[i][j]), log))
+                else:
+                    tr_tag.append(self.create_td_tag(content[i][j], log))
+            table_tag.append(tr_tag)
+        return table_tag
+
+    def create_th_tag(self, content: str, log: BeautifulSoup):
+        """
+        Method used to create a "th" tag.
+
+        :param content: str representing the content of the th tag
+        :param log: the log representing the html file
+        :return: a "th" tag
+        """
+        th_tag = log.new_tag("th")
+        th_tag.append(BeautifulSoup(content, 'html.parser'))
+        return th_tag
+
+    def create_td_tag(self, content: str, log: BeautifulSoup):
+        """
+        Method used to create a "td" tag.
+
+        :param content: str representing the content of the td tag
+        :param log: the log representing the html file
+        :return: a "td" tag
+        """
+        td_tag = log.new_tag("td")
+        td_tag.append(BeautifulSoup(content, 'html.parser'))
+        return td_tag
 
     def write_general(self, tag):
         """

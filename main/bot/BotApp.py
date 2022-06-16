@@ -1053,6 +1053,8 @@ def start_bot():
         )
     )
 
+    dispatcher.add_handler(CommandHandler(["codex".casefold(), "data".casefold()], send_codex))
+
     # -----------------------------------------START--------------------------------------------------------------------
 
     dispatcher.add_handler(CommandHandler("start".casefold(), start))

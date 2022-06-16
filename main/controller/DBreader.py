@@ -1330,3 +1330,152 @@ def query_npcs(npc_id: int = None, name: str = None, role: str = None, faction: 
             npcs[i] = NPC(**npcs[i])
 
     return npcs
+
+
+def query_codex() -> Dict[str, List[Tuple]]:
+    """
+    Method used to get all the information contained in the database about Blades in the Dark.
+
+    :return: a dict containing all the information
+    """
+    connection = establish_connection()
+    cursor = connection.cursor()
+
+    # NPCs, Factions
+    info = {
+        "FACTIONS": [("Name", "Description", "Category", "Tier", "Hold")],
+        "NPCs": [("Name", "Role", "Faction", "Description")],
+        "ACTIONS": [("Name", "Description", "Attribute")],
+        "TRAUMAS": [("Name", "Description", "Character")],
+        "VICES": [("Name", "Character", "Description")],
+        "HUNTING GROUNDS": [("Name", "Description")],
+        "ITEMS": [("Name", "Description", "Weight", "Usages")],
+        "UPGRADES": [("Name", "Description", "Maximum Quality", "Group")],
+        "CLAIMS": [("Name", "Description", "Prison")],
+        "SPECIAL ABILITIES": [("Name", "Description")],
+        "STRICTURES": [("Name", "Description")],
+        "FRAME FEATURES": [("Name", "Description")],
+        "CHARACTER SHEETS": [("Name", "Description", "Spirit")],
+        "CHARACTER ACTIONS": [("Character", "Action", "Amount")],
+        "CHARACTER FRIENDS": [("Character", "Friend")],
+        "CHARACTER ITEMS": [("Character", "Item")],
+        "CHARACTER SPECIAL ABILITIES": [("Character", "Special Ability", "Peculiar of the class")],
+        "CHARACTER XP TRIGGERS": [("Character", "Xp Trigger", "Peculiar of the class")],
+        "CREW SHEETS": [("Name", "Description")],
+        "CREW CONTACTS": [("Crew", "Contact")],
+        "CREW HUNTING GROUNDS": [("Crew", "Name")],
+        "CREW SPECIAL ABILITIES": [("Crew", "Special Ability", "Peculiar of the class")],
+        "CREW STARTING UPGRADES": ["Crew", "Upgrade", "Initial Quality"],
+        "CREW UPGRADES": ["Crew", "Upgrade"],
+        "CREW STARTING COHORTS": [("Crew", "Cohort")],
+        "CREW XP TRIGGERS": [("Crew", "Xp Trigger", "Peculiar of the class")]
+    }
+
+    query = "SELECT Type, Description FROM CrewSheet"
+    cursor.execute(query)
+    info["CREW SHEETS"] += cursor.fetchall()
+
+    query = "SELECT Class, Description, Spirit FROM CharacterSheet"
+    cursor.execute(query)
+    info["CHARACTER SHEETS"] += cursor.fetchall()
+
+    query = "SELECT Name, Role, Faction, Description FROM NPC"
+    cursor.execute(query)
+    info["NPCs"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, Category, Tier, Hold FROM Faction"
+    cursor.execute(query)
+    info["FACTIONS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, Attribute FROM Action"
+    cursor.execute(query)
+    info["ACTIONS"] += cursor.fetchall()
+
+    query = "SELECT Character, Action, Dots FROM Char_Action"
+    cursor.execute(query)
+    info["CHARACTER ACTIONS"] += cursor.fetchall()
+
+    query = "SELECT Character, Name FROM NPC JOIN Char_Friend ON NpcID = NPC"
+    cursor.execute(query)
+    info["CHARACTER FRIENDS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, Weight, Usages FROM Item"
+    cursor.execute(query)
+    info["ITEMS"] += cursor.fetchall()
+
+    query = "SELECT Character, Item FROM Char_Item"
+    cursor.execute(query)
+    info["CHARACTER ITEMS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, Prison FROM Claim"
+    cursor.execute(query)
+    info["CLAIMS"] += cursor.fetchall()
+
+    query = "SELECT Crew, Name FROM NPC JOIN Crew_Contact ON NpcID = NPC"
+    cursor.execute(query)
+    info["CREW CONTACTS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description FROM HuntingGround"
+    cursor.execute(query)
+    info["HUNTING GROUNDS"] += cursor.fetchall()
+
+    query = "SELECT Crew, HuntingGround FROM Crew_HG"
+    cursor.execute(query)
+    info["CREW HUNTING GROUNDS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, Class FROM Trauma"
+    cursor.execute(query)
+    info["TRAUMAS"] += cursor.fetchall()
+
+    query = "SELECT Name, Description, TotQuality, 'Group' FROM Upgrade"
+    cursor.execute(query)
+    info["UPGRADES"] += cursor.fetchall()
+
+    query = "SELECT Name, Class, Description FROM Vice"
+    cursor.execute(query)
+    info["VICES"] += cursor.fetchall()
+
+    query = "SELECT Name, Description FROM SpecialAbility"
+    cursor.execute(query)
+    info["SPECIAL ABILITIES"] += cursor.fetchall()
+
+    query = "SELECT Name, Description FROM SpecialAbility WHERE Stricture is true"
+    cursor.execute(query)
+    info["STRICTURES"] += cursor.fetchall()
+
+    query = "SELECT Name, Description FROM SpecialAbility WHERE FrameFeature != 'N'"
+    cursor.execute(query)
+    info["FRAME FEATURES"] += cursor.fetchall()
+
+    query = """SELECT C.Character, C.SpecialAbility, C.Peculiar 
+               FROM Char_SA C JOIN SpecialAbility S on  C.SpecialAbility = S.Name
+               WHERE S.Name NOT IN (
+               SELECT Name FROM SpecialAbility WHERE FrameFeature != 'N' AND Stricture is true)"""
+    cursor.execute(query)
+    info["CHARACTER SPECIAL ABILITIES"] += cursor.fetchall()
+
+    query = "SELECT Crew, SpecialAbility, Peculiar FROM Crew_SA"
+    cursor.execute(query)
+    info["CREW SPECIAL ABILITIES"] += cursor.fetchall()
+
+    query = "SELECT Crew, Upgrade, Quality FROM Crew_StartingUpgrade"
+    cursor.execute(query)
+    info["CREW STARTING UPGRADES"] += cursor.fetchall()
+
+    query = "SELECT Crew, Upgrade FROM Crew_Upgrade"
+    cursor.execute(query)
+    info["CREW UPGRADES"] += cursor.fetchall()
+
+    query = "SELECT Crew, Type FROM Starting_Cohort"
+    cursor.execute(query)
+    info["CREW STARTING COHORTS"] += cursor.fetchall()
+
+    query = "SELECT Character, Description, Peculiar FROM Char_Xp NATURAL JOIN XpTrigger"
+    cursor.execute(query)
+    info["CHARACTER XP TRIGGERS"] += cursor.fetchall()
+
+    query = "SELECT Crew, Description, Peculiar FROM Crew_Xp NATURAL JOIN XpTrigger"
+    cursor.execute(query)
+    info["CREW XP TRIGGERS"] += cursor.fetchall()
+
+    return info

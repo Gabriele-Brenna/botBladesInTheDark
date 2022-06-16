@@ -9877,6 +9877,23 @@ def create_npc_end(update: Update, context: CallbackContext) -> int:
 # ------------------------------------------conv_createNPC--------------------------------------------------------------
 
 
+def send_codex(update: Update, context: CallbackContext):
+    """
+    Method used to get all the information contained in the database.
+
+    :param update: instance of Update sent by the user.
+    :param context: instance of CallbackContext linked to the user.
+    :return:
+    """
+    placeholders = get_lang(context, send_codex.__name__)
+
+    if is_user_not_in_game(update, placeholders["404"]):
+        return
+
+    codex = controller.get_codex(query_game_of_user(update.effective_message.chat_id, get_user_id(update)))
+    update.message.reply_document(document=codex[0], filename=codex[1], caption=placeholders["0"])
+
+
 def greet_chat_members(update: Update, context: CallbackContext) -> None:
     """
     Greets new users in chats and announces when someone leaves.

@@ -50,6 +50,7 @@ class TestJournal(TestCase):
                           assistants=["user5", "user6"], push=True)
         temp.write_action("User1", "goal of the action", "Skirmish", "controlled", "effect of the action", 5,
                           "extra notes", cohort="Thugs", assistants=["user5", "user6"], push=True)
+
         temp.write_use_item("User", "Long rifle", "use of the long rifle")
 
         temp.edit_note("another use of the long rifle", 1)
@@ -60,3 +61,18 @@ class TestJournal(TestCase):
 
         with open("resources_test/journalTest.html", 'w+') as f:
             f.write(temp.get_log_string())
+
+    def test_get_codex(self):
+        temp = Journal()
+        codex = temp.get_codex("The Knives of Doskvol",
+                       {
+                           "Crew": [("Name", "Description"),
+                                    ("Assassins", "Killing me softly"),
+                                    ("Templars", "Knight of the cross")],
+                           "Items": [("Name", "Description", "Weight", "Usages", "Quality"),
+                                     ("Long knive", None, 0, 1, 2),
+                                     ("Bow", "Long bow", "3", "3", True)]
+                       })
+
+        with open("resources_test/codexTest.html", 'w+') as f:
+            f.write(codex)
