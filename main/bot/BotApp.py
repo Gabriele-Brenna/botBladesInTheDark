@@ -762,7 +762,7 @@ def start_bot():
     )
 
     dispatcher.add_handler(CommandHandler(["endDowntime".casefold(), "downtimeEnd".casefold(),
-                                           "endDT".casefold(), "DTEnd".casefold()], end_downtime))
+                                          "endDT".casefold(), "DTEnd".casefold()], end_downtime))
 
     dispatcher.add_handler(
         ConversationHandler(
@@ -1142,6 +1142,8 @@ def start_bot():
             persistent=True
         )
     )
+
+    dispatcher.add_handler(CommandHandler(["codex".casefold(), "data".casefold()], send_codex))
 
     # -----------------------------------------START--------------------------------------------------------------------
 

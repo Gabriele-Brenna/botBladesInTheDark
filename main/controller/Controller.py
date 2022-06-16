@@ -2436,5 +2436,16 @@ class Controller:
 
         insert_crew_json(game_id, save_to_json(crew))
 
+    def get_codex(self, game_id: int) -> Tuple[bytes, str]:
+        """
+        Retrieves the Codex's HTML file as a bytes array and builds the file's name using the game's title.
+
+        :param game_id: is the identifier of the game.
+        :return: a Tuple that contains the bytes of the file and a string that represents its name.
+        """
+        game = self.get_game_by_id(game_id)
+
+        return game.journal.read_codex(game.title, query_codex()), ("Codex - " + game.title + ".html")
+
     def __repr__(self) -> str:
         return str(self.games)

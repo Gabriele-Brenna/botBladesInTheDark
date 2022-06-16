@@ -1423,6 +1423,11 @@
       "err2": "You don't have any alive cohort..."
     },
 
+    "send_codex": {
+      "0": "This is the Codex of \"Blades In The Dark\"!\nIn here you will find all the information you may need during your journey.\nFor instance, when you select a crew or a character you can choose between all the one presented to you in this file",
+      "404": "You can't visualize the codex without being in a game... /join to take part in a game"
+    },
+
     "create_claim": {
       "0": "Write the name of the claim"
     },
