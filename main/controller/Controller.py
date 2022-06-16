@@ -436,6 +436,8 @@ class Controller:
 
         crew.add_cohort(Cohort(**cohort))
 
+        crew.crew_exp.add_points(-1)
+
         insert_crew_json(game_id, save_to_json(crew))
 
     def add_clock_to_game(self, chat_id: int, user_id: int, clock: dict):
@@ -456,6 +458,19 @@ class Controller:
         game.journal.write_clock(query_users_names(user_id)[0], new_clock)
 
         insert_journal(game.identifier, game.journal.get_log_string())
+
+    def get_healing_clock(self,  chat_id: int, user_id: int, pc_name: str) -> str:
+        """
+        Retrieves the healing clock of the selected PC
+
+        :param chat_id: the Telegram id of the user who invoked the action roll.
+        :param user_id: the Telegram chat id of the user.
+        :param pc_name: the name of the active PC
+        :return: the string representation of the healing clock
+        """
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+        clock = game.get_player_by_id(user_id).get_character_by_name(pc_name).healing
+        return "{}: {}/{}".format(clock.name, clock.progress, clock.segments)
 
     def get_clocks_of_game(self, game_id: int, projects: bool = False) -> List[str]:
         """
@@ -503,6 +518,22 @@ class Controller:
 
         return filled, new_clock.__dict__
 
+    def edit_clock_of_game(self, chat_id: int, user_id: int, pc_name: str, old_clock: dict, segments: int):
+        game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
+
+        clock_to_edit = Clock(**old_clock)
+
+        if "healing" in clock_to_edit.name.lower():
+            player = game.get_player_by_id(user_id)
+            player.get_character_by_name(pc_name).healing.edit(segments=segments)
+            update_user_characters(user_id, game.identifier, save_to_json(player.characters))
+        else:
+            for clock in game.clocks:
+                if clock_to_edit == clock:
+                    clock.edit(segments=segments)
+                    insert_clock_json(game.identifier, save_to_json(game.clocks))
+                    break
+
     def add_claim_to_game(self, game_id: int, claim: dict):
         """
         Handles the addiction of a new Claim to the game's crew and write the information in the journal.
@@ -535,10 +566,12 @@ class Controller:
         game = self.get_game_by_id(game_id)
         return game.crew is not None
 
-    def get_cohorts_of_crew(self, chat_id: int, user_id: int, dead: bool = False) -> List[Tuple[str, int]]:
+    def get_cohorts_of_crew(self, chat_id: int, user_id: int, dead: bool = False,
+                            elite: bool = True) -> List[Tuple[str, int]]:
         """
         Gives a list of tuple representing the cohorts of the specified crew.
 
+        :param elite: if True the elite cohorts are included
         :param dead: states if the retrieved cohorts should be dead or not.
         :param chat_id: the Telegram id of the user who invoked the action roll.
         :param user_id: the Telegram chat id of the user.
@@ -549,19 +582,20 @@ class Controller:
         co = []
         for cohort in crew.cohorts:
             if (not dead and cohort.harm < 4) or (dead and cohort.harm >= 4):
-                label = ""
-                if cohort.elite:
-                    label += "💠"
-                if cohort.expert:
-                    label += "[EXPERT] "
-                else:
-                    label += "[GANG] "
-                label += cohort.type[0]
-                for i in range(1, len(cohort.type)):
-                    label += ", "
-                    label += cohort.type[i]
+                if elite or (not elite and not cohort.elite):
+                    label = ""
+                    if cohort.elite:
+                        label += "💠"
+                    if cohort.expert:
+                        label += "[EXPERT] "
+                    else:
+                        label += "[GANG] "
+                    label += cohort.type[0]
+                    for i in range(1, len(cohort.type)):
+                        label += ", "
+                        label += cohort.type[i]
 
-                co.append((label, cohort.quality))
+                    co.append((label, cohort.quality))
 
         return co
 
@@ -2370,6 +2404,37 @@ class Controller:
             update_user_characters(user_id, game.identifier, save_to_json(player.characters))
 
         insert_npc_json(game.identifier, save_to_json(game.NPCs))
+
+    def change_journal_language(self, game_id: int, lang: str):
+        """
+        Changes the journal language of the selected game and updates the database
+
+        :param game_id: the game's id
+        :param lang: the name of the file containing the language
+        """
+        game = self.get_game_by_id(game_id)
+
+        game.journal.change_lang(lang)
+
+        insert_lang(game_id, lang)
+
+    def promote_cohort_of_crew(self, game_id: int, cohort_index: int):
+        """
+        Set the selected cohort to elite and updates the database.
+
+        :param game_id: the game's id
+        :param cohort_index: int representing the cohort to promote
+        """
+        crew = self.get_game_by_id(game_id).crew
+
+        not_elite_cohorts = []
+        for cohort in crew.cohorts:
+            if not cohort.elite:
+                not_elite_cohorts.append(cohort)
+
+        not_elite_cohorts[cohort_index].elite = True
+
+        insert_crew_json(game_id, save_to_json(crew))
 
     def __repr__(self) -> str:
         return str(self.games)

@@ -134,10 +134,10 @@ def query_xp_triggers_id_description(xp_id: int = None, crew: bool = False) -> L
         cursor.execute(query, (xp_id,))
     else:
         if crew:
-            query += "FROM XpTrigger NATURAL JOIN Crew_Xp\nWHERE Peculiar is True"
+            query += "FROM XpTrigger NATURAL JOIN Crew_Xp\nWHERE Peculiar is True OR Canon is False"
             cursor.execute(query)
         else:
-            query += "FROM XpTrigger NATURAL JOIN Char_Xp\nWHERE Peculiar is True"
+            query += "FROM XpTrigger NATURAL JOIN Char_Xp\nWHERE Peculiar is True OR Canon is False"
             cursor.execute(query)
     return cursor.fetchall()
 
@@ -459,7 +459,7 @@ def query_game_json(game_id: int, files: List = None) -> dict:
         cursor.execute("""
         SELECT name
         FROM PRAGMA_TABLE_INFO('Game')
-        WHERE name LIKE '%JSON%' or name = 'Journal' or name = 'State'""")
+        WHERE name LIKE '%JSON%' or name = 'Journal' or name = 'State' or name = 'Language'""")
 
         rows = cursor.fetchall()
 
