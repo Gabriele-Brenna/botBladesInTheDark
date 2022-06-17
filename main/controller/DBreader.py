@@ -38,11 +38,12 @@ def query_game_of_user(tel_chat_id: int, user_id: int) -> Optional[int]:
 
 
 def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ability: str = None, pc: bool = None,
-                            frame_feature: str = None, stricture: bool = None,
+                            frame_feature: str = None, stricture: bool = None, canon: bool = None,
                             as_dict: bool = False) -> Union[List[SpecialAbility], List[Dict[str, str]]]:
     """
     Creates a parametric query to retrieve from database name and description of specified special abilities.
 
+    :param canon:
     :param sheet: represents the sheet of interest, both crews and characters.
     :param peculiar: if True, the search is restricted to peculiar abilities only.
     :param special_ability: represents the name of the ability to get;
@@ -86,11 +87,29 @@ def query_special_abilities(sheet: str = None, peculiar: bool = None, special_ab
         WHERE CREW.peculiar is ? OR CHAR.peculiar is ?"""
         cursor.execute(query, (peculiar, peculiar))
     elif pc is not None:
-        if pc:
-            query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility 
-            WHERE CHAR.Character not in (SELECT Class FROM CharacterSheet WHERE Spirit is True)"""
-        elif not pc:
-            query += """FROM Crew_SA CREW LEFT JOIN SpecialAbility S on S.Name = CREW.SpecialAbility"""
+        if canon is None:
+            if pc:
+                query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility 
+                WHERE CHAR.Character not in (SELECT Class FROM CharacterSheet WHERE Spirit is True)"""
+            elif not pc:
+                query += """FROM Crew_SA CREW LEFT JOIN SpecialAbility S on S.Name = CREW.SpecialAbility"""
+        else:
+            if pc:
+                query = """SELECT Name, Description
+                FROM Char_SA CHAR JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility 
+                WHERE CHAR.Character not in (SELECT Class FROM CharacterSheet WHERE Spirit is True)
+                UNION
+                Select Name, Description
+                From SpecialAbility
+                WHERE Canon is False"""
+            elif not pc:
+                query = """SELECT Name, Description
+                FROM Crew_SA CREW LEFT JOIN SpecialAbility S on S.Name = CREW.SpecialAbility
+                UNION
+                Select Name, Description
+                From SpecialAbility
+                WHERE Canon is False"""
+
         cursor.execute(query)
     elif frame_feature is not None:
         query += """FROM Char_SA CHAR LEFT JOIN SpecialAbility S on S.Name = CHAR.SpecialAbility

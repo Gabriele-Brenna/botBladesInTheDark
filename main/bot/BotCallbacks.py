@@ -2931,7 +2931,7 @@ def add_claim_name(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["add_claim"]["buttons_list"]):
+        if index >= len(context.user_data["add_claim"]["buttons_list"]):
             index = 0
         context.user_data["add_claim"]["query_menu_index"] = index
 
@@ -3157,7 +3157,7 @@ def score_target_selection(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.chat_data["score"]["buttons_list"]):
+        if index >= len(context.chat_data["score"]["buttons_list"]):
             index = 0
         context.chat_data["score"]["query_menu_index"] = index
 
@@ -4883,7 +4883,7 @@ def factions_status_selection(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["factions_status"]["buttons_list"]):
+        if index >= len(context.user_data["factions_status"]["buttons_list"]):
             index = 0
         context.user_data["factions_status"]["query_menu_index"] = index
 
@@ -5073,7 +5073,7 @@ def use_item_name(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["use_item"]["buttons_list"]):
+        if index >= len(context.user_data["use_item"]["buttons_list"]):
             index = 0
         context.user_data["use_item"]["query_menu_index"] = index
 
@@ -5626,7 +5626,7 @@ def fortune_roll_faction(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["fortune_roll"]["buttons_list"]):
+        if index >= len(context.user_data["fortune_roll"]["buttons_list"]):
             index = 0
         context.user_data["fortune_roll"]["query_menu_index"] = index
 
@@ -5684,7 +5684,7 @@ def fortune_roll_item(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["fortune_roll"]["buttons_list"]):
+        if index >= len(context.user_data["fortune_roll"]["buttons_list"]):
             index = 0
         context.user_data["fortune_roll"]["query_menu_index"] = index
 
@@ -6672,7 +6672,7 @@ def downtime_npc_selection(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.chat_data["downtime"]["buttons_list"]):
+        if index >= len(context.chat_data["downtime"]["buttons_list"]):
             index = 0
         context.chat_data["downtime"]["query_menu_index"] = index
 
@@ -9315,7 +9315,7 @@ def create_char_sheet_friends(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["char_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["char_sheet"]["buttons_list"]):
             index = 0
         context.user_data["char_sheet"]["query_menu_index"] = index
 
@@ -9397,7 +9397,7 @@ def create_char_sheet_items(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["char_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["char_sheet"]["buttons_list"]):
             index = 0
         context.user_data["char_sheet"]["query_menu_index"] = index
 
@@ -9417,7 +9417,7 @@ def create_char_sheet_items(update: Update, context: CallbackContext) -> int:
             items.append(name)
 
             if len(items) >= 6:
-                sa = [sa["name"] for sa in query_special_abilities(pc=True, as_dict=True)]
+                sa = [sa["name"] for sa in query_special_abilities(pc=True, canon=True, as_dict=True)]
 
                 buttons_list = []
                 buttons = []
@@ -9480,7 +9480,7 @@ def create_char_sheet_sa(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["char_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["char_sheet"]["buttons_list"]):
             index = 0
         context.user_data["char_sheet"]["query_menu_index"] = index
 
@@ -9556,7 +9556,7 @@ def create_char_sheet_xp(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["char_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["char_sheet"]["buttons_list"]):
             index = 0
         context.user_data["char_sheet"]["query_menu_index"] = index
 
@@ -10173,7 +10173,7 @@ def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 
@@ -10193,7 +10193,7 @@ def create_crew_sheet_contacts(update: Update, context: CallbackContext) -> int:
             contacts.append(query_npc_id(name, role))
 
             if len(contacts) >= 6:
-                sa = [sa["name"] for sa in query_special_abilities(pc=False, as_dict=True)]
+                sa = [sa["name"] for sa in query_special_abilities(pc=False, canon=True, as_dict=True)]
 
                 buttons_list = []
                 buttons = []
@@ -10255,7 +10255,7 @@ def create_crew_sheet_sa(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 
@@ -10331,7 +10331,7 @@ def create_crew_sheet_xp(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 
@@ -10410,7 +10410,7 @@ def create_crew_sheet_hg(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 
@@ -10491,7 +10491,7 @@ def create_crew_sheet_upgrades(update: Update, context: CallbackContext) -> int:
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 
@@ -10573,7 +10573,7 @@ def create_crew_sheet_starting_upgrades(update: Update, context: CallbackContext
 
     if choice == "RIGHT":
         index += 1
-        if index > len(context.user_data["crew_sheet"]["buttons_list"]):
+        if index >= len(context.user_data["crew_sheet"]["buttons_list"]):
             index = 0
         context.user_data["crew_sheet"]["query_menu_index"] = index
 

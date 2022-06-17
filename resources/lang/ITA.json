@@ -17,7 +17,7 @@
         "1": "<i>-GENERAL-</i>\n/start - messaggio di benvenuto con crediti e istruzioni per l'avvio del bot.\n/login - registra il tuo account Telegram scegliendo un nome utente.\n/join - partecipa una partita di questa chat. \uD83D\uDD0E\n/myPC - invia la scheda del personaggio aggiornata del tuo PC attivo in questa chat.\n/myCrew - invia la scheda della squadra aggiornata dell'banda in questa chat.\n/journal - invia il diario aggiornato del tuo gioco in questa chat.\n/map - invia la mappa interattiva di Doskvol con i nomi dei personaggi del gioco in questa chat.\n/changePC - cambia il PC attivo per il gioco in questa chat. \n/changeState - cambia lo stato attuale del gioco in questa chat. Le possibilità sono: FREEPLAY, SCOREPHASE e DOWNTIME. \n/tickClock - gestisce i progressi della squadra.  \n/addStress [N] - aggiunge N stress al tuo PC attivo nel gioco di questa chat.\n/addTrauma - aggiunge un nuovo trauma al tuo PC attivo nel gioco di questa chat.\n/useArmor - spunta uno dei le scatole dell'armatura del tuo PC.\n/coi n - ti permette di gestire i tuoi averi in termini di monete. Puoi aggiungere o rimuovere le monete dalla tua borsa, dalla tua scorta o dal caveau del tuo banda.\n/vaultCapacity: ti consente di espandere o ridurre la capacità del caveau del tuo banda.\n/upgradeCrew: gestisce l'aggiornamento del livello del tuo banda (o cambia la tua situazione di presa se è debole).\n/factionStatus: gestisce le relazioni tra il tuo banda e le altre fazioni del gioco.\n/addExp: ti consente di aggiungere punti esperienza agli attributi del tuo PC attivo o al tuo banda.\n/addActionDots: ti consente di aggiungere punti azione ai tuoi PC attivi.\n/addUpgrade: aggiunge nuovi aggiornamenti alla tua banda se hai abbastanza punti. \n/addSpecialAbility - aggiunge una nuova abilità speciale al tuo PC attivo o al tuo banda. \n/addHarm - gestisce l'aggiunta di un nuovo danno al tuo PC attivo. \uD83D\uDD0E\n/addHarmCohort - gestisce l'aggiunta di un nuovo danno a una delle coorti del tuo banda. \n/changePurveyor - cambia il fornitore del vizio del tuo PC attivo.\n/migrate - cambia la natura del tuo PC attivo. \uD83D\uDD0E\n/changePCclass - modifica la classe del tuo PC attivo (disponibile solo per gli umani). \uD83D\uDD0E\n/addRep [N] - aggiunge N rappresentante al tuo banda.\n/addArmorCohort - avvia la conversazione per aggiungere a una cricca del tuo banda un certo livello di armatura.\n/changeLife - gestisce il ritiro di il tuo PC attivo. Puoi decidere se il PC muore o semplicemente si ritira a una vita migliore. \n/addNote: consente di scrivere una sezione personalizzata nel diario del gioco. \n/editNote: consente di selezionare e modificare una descrizione precedente nel diario del gioco. \n/changeFrameSize - cambia la cornice del tuo PC (disponibile solo per Hull). \n/addServant: aggiungi un nuovo servitore del tuo PC (disponibile solo per il vampiro).\n/addTypeCohort: aggiungi un nuovo tipo a una delle coorti del tuo banda.\n/endGame: chiude il gioco in questo chatta e ti invia tutti i fogli e la versione finale del Journal.",
         "2": "<i>-CREAZIONE-</i>\n/createGame - crea un nuovo gioco in questa chat.\n/createPC - avvia la creazione di un PC. \n/createCrew - inizia la creazione dell'banda. \uD83D\uDD0E\n/createClock - avvia la creazione di un nuovo orologio. \n/addCohort - gestisce l'aggiunta di una nuova cricca dell'banda. \n/addClaim - gestisce l'aggiunta di una nuova rivendicazione dell'banda, sia standard che carcere. ",
         "3": "<i>-SCORE-</i>\n/score - avvia la preparazione di una nuovo colpo. Questo comprende la pianificazione e la preparazione dei PC. \uD83D\uDD0E\n/useItem - consente all'utente per selezionare un oggetto trasportato. \n/flashback: avvia la conversazione del flashback per consentire a un PC di richiamare un evento del passato. \n/endScore: chiude il colpo piu recente. ",
-        "4": "<i>-DOWNTIME-</i>\n/payoff - gestisce la ridistribuzione dei guadagni della fase del colpo.  \n/heat - gestisce le conseguenze delle tue attività passate, valuta e aggiunge il la quantità di calore corrispondente al tuo equipaggio. \n/entanglement - lancia i dadi e ti permette di decidere un entanglement. Suggerisce anche l'entanglement corrispondente alle regole del gioco. \n/secretEntanglement - si comporta come un normale entanglement ma la sua descrizione non viene mostrata agli altri giocatori del gioco.\n/downtimeActivity: avvia una nuova attività di downtime per il tuo PC attivo in questo gioco. \uD83D\uDD0E\n/endDowntime: termina le attività di downtime per la fase corrente. ",
+        "4": "<i>-DOWNTIME-</i>\n/payoff - gestisce la ridistribuzione dei guadagni della fase del colpo.  \n/heat - gestisce le conseguenze delle tue attività passate, valuta e aggiunge il la quantità di sospetto corrispondente al tuo equipaggio. \n/entanglement - lancia i dadi e ti permette di decidere un entanglement. Suggerisce anche l'entanglement corrispondente alle regole del gioco. \n/secretEntanglement - si comporta come un normale entanglement ma la sua descrizione non viene mostrata agli altri giocatori del gioco.\n/downtimeActivity: avvia una nuova attività di downtime per il tuo PC attivo in questo gioco. \uD83D\uDD0E\n/endDowntime: termina le attività di downtime per la fase corrente. ",
         "5": "<i>-DADI-</i>\n/roll [N] - lancia N dadi e restituisce il risultato. \uD83D\uDD0E\n/actionRoll - avvia la conversazione del tiro azione con tutti i richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/fortuneRoll - avvia la conversazione del tiro della fortuna con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/resistanceRoll - avvia la conversazione di il tiro di resistenza con tutte le richieste di informazioni per eseguire questo tipo di tiro. \uD83D\uDD0E\n/groupAction - avvia la conversazione dell'azione di gruppo con tutte le richieste di informazioni per eseguire questo tipo di tiro. Agisce come un Tiro Azione con più utenti.\n/incarcerationRoll - inizia la conversazione del Tiro Incarcerazione di un personaggio o npc e di come ha aiutato/danneggiato la banda o il giocatore",
         "6": "<i>-PERSONALIZZAZIONE-</i>\nI comandi in questa sezione guidano la creazione di elementi di gioco che saranno disponibili per tutti gli utenti\n/createItem - permette la creazione di un nuovo oggetto.\n /createSpecialAbility - consente la creazione di una nuova Abilità Speciale.\n/createXpTrigger - consente la creazione di un nuovo XpTrigger.\n/createHuntingGround - consente la creazione di un nuovo Terreno di caccia.\n/createUpgrade - consente la creazione di un nuovo Upgrade.\n/createNPC - consente la creazione di un nuovo NPC associandolo a una fazione.\n/createClaim - consente la creazione di una nuova rivendicazione.\n/createCharacterSheet - consente la creazione di un nuovo archetipo di personaggio umano. \n/createCrewSheet - consente la creazione di un nuovo archetipo di banda."
       },
@@ -296,9 +296,9 @@
       "engagement": "Ingaggio \uD83C\uDFB2: {}",
       "engagement_extended": "Seleziona il numero di dadi che vuoi tirare. Considera i dettagli del tuo piano.",
 
-      "heat": "Seleziona la quantità di calore da aggiungere o rimuovere.",
+      "heat": "Seleziona la quantità di sospetto da aggiungere o rimuovere.",
       "heat_button": "Sospetto \u2668\uFE0F: {}",
-      "heat_description": "Modifica la quantità di calore che riceverà il tuo banda. Considera le tue capacità/abilità dell'banda.",
+      "heat_description": "Modifica la quantità di sospetto che riceverà il tuo banda. Considera le tue capacità/abilità dell'banda.",
 
       "rep": "Seleziona la quantità di rep da aggiungere al tuo banda.",
       "rep_button": "Rep : {}",
@@ -333,7 +333,7 @@
     },
 
     "action_roll_rating": {
-      "0": "Il <b>GM</b> deve impostare alcune informazioni: <i><b>{}</b></i> sta tentando di <i>{}</i> utilizzando < i>{}</i>\n/reply_action_roll",
+      "0": "Il <b>GM</b> deve impostare alcune informazioni: <i><b>{}</b></i> sta tentando di <i>{}</i> utilizzando <i>{}</i>\n/reply_action_roll",
       "1": "Qual è la posizione di questo tiro?",
       "keyboard": ["Controllato", "Rischioso", "Disperato"]
     },
@@ -877,7 +877,7 @@
       "0": "Seleziona l'attività di downtime che vuoi fare",
       "err": "Non puoi svolgere un'attività di downtime senza essere in una partita... /join per prendere parte a una partita.",
       "err2": "Non hai un PC attivo in questo gioco... /join per prendere parte a un gioco.",
-      "keyboard": ["Acquisisci asset", "Crafting", "Progetto a lungo termine", "Recupera", "Riduci calore", "Train", "Indulge Vice", "Aiuta cricca", "Sostituisci cricca"],
+      "keyboard": ["Acquisisci asset", "Crafting", "Progetto a lungo termine", "Recupera", "Riduci sospetto", "Train", "Indulge Vice", "Aiuta cricca", "Sostituisci cricca"],
       "callbacks": [1,2,3,4,5,6,7,8,9]
     },
 
@@ -1514,7 +1514,7 @@
       "3": "La situazione si è verificata su un terreno ostile.",
       "4": "L'banda è attualmente in guerra con un'altra fazione.",
       "5": "I cadaveri non passano inosservati...",
-      "6": "Il tuo banda ora ha {} livelli di calore",
+      "6": "Il tuo banda ora ha {} livelli di sospetto",
       "7": "La tua squadra ora ha {} livelli ricercati"
     },
     "write_entanglement": {
@@ -1566,9 +1566,9 @@
       },
       "reduce_heat": {
         "0": "RIDUZIONE SOSPETTO",
-        "1": "<b><i>{}</i></b> cerca di ridurre il calore usando: {}",
+        "1": "<b><i>{}</i></b> cerca di ridurre il sospetto usando: {}",
         "2": "Il risultato è {}",
-        "3": "<b><i>{}</i></b> ha ridotto il calore dell'banda di {}"
+        "3": "<b><i>{}</i></b> ha ridotto il sospetto dell'banda di {}"
       },
       "Allenamento": {
         "0": "ALLENAMENTO",
