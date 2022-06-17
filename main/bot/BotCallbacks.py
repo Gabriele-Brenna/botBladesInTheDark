@@ -611,7 +611,7 @@ def join_complete_pc_ability(update: Update, context: CallbackContext) -> int:
     if ability:
         update.message.delete()
         store_value_and_update_kb(update, context, tags=["join", "pc", "abilities"], value=ability,
-                                  btn_label="special ability", lang_source="join_complete_pc", split_row=2)
+                                  btn_label="ability", lang_source="join_complete_pc", split_row=2)
 
         return 2
     else:
