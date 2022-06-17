@@ -1921,7 +1921,7 @@ class Controller:
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
         if selection == 2:
             pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
-            abilities = query_special_abilities(pc=True, as_dict=True)
+            abilities = query_special_abilities(pc=True, canon=True, as_dict=True)
             pc_abilities = pc.abilities
             abilities_dict = []
             for ab in pc_abilities:
@@ -1929,7 +1929,7 @@ class Controller:
             return self.remove_duplicate_abilities(abilities, abilities_dict)
         elif selection == 1:
             crew = game.crew
-            abilities = query_special_abilities(pc=False, as_dict=True)
+            abilities = query_special_abilities(pc=False, canon=True, as_dict=True)
             crew_abilities = crew.abilities
             abilities_dict = []
             for ab in crew_abilities:
@@ -1988,7 +1988,7 @@ class Controller:
         """
         game = self.get_game_by_id(query_game_of_user(chat_id, user_id))
 
-        if pc_name is not None:
+        if add_ability["selection"] != 1:
             pc = game.get_player_by_id(user_id).get_character_by_name(pc_name)
             if add_ability["selection"] == 2:
                 pc.abilities.append(query_special_abilities(special_ability=add_ability["ability"])[0])
